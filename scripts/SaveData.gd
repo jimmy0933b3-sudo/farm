@@ -13,7 +13,7 @@ func _fresh() -> Dictionary:
 		"collected": [],
 		"completed": [],
 		"care": {},
-		"settings": {"music": true, "sound": true, "reduce_motion": false},
+		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
 		"last_screen": "home"
 	}
 

@@ -20,3 +20,6 @@ textures/default_filters/use_nearest_mipmap_filter=false
 
 [application/config]
 name="動物探險島"
+
+[audio]
+general/text_to_speech=true

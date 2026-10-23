@@ -94,6 +94,31 @@ func _draw() -> void:
 			_oval(-63,1,5,6,Color("#334B69"))
 			for y in [42.0,65.0]:
 				_line(Vector2(-104,y),Vector2(104,y),Color("#FFF9EF"),5.0)
+		"feed":
+			_oval(0,58,82,25,Color("#92B7DE"))
+			_oval(0,44,70,13,Color("#B4D0F0"))
+			_oval(-30,12,16,40,Color("#F1953D"))
+			_oval(5,-7,16,45,Color("#E98332"))
+			_oval(42,16,14,36,Color("#F1AA4D"))
+			for x in [-34.0,5.0,43.0]:
+				_oval(x,-30,10,20,Color("#76B576"))
+		"wash":
+			_oval(0,55,76,31,Color("#95CBE7"))
+			_oval(0,37,70,18,Color("#D5F1F9"))
+			for p in [Vector2(-50,-15),Vector2(20,-43),Vector2(58,4),Vector2(-8,-60)]:
+				_oval(p.x,p.y,15,15,Color("#A1DCE9"))
+				_oval(p.x-5,p.y-5,5,5,Color.WHITE)
+		"play":
+			_oval(0,3,64,65,Color("#E9A5A5"))
+			for i in range(4):
+				draw_arc(Vector2(0,3),64.0,TAU*float(i)/4.0,TAU*float(i+1)/4.0,12,Color("#FCDF94"),9.0,true)
+			_oval(0,3,17,17,Color("#FFF7E5"))
+		"sleep":
+			_oval(0,30,82,44,Color("#C7B2ED"))
+			_oval(-29,0,35,31,Color("#FFF1DB"))
+			_shape([Vector2(16,2),Vector2(64,-16),Vector2(75,58),Vector2(-15,58)],Color("#A6D9EC"))
+			_oval(49,-58,15,19,Color("#F9D65D"))
+			_oval(57,-65,10,14,Color("#A9E5F2"))
 		"care":
 			_shape([Vector2(-85,-19),Vector2(0,-88),Vector2(85,-19)],Color("#E7848D"))
 			draw_rect(Rect2(-72,-20,144,100),Color("#FFE9C9"))

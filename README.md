@@ -43,3 +43,24 @@ godot --headless --path . --script tests/validate.gd
 ## 授權
 
 原創程式繪製動物、場景與合成音效，沒有採用未授權第三方圖片或錄音。本專案未設定對外開源授權，保留相關權利。
+
+## V0.2 Voice-first improvements
+
+- Real CC0 recorded animal calls are bundled offline for cow, pig, sheep, rooster, duck, horse, owl. No more pitch-shifted electronic animal calls.
+- Wild animals with no verified sound (rabbit, squirrel, fox, deer, bear) are introduced with Mandarin voice rather than fabricated animal sounds.
+- Food, habitats and care actions have original vector picture cards so pre-readers can play without reading.
+- Spoken Chinese guidance uses **Godot native TTS** with the Android device's installed Mandarin voices. For fully offline guidance, install a **Traditional Chinese offline speech voice** in Android text-to-speech settings. When no Chinese speech engine is installed, large picture buttons remain available; speech might be unavailable until set up.
+
+### Audio recording credits (CC0 1.0)
+
+Audio re-used from Freesound as independently licensed CC0 recordings, transferred via the public WilhelmSFX sample mirror. Sources:
+
+- Cow: [Bird_man / Moo.wav](https://freesound.org/people/Bird_man/sounds/275154/)
+- Pig: [qubodup / Pig Oink](https://freesound.org/people/qubodup/sounds/442906/)
+- Sheep: [edschaefer / Sheeplings](https://freesound.org/people/edschaefer/sounds/380042/)
+- Rooster: [BenjaminNelan / Rooster Crow 1](https://freesound.org/people/BenjaminNelan/sounds/435508/)
+- Duck: [D4XX / Ducks](https://freesound.org/people/D4XX/sounds/607226/)
+- Horse: [shadoWisp / horse neigh shortened](https://freesound.org/people/shadoWisp/sounds/269571/)
+- Owl: [Gerent / owl_hooting](https://freesound.org/people/Gerent/sounds/558397/)
+
+Every source has its own CC0 license; see linked Freesound listing.

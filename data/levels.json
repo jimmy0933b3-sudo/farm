@@ -86,14 +86,14 @@
   {
     "id": 8,
     "animal": "squirrel",
-    "type": "sound",
-    "prompt": "聽一聽，找出「松鼠」！",
+    "type": "habitat",
+    "prompt": "幫松鼠找到森林的家。",
     "options": [
-      "squirrel",
-      "rabbit",
-      "fox"
+      "farm",
+      "forest",
+      "ocean"
     ],
-    "answer": "squirrel"
+    "answer": "forest"
   },
   {
     "id": 9,
