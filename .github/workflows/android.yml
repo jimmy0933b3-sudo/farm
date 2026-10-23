@@ -45,15 +45,204 @@ jobs:
         run: godot --headless --path . --script tests/validate.gd
       - name: Configure Android paths
         run: godot --headless --editor --path . --script tools/configure_android.gd
-      - name: Create Android debug signing key
+      # The four secrets are injected only for the private signing step.
+      # Fork PRs run the tests but never receive signing credentials or APKs.
+      - name: Restore fixed keystore and set upgradeable version
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          mkdir -p "$HOME/.android"
-          if [ ! -f "$HOME/.android/debug.keystore" ]; then
-            keytool -genkeypair -keystore "$HOME/.android/debug.keystore" -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -noprompt
+          set -euo pipefail
+          umask 077
+          for key in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!key:-}" ]; then
+              echo "::error::Missing repository secret: $key"
+              exit 1
+            fi
+          done
+
+          # Decode the user's existing keystore only inside the runner.
+          # No keystore or passwords are ever written into the git tree.
+          python3 - <<'PY'
+          import base64, os, pathlib
+          secret = "".join(os.environ["KEYSTORE_BASE64"].split())
+          try:
+              payload = base64.b64decode(secret, validate=True)
+          except Exception as exc:
+              raise SystemExit("KEYSTORE_BASE64 is not valid Base64") from exc
+          if len(payload) < 300:
+              raise SystemExit("Decoded keystore is unexpectedly small")
+          target = pathlib.Path(os.environ["RUNNER_TEMP"]) / "animal-island-original.jks"
+          target.write_bytes(payload)
+          target.chmod(0o600)
+          print("Original signing keystore restored securely")
+          PY
+
+          # Godot currently uses a single password for both the keystore and
+          # the private key. Normalize even when KEY_PASSWORD differs.
+          keytool -importkeystore \
+            -srckeystore "$RUNNER_TEMP/animal-island-original.jks" \
+            -srcstorepass:env KEYSTORE_PASSWORD \
+            -srcalias "$KEY_ALIAS" \
+            -srckeypass:env KEY_PASSWORD \
+            -destkeystore "$RUNNER_TEMP/animal-island-release.p12" \
+            -deststoretype PKCS12 \
+            -deststorepass:env KEYSTORE_PASSWORD \
+            -destkeypass:env KEYSTORE_PASSWORD \
+            -destalias "$KEY_ALIAS" -noprompt
+          chmod 600 "$RUNNER_TEMP/animal-island-release.p12"
+          rm -f "$RUNNER_TEMP/animal-island-original.jks"
+
+          # A monotonically increasing Android versionCode is necessary to
+          # install an update over the previous release with the same cert.
+          python3 - <<'PY'
+          import os, pathlib, re
+          path = pathlib.Path("export_presets.cfg")
+          body = path.read_text(encoding="utf-8")
+          run = int(os.environ["GITHUB_RUN_NUMBER"])
+          version_code = 1000 + run
+          assert 2 <= version_code < 2_100_000_000
+          body, n = re.subn(r'(?m)^package/version_code=\d+      - name: Exercise all picture-choice levels
+        run: |
+          godot --headless --path . --script tests/ui_smoke.gd
+      - name: Check touch petting and persistent care animations
+        run: godot --headless --path . --script tests/interaction_smoke.gd
+      - name: Test forest animal discovery mini-game
+        run: godot --headless --path . --script tests/forest_discovery_smoke.gd
+      - name: Test independent large forest adventure
+        run: godot --headless --path . --script tests/large_forest_smoke.gd
+      - name: Test landscape UI boundaries and no white hideout buttons
+        run: godot --headless --path . --script tests/layout_smoke.gd
+      - name: Launch game smoke test
+        run: |
+          godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1
+          cat "$RUNNER_TEMP/game-smoke.log"
+          if grep -E 'SCRIPT ERROR|Parse Error|Invalid call|Invalid access' "$RUNNER_TEMP/game-smoke.log"; then
+            echo "Game runtime errors detected"
+            exit 1
           fi
-          echo "GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$HOME/.android/debug.keystore" >> "$GITHUB_ENV"
-          echo "GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey" >> "$GITHUB_ENV"
-          echo "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android" >> "$GITHUB_ENV"
+      - name: Diagnose Android configuration
+        run: |
+          echo "Android SDK: $ANDROID_HOME; JDK: $JAVA_HOME"
+          ls -l "$ANDROID_HOME/platform-tools/adb" "$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          find "$HOME/.config/godot" -maxdepth 2 -type f -name 'editor_settings*' -print -exec grep -E 'export/android/(java_sdk_path|android_sdk_path)' {} \; || true
+          godot --headless --editor --path . --script tools/check_android.gd
+      - name: Export consistently signed release APK
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          GODOT_ANDROID_KEYSTORE_RELEASE_PATH: ${{ runner.temp }}/animal-island-release.p12
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          test -s "$GODOT_ANDROID_KEYSTORE_RELEASE_PATH"
+          godot --headless --path . --export-release Android build/AnimalAdventureIsland-signed.apk
+          test -s build/AnimalAdventureIsland-signed.apk
+
+      - name: Verify signed APK certificate and package identity
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          APK=build/AnimalAdventureIsland-signed.apk
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" > "$RUNNER_TEMP/apk-signature.txt"
+          cat "$RUNNER_TEMP/apk-signature.txt"
+          keytool -exportcert -rfc \
+            -keystore "$RUNNER_TEMP/animal-island-release.p12" \
+            -storepass:env KEYSTORE_PASSWORD -alias "$KEY_ALIAS" \
+            > "$RUNNER_TEMP/expected-cert.pem"
+          EXPECTED="$(openssl x509 -in "$RUNNER_TEMP/expected-cert.pem" -outform DER | sha256sum | awk '{print $1}')"
+          ACTUAL="$(sed -n 's/.*Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/apk-signature.txt" | head -1 | tr '[:upper:]' '[:lower:]' | tr -d '\r')"
+          if [ -z "$ACTUAL" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "::error::APK certificate does not match the uploaded signing keystore"
+            exit 1
+          fi
+          PACKAGE="$("$AAPT" dump badging "$APK" | grep '^package:' | head -1)"
+          echo "$PACKAGE"
+          if [[ "$PACKAGE" != *"name='com.jimmy0933.animalisland'"* ]]; then
+            echo "::error::Android package identity has unexpectedly changed"
+            exit 1
+          fi
+          printf 'Package: com.jimmy0933.animalisland\nVersion build: %s\nCertificate SHA-256: %s\n' \
+            "$GITHUB_RUN_NUMBER" "$EXPECTED" > build/SIGNING-INFO.txt
+          echo "Verified signing SHA-256: $EXPECTED"
+
+      - name: Upload upgradeable signed APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnimalAdventureIsland-signed-APK
+          path: |
+            build/AnimalAdventureIsland-signed.apk
+            build/SIGNING-INFO.txt
+          if-no-files-found: error
+          retention-days: 30
+,
+                            f'package/version_code={version_code}', body)
+          if n != 1:
+              raise SystemExit("Unable to locate Android versionCode in export preset")
+          body, n = re.subn(r'(?m)^package/version_name="[^"]+"      - name: Exercise all picture-choice levels
+        run: |
+          godot --headless --path . --script tests/ui_smoke.gd
+      - name: Check touch petting and persistent care animations
+        run: godot --headless --path . --script tests/interaction_smoke.gd
+      - name: Test forest animal discovery mini-game
+        run: godot --headless --path . --script tests/forest_discovery_smoke.gd
+      - name: Test independent large forest adventure
+        run: godot --headless --path . --script tests/large_forest_smoke.gd
+      - name: Test landscape UI boundaries and no white hideout buttons
+        run: godot --headless --path . --script tests/layout_smoke.gd
+      - name: Launch game smoke test
+        run: |
+          godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1
+          cat "$RUNNER_TEMP/game-smoke.log"
+          if grep -E 'SCRIPT ERROR|Parse Error|Invalid call|Invalid access' "$RUNNER_TEMP/game-smoke.log"; then
+            echo "Game runtime errors detected"
+            exit 1
+          fi
+      - name: Diagnose Android configuration
+        run: |
+          echo "Android SDK: $ANDROID_HOME; JDK: $JAVA_HOME"
+          ls -l "$ANDROID_HOME/platform-tools/adb" "$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          find "$HOME/.config/godot" -maxdepth 2 -type f -name 'editor_settings*' -print -exec grep -E 'export/android/(java_sdk_path|android_sdk_path)' {} \; || true
+          godot --headless --editor --path . --script tools/check_android.gd
+      - name: Export installable debug APK
+        run: |
+          mkdir -p build
+          godot --headless --verbose --path . --export-debug Android build/AnimalAdventureIsland-debug.apk
+          test -s build/AnimalAdventureIsland-debug.apk
+      - name: Verify APK signature
+        run: |
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          "$APKSIGNER" verify --verbose build/AnimalAdventureIsland-debug.apk
+      - name: Optional release signing
+        if: ${{ env.HAS_RELEASE_KEY == 'true' }}
+        run: echo "release secrets available"
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnimalAdventureIsland-debug-APK
+          path: build/*.apk
+          if-no-files-found: error
+          retention-days: 30
+,
+                            f'package/version_name="0.6.{run}"', body)
+          if n != 1:
+              raise SystemExit("Unable to locate Android versionName in export preset")
+          path.write_text(body, encoding="utf-8")
+          print(f"Android versionCode={version_code}; versionName=0.6.{run}")
+          PY
       - name: Exercise all picture-choice levels
         run: |
           godot --headless --path . --script tests/ui_smoke.gd

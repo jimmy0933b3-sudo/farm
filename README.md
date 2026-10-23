@@ -100,3 +100,11 @@ Every source has its own CC0 license; see linked Freesound listing.
 - 縮小森林 HUD 與底部操作列最低高度，針對平板橫向解析度節省空間。
 - 森林增加 **刺蝟、浣熊、野豬、猴子**，森林探索擴大至 10 隻；總動物 16 隻，各自有原創矢量插畫、食物或棲地關卡和中文語音介紹。沒有正確錄音的動物不偽造叫聲。
 - 地圖延長到 4720px、藏點增加至 10 個。舊資料保留在圖鑑與發現紀錄中。
+
+## 固定簽章與可直接升級的 Android APK
+
+自 2026-10-23 起，GitHub Actions 在 `main` push 或手動執行時，讀取 Repository secrets：`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。工作流程會在 runner 的臨時目錄解碼 keystore，經過憑證與 alias 驗證後，以 **同一組金鑰簽署 release APK**；沒有四個 secrets 時會明確失敗，絕不退回每次重新產生的 debug key。Pull request 只跑測試，不提供 secrets 也不產生已簽章 APK。
+
+Godot 4.5 使用一組憑證密碼，CI 將輸入 keystore 的不同 `KEY_PASSWORD` 正規化成臨時 PKCS12，不變更原私鑰或憑證。Android package ID 維持 `com.jimmy0933.animalisland`，CI 以 GitHub Actions run number 自動遞增 versionCode，APK 附上 `SIGNING-INFO.txt` 記錄公開憑證 SHA-256 指紋並確認與輸入金鑰完全相同。
+
+**第一次改用固定簽章要注意：**先前 CI 使用臨時 debug key。如果手機上安裝的是舊 debug APK，憑證不同時 Android 無法直接覆蓋安裝；請先備份舊版遊戲資料（若沒有備份功能則無法保證保留），之後才移除舊版並安裝新的固定簽章 APK。往後用**同一份 keystore、相同 package ID、較高 versionCode** 才能正常更新，不應換掉這四個 secrets 所代表的私鑰。請妥善在 GitHub 以外保留加密金鑰備份。
