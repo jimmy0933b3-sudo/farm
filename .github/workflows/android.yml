@@ -21,10 +21,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Android SDK licenses
-        run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
-          yes | sdkmanager --licenses > /dev/null || true
+      - name: Setup Android SDK command line tools
+        uses: android-actions/setup-android@v4
+        with:
+          accept-android-sdk-licenses: 'false'
+          packages: ''
+      - name: Accept SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null
       - name: Install Android API
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
