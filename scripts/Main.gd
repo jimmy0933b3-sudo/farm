@@ -239,7 +239,6 @@ func show_home() -> void:
 	# Three columns across two rows leave generous hit targets on 16:9 phones.
 	var cards = GridContainer.new()
 	cards.columns = 3
-	cards.alignment = BoxContainer.ALIGNMENT_CENTER
 	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	cards.add_theme_constant_override("h_separation",22)
