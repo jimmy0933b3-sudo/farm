@@ -10,15 +10,18 @@ var last_position: Vector2 = Vector2.ZERO
 var moved: float = 0.0
 var block_card_press: bool = false
 
+func _init() -> void:
+	# Defaults must apply BEFORE pages configure horizontal scrolling.
+	# Resetting orientation in _ready would break the Care list.
+	horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
+
 func _ready() -> void:
 	mouse_filter=Control.MOUSE_FILTER_STOP
 	# ScrollContainer's default touch handling conflicts with nested Buttons.
 	# This scroller handles both touch and mouse with the same threshold.
 	scroll_deadzone=100000
 	follow_focus=false
-	size_flags_vertical=Control.SIZE_EXPAND_FILL
-	horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
 
 func wire_button(button: Button, action: Callable) -> void:
 	button.mouse_filter=Control.MOUSE_FILTER_PASS
