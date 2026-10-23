@@ -84,6 +84,28 @@ func mark_forest_found(animal_id: String) -> void:
 
 func get_forest_explore_session(order: Array) -> Dictionary:
 	var session = data.get("forest_explore_session",{})
+	# Expand existing six-animal sessions without erasing animals the child
+	# already found before updating. The remaining animals are added at the end.
+	if session is Dictionary and session.get("placement",null) is Array and session.get("found",null) is Array:
+		var old_positions: Array = session["placement"]
+		var old_found: Array = session["found"]
+		if old_positions.size() == 6 and order.size() > 6 and old_found.size() <= 6:
+			var legacy_order: Array = order.slice(0,6)
+			var can_migrate: bool = true
+			for id in legacy_order:
+				if old_positions.count(id) != 1:
+					can_migrate = false
+			for i in range(old_found.size()):
+				if old_found[i] != legacy_order[i]:
+					can_migrate = false
+			if can_migrate:
+				var extended: Array = old_positions.duplicate()
+				var extras: Array = order.slice(6,order.size())
+				extras.shuffle()
+				extended.append_array(extras)
+				session = {"placement":extended,"found":old_found.duplicate()}
+				data["forest_explore_session"] = session
+				save()
 	var valid = session is Dictionary
 	if valid:
 		valid = session.get("placement",null) is Array and session.get("found",null) is Array

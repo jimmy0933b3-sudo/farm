@@ -287,11 +287,16 @@ func show_zone(zone: String) -> void:
 	var panel = _panel()
 	layout.add_child(panel)
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
 	var grid = GridContainer.new()
-	grid.columns = 6
-	grid.add_theme_constant_override("h_separation", 14)
-	grid.add_theme_constant_override("v_separation", 12)
-	panel.add_child(grid)
+	grid.columns = 6 if zone == "farm" else 5
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
+	scroll.add_child(grid)
 	for info in animals:
 		if str(info.get("zone","")) == zone:
 			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"]))))
