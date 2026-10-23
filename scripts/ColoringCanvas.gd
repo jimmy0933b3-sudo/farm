@@ -109,6 +109,11 @@ func move_stroke(point: Vector2) -> void:
 	# Ignore micro-jitter; a single tap never fills a region.
 	if distance<2.0:
 		return
+	# First real movement always starts with pigment at the touched point.
+	# Otherwise a fast swipe can skip a thin ear, fin or snake segment.
+	# A stationary tap still creates no mark.
+	if not dirty and not locked_region.is_empty():
+		_paint_dot(last_pos)
 	var steps=clampi(int(ceil(distance/SPACING)),1,60)
 	for i in range(1,steps+1):
 		var intermediate=last_pos.lerp(point,float(i)/float(steps))
