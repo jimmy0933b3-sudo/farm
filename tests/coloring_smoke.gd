@@ -1,7 +1,8 @@
 extends SceneTree
-## Coloring room end-to-end regression: collection gate, black line-art,
-## independent fillable regions, persistent color, undo/reset and responsive UI.
+## Real finger-painting test: a tap alone CANNOT fill any animal region.
+## Drag lays down individually saved pigment dots, clipped by original AnimalArt.
 const Canvas = preload("res://scripts/ColoringCanvas.gd")
+const Art = preload("res://scripts/AnimalArt.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
 const Store = preload("res://scripts/SaveData.gd")
 
@@ -19,110 +20,142 @@ func _run() -> void:
 		if node.get_script()==ChoiceArt and str(node.get("item_id"))=="coloring":
 			home_icon=true
 	if not home_icon:
-		_fail("New independent coloring home icon missing")
+		_fail("Independent coloring icon missing")
 		return
-	game._go("coloring")
-	await process_frame
-	if game.screen!="coloring":
-		_fail("Coloring icon did not open the room")
-		return
-	var room=game.coloring_game
 	var original_collected=game.progress.data["collected"].duplicate(true)
 	var old_pages=game.progress.data["coloring_pages"].duplicate(true)
-	if game.progress.color_animal_region("not_collected","body","#F26A72"):
-		_fail("Uncollected animal must never be colorable")
+	if game.progress.color_animal_region("uncollected_fake","body","#F26A72"):
+		_fail("Cannot color an uncollected species")
 		return
-	game.progress.unlock("rabbit")
-	game.progress.unlock("snake")
-	game.progress.unlock("cow")
-	room._rebuild_gallery()
-	if room.gallery.get_child_count()<3:
-		_fail("Newly collected animals missing from the gallery")
-		return
+	for id in ["rabbit","snake","meerkat"]:
+		game.progress.unlock(id)
+		game.progress.replace_coloring(id,{})
+	game._go("coloring")
+	await process_frame
+	var room=game.coloring_game
 	room.select_animal("rabbit",false)
 	await process_frame
 	var canvas=room.canvas
 	if not is_instance_valid(canvas) or canvas.get_script()!=Canvas:
-		_fail("No interactive coloring canvas")
+		_fail("Expected direct-drawing canvas")
+		return
+	if canvas.avatar.get_script()!=Art:
+		_fail("Coloring MUST use the same original AnimalArt as the album")
 		return
 	for info in game.animals:
 		canvas.setup(str(info["id"]),{})
 		await process_frame
-		if canvas.avatar.get_script()!=preload("res://scripts/AnimalArt.gd"):
-			_fail("Coloring must use actual original AnimalArt, never a duplicate shape renderer")
-			return
 		if canvas.get_regions().size()<5:
-			_fail("Missing outlined and colorable pieces for "+str(info["id"]))
+			_fail("Original-art coloring shapes missing for "+str(info["id"]))
 			return
-		for id in canvas.colors.keys():
-			if str(canvas.colors[id])!="#FFFFFF":
-				_fail("Unpainted animal should be monochrome")
-				return
+		if not canvas.avatar.coloring_mode:
+			_fail("Artist should be black-and-white in coloring room")
+			return
 	room.select_animal("rabbit",false)
 	await process_frame
 	var scale=minf(canvas.size.x/220.0,canvas.size.y/220.0)
-	if scale<=0:
-		_fail("Canvas size not laid out")
+	if scale<=0.0:
+		_fail("Animal canvas not laid out")
 		return
-	var spot=Vector2(canvas.size.x*.5,canvas.size.y*.52)+Vector2(0,24)*scale
-	var region=canvas.region_at(spot)
+	var center=Vector2(canvas.size.x*.5,canvas.size.y*.52)+Vector2(0,22)*scale
+	var region=canvas.region_at(center)
 	if region.is_empty():
-		_fail("Cannot tap and fill the animal's body")
+		_fail("Cannot find colorable body region")
 		return
 	room.choose_color("#7189ED")
-	canvas.paint_at(spot)
-	if str(game.progress.get_coloring("rabbit").get(region,""))!="#7189ED":
-		_fail("Tapping white line art did not save filled color")
+	# One tap, no MOVE, must remain blank.
+	canvas.begin_stroke(center)
+	canvas.finish_stroke()
+	if not game.progress.get_coloring("rabbit").is_empty():
+		_fail("A single touch instantly filled an entire region")
+		return
+	if room.history.size()!=0:
+		_fail("Tap alone should not create an undo entry")
+		return
+	# Partial stroke paints only a series of dots, no full-region flat color.
+	canvas.begin_stroke(center)
+	canvas.move_stroke(center+Vector2(23,0))
+	if not canvas.colors.has("strokes_v2"):
+		_fail("Finger dragging produced no visible paint points")
+		return
+	if game.progress.get_coloring("rabbit").has("strokes_v2"):
+		_fail("Partial live stroke should save once on finger release")
+		return
+	canvas.finish_stroke()
+	var page=game.progress.get_coloring("rabbit")
+	var strokes=page.get("strokes_v2",[])
+	if strokes.size()<1:
+		_fail("Finger stroke was not saved")
+		return
+	if page.has(region):
+		_fail("Finger stroke incorrectly changed the entire region color")
 		return
 	if not room.history.size()==1:
-		_fail("Coloring should add undo snapshot")
+		_fail("One gesture should create exactly one undo step")
 		return
-	room.undo()
-	if game.progress.get_coloring("rabbit").has(region):
-		_fail("Undo did not restore original white paper")
+	if strokes[0]["dots"].size()<2:
+		_fail("Fast finger movement must paint a connected path")
 		return
-	canvas.drag_region=""
-	canvas.paint_at(spot)
+	# A second gesture from inside the body into empty outside cannot
+	# create a whole-page paint region.
+	var count_before=strokes.size()
+	canvas.begin_stroke(center)
+	canvas.move_stroke(Vector2(-30,-30))
+	canvas.finish_stroke()
+	page=game.progress.get_coloring("rabbit")
+	for stroke in page.get("strokes_v2",[]):
+		for pair in stroke["dots"]:
+			if absf(float(pair[0]))>260 or absf(float(pair[1]))>260:
+				_fail("Unbounded strokes escaped the paper")
+				return
+	if page.get("strokes_v2",[]).size()<count_before:
+		_fail("Previous paint was lost")
+		return
+	# Leaving and reopening a coloring page must keep the partial scribbles.
 	room.select_animal("snake",false)
 	if not game.progress.get_coloring("snake").is_empty():
-		_fail("Different animal accidentally inherited rabbit paint")
+		_fail("Another species inherited the first animal's strokes")
 		return
 	room.select_animal("rabbit",false)
-	if str(canvas.colors.get(region,""))!="#7189ED":
-		_fail("Switching animal lost coloring progress")
+	if room.canvas.colors.get("strokes_v2",[]).is_empty():
+		_fail("Navigating back lost partially painted colors")
 		return
 	var loaded=Store.new()
 	loaded.load_save()
-	if str(loaded.get_coloring("rabbit").get(region,""))!="#7189ED":
-		_fail("Coloring progress was not persisted to disk")
+	if loaded.get_coloring("rabbit").get("strokes_v2",[]).is_empty():
+		_fail("Saved partial painting was lost after reloading the save file")
+		return
+	room.undo()
+	if room.canvas.colors.get("strokes_v2",[]).size()>0 and room.history.size()!=0:
+		_fail("Undo did not restore the previous saved picture")
 		return
 	room.reset_coloring()
 	if game.progress.get_coloring("rabbit").is_empty():
-		_fail("First reset tap should only request confirmation")
+		_fail("Reset must need confirmation and protect existing art")
 		return
 	room.reset_coloring()
 	if not game.progress.get_coloring("rabbit").is_empty():
-		_fail("Second reset tap did not clear coloring")
+		_fail("Confirmed reset did not clear the art")
 		return
 	room.undo()
-	if str(game.progress.get_coloring("rabbit").get(region,""))!="#7189ED":
-		_fail("Undo after reset should recover colored masterpiece")
+	if game.progress.get_coloring("rabbit").get("strokes_v2",[]).is_empty():
+		_fail("Undo after reset failed to bring back painted strokes")
 		return
 	game.progress.data["collected"]=original_collected
 	game.progress.data["coloring_pages"]=old_pages
 	game.progress.save()
-	print("PASS: separate coloring icon, 19 original-art outline animals, collection gate, region fill, undo, reset confirmation and save")
+	print("PASS: 19 original animals, no tap-to-fill, real clipped finger stroke, partial save, undo, reset and reload")
 	game.queue_free()
 	await process_frame
 	quit(0)
 
 func _descendants(node: Node) -> Array:
-	var result: Array=[]
-	for c in node.get_children():
-		result.append(c)
-		result.append_array(_descendants(c))
-	return result
+	var all: Array=[]
+	for child in node.get_children():
+		all.append(child)
+		all.append_array(_descendants(child))
+	return all
 
-func _fail(msg: String) -> void:
-	push_error("COLORING ROOM TEST FAILED: "+msg)
+func _fail(reason: String) -> void:
+	push_error("FINGER PAINT TEST FAILED: "+reason)
 	quit(1)
