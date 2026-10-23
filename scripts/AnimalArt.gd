@@ -77,13 +77,21 @@ func _draw() -> void:
 	if animal_id == "owl":
 		_oval(-27,-39,31,38,Color("#FFF4D0"))
 		_oval(27,-39,31,38,Color("#FFF4D0"))
-	# Faces.
-	_oval(-25,-38,8,11,ink)
-	_oval(25,-38,8,11,ink)
-	_oval(-27,-42,3,4,Color.WHITE)
-	_oval(23,-42,3,4,Color.WHITE)
-	_oval(-43,-9,13,8,cheek)
-	_oval(43,-9,13,8,cheek)
+	# Expressive eyes and cheeks for petting, eating, washing, playing and sleeping.
+	if mood == "sleep":
+		draw_arc(Vector2(-25,-37),13.0,0.15,PI-0.15,14,ink,3.5)
+		draw_arc(Vector2(25,-37),13.0,0.15,PI-0.15,14,ink,3.5)
+	elif mood in ["happy","clean","play"]:
+		draw_arc(Vector2(-25,-36),12.0,PI+0.13,TAU-0.13,14,ink,4.0)
+		draw_arc(Vector2(25,-36),12.0,PI+0.13,TAU-0.13,14,ink,4.0)
+	else:
+		_oval(-25,-38,8,11,ink)
+		_oval(25,-38,8,11,ink)
+		_oval(-27,-42,3,4,Color.WHITE)
+		_oval(23,-42,3,4,Color.WHITE)
+	var blush_size = 19.0 if mood in ["happy","clean","play"] else 13.0
+	_oval(-43,-9,blush_size,9,cheek)
+	_oval(43,-9,blush_size,9,cheek)
 	if animal_id in ["duck", "chicken", "owl"]:
 		_poly([Vector2(-16,-19),Vector2(16,-19),Vector2(0,5)],Color("#F6A83C"))
 	elif animal_id in ["cow","pig","horse"]:
@@ -92,16 +100,23 @@ func _draw() -> void:
 		_oval(12,-4,4,6,dark)
 	else:
 		_oval(0,-14,9,7,Color("#705C54"))
-		if mood == "happy":
-			draw_arc(Vector2(0,-6),18.0,0.15,PI - 0.15,16,ink,3.0)
+		if mood in ["happy","clean","play","eating"]:
+			draw_arc(Vector2(0,-6),18.0,0.15,PI-0.15,16,ink,3.0)
+		elif mood == "sleep":
+			draw_line(Vector2(-8,-1),Vector2(8,-1),ink,3.0)
 		else:
 			draw_line(Vector2(-9,-3),Vector2(0,3),ink,2.0)
 			draw_line(Vector2(0,3),Vector2(9,-3),ink,2.0)
 	if animal_id == "pig":
 		_oval(-66,-67,22,27,tint)
 		_oval(66,-67,22,27,tint)
-	if mood == "happy":
+	if mood in ["happy","play","clean"]:
 		_oval(69,-110,9,10,Color("#F57892"))
 		_oval(83,-115,9,10,Color("#F57892"))
 		_poly([Vector2(60,-111),Vector2(92,-111),Vector2(76,-92)],Color("#F57892"))
+	if mood == "eating":
+		_oval(-13,25,4,6,Color("#DDB46B"))
+		_oval(16,31,5,5,Color("#DDB46B"))
+	if mood in ["happy","eating","clean","play"] and animal_id in ["cow","pig","horse","duck","chicken","owl"]:
+		draw_arc(Vector2(0,24),18.0,0.15,PI-0.15,16,ink,3.0)
 	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)

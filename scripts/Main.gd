@@ -5,6 +5,8 @@ extends Control
 const Data = preload("res://scripts/GameData.gd")
 const Store = preload("res://scripts/SaveData.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
+const PettingArea = preload("res://scripts/PettingArea.gd")
+const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
 const Backdrop = preload("res://scripts/Backdrop.gd")
 const Synth = preload("res://scripts/Synth.gd")
@@ -20,6 +22,12 @@ var mistake_count: int = 0
 var feedback_label: Label
 var answer_buttons: Array = []
 var adult_unlocked: bool = false
+var petting_area: Control
+var care_stage: Control
+var care_bars: Dictionary = {}
+var care_feedback: Label
+var care_action_buttons: Array = []
+var care_intro_count: int = 0
 
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
@@ -286,7 +294,13 @@ func show_animal(id: String) -> void:
 	var panel = _panel()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	main.add_child(panel)
-	panel.add_child(_large_art(info,Vector2(380,390)))
+	petting_area = PettingArea.new()
+	petting_area.setup(info,bool(progress.data["settings"].get("reduce_motion",false)))
+	petting_area.custom_minimum_size = Vector2(380,390)
+	petting_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	petting_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	petting_area.stroked.connect(Callable(self,"_on_pet_stroke"))
+	panel.add_child(petting_area)
 	var side = VBoxContainer.new()
 	side.custom_minimum_size = Vector2(465,0)
 	side.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -298,26 +312,24 @@ func show_animal(id: String) -> void:
 	side.add_child(_button("一起玩小遊戲", Callable(self,"show_game").bind(id), Color("#D5EEDD")))
 	if bool(info.get("care",false)):
 		side.add_child(_button("去動物之家照顧牠", Callable(self,"show_care").bind(id), Color("#DFE9FF")))
-	side.add_child(_label("認識動物後，已自動加入圖鑑。", 20))
-	_narrate("你好！我是%s。%s 你可以摸摸我、聽聽聲音，或玩小遊戲。" % [str(info["name"]),str(info["desc"])])
+	side.add_child(_label("用手指在動物身上滑動，牠會開心喔！", 20))
+	_narrate("你好！我是%s。%s 用手指在我身上輕輕滑動，就能摸摸我喔！" % [str(info["name"]),str(info["desc"])])
 
 func _play_animal(id: String) -> void:
 	if bool(progress.data["settings"].get("sound",true)):
 		sound.play_animal(id)
 
-func _pet(id: String) -> void:
-	_play_animal(id)
-	# A happy pose is temporary, next page returns to idle.
-	for child in get_children():
-		if child is MarginContainer:
-			_set_mood_recursive(child)
+func _pet(_id: String) -> void:
+	# The button is an instruction, not an artificial 'pet success' shortcut.
+	if is_instance_valid(petting_area):
+		petting_area.guide()
+	_narrate("把手指放在動物身上，輕輕來回滑動，讓牠開心！")
 
-func _set_mood_recursive(node: Node) -> void:
-	if node is AnimalArt:
-		node.mood = "happy"
-		node.queue_redraw()
-	for child in node.get_children():
-		_set_mood_recursive(child)
+func _on_pet_stroke() -> void:
+	# Reward only the first successful stroke with audio; the animation
+	# continues smoothly without restarting a long spoken introduction.
+	if is_instance_valid(petting_area) and int(petting_area.strokes) == 1:
+		_play_animal(selected_animal)
 
 func show_game(animal_id: String) -> void:
 	var level = Data.get_level(levels, animal_id)
@@ -444,7 +456,7 @@ func _locked() -> void:
 	# Locked stickers are intentionally non-destructive.
 	pass
 
-func show_care(id: String = "") -> void:
+func show_care(id: String = "", announce: bool = true) -> void:
 	if id != "":
 		selected_animal = id
 	var info = _animal(selected_animal)
@@ -460,7 +472,7 @@ func show_care(id: String = "") -> void:
 	for animal in animals:
 		if bool(animal.get("care",false)):
 			var aid = str(animal["id"])
-			tabs.add_child(_button(str(animal["name"]),Callable(self,"show_care").bind(aid),Color("#D9F2D9") if aid == selected_animal else Color("#FFFDF1"),Vector2(150,58)))
+			tabs.add_child(_button(str(animal["name"]),Callable(self,"show_care").bind(aid,false),Color("#D9F2D9") if aid == selected_animal else Color("#FFFDF1"),Vector2(150,58)))
 	var center = HBoxContainer.new()
 	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center.add_theme_constant_override("separation",20)
@@ -468,34 +480,67 @@ func show_care(id: String = "") -> void:
 	var photo = _panel()
 	photo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center.add_child(photo)
-	photo.add_child(_large_art(info,Vector2(370,360)))
+	care_stage = CareStage.new()
+	care_stage.setup(info,bool(progress.data["settings"].get("reduce_motion",false)))
+	care_stage.custom_minimum_size = Vector2(370,345)
+	care_stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	care_stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	care_stage.action_finished.connect(Callable(self,"_on_care_finished"))
+	photo.add_child(care_stage)
 	var right = VBoxContainer.new()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.add_theme_constant_override("separation",14)
+	right.add_theme_constant_override("separation",12)
 	center.add_child(right)
-	right.add_child(_label("今天也來照顧「%s」吧！" % info["name"],29))
+	care_feedback = _label("今天和「%s」玩什麼？" % info["name"],26)
+	right.add_child(care_feedback)
+	care_bars.clear()
 	var stats = progress.care_stats(selected_animal)
 	for pair in [["food","飽足"],["clean","清潔"],["happy","開心"]]:
 		var bar = ProgressBar.new()
-		bar.custom_minimum_size = Vector2(360,34)
+		bar.custom_minimum_size = Vector2(320,30)
 		bar.value = float(stats[pair[0]])
 		bar.show_percentage = false
-		right.add_child(_label(str(pair[1]),21,HORIZONTAL_ALIGNMENT_LEFT))
+		right.add_child(_label(str(pair[1]),20,HORIZONTAL_ALIGNMENT_LEFT))
 		right.add_child(bar)
+		care_bars[str(pair[0])] = bar
 	var actions = HBoxContainer.new()
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	actions.add_theme_constant_override("separation",10)
 	layout.add_child(actions)
+	care_action_buttons.clear()
 	for item in [["feed","餵食"],["wash","洗澡"],["play","玩耍"],["sleep","休息"]]:
-		actions.add_child(_picture_button(str(item[0]),str(item[1]),Callable(self,"_care_action").bind(str(item[0])),Vector2(220,115)))
-	layout.add_child(_label("小動物不會因為沒玩而挨餓，請放心慢慢陪伴牠。",21))
-	_narrate("歡迎來到動物之家！可以點餵食、洗澡、玩耍，或休息的圖片照顧%s。" % str(info["name"]))
+		var button = _picture_button(str(item[0]),str(item[1]),Callable(self,"_care_action").bind(str(item[0])),Vector2(220,115))
+		actions.add_child(button)
+		care_action_buttons.append(button)
+	layout.add_child(_label("看看圖片，點一下就可以照顧動物。",21))
+	if announce:
+		care_intro_count += 1
+		_narrate("歡迎來到動物之家！看看下面的圖片，可以餵食、洗澡、玩耍，或讓%s休息。" % str(info["name"]))
+	elif id != "":
+		_narrate("現在來照顧%s。" % str(info["name"]))
 
 func _care_action(action: String) -> void:
+	if not is_instance_valid(care_stage):
+		return
+	if not bool(care_stage.play_action(action)):
+		return
 	progress.care_for(selected_animal,action)
-	if bool(progress.data["settings"].get("sound",true)):
-		sound.play_good()
-	show_care(selected_animal)
+	var stats = progress.care_stats(selected_animal)
+	for key in care_bars.keys():
+		var bar: ProgressBar = care_bars[key]
+		create_tween().tween_property(bar,"value",float(stats[key]),0.38)
+	var phrases = {"feed":"真好吃！牠開心地吃飯了！","wash":"好多泡泡！洗得乾乾淨淨！","play":"玩得好開心！一起玩球吧！","sleep":"晚安！讓牠舒服地休息。"}
+	care_feedback.text = str(phrases.get(action,"牠很開心！"))
+	for button in care_action_buttons:
+		button.disabled = true
+	# Don't navigate/recreate the care screen. That previously retriggered
+	# _switch and replayed the full 'welcome to animal home' introduction.
+	_narrate(str(phrases.get(action,"真棒！")))
+
+func _on_care_finished(_action: String) -> void:
+	for button in care_action_buttons:
+		if is_instance_valid(button):
+			button.disabled = false
 
 func show_parent_gate() -> void:
 	if adult_unlocked:
