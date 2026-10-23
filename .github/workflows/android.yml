@@ -50,7 +50,7 @@ jobs:
       - name: Configure Android paths
         run: godot --headless --editor --path . --script tools/configure_android.gd
       - name: Test touch animal lists, scroll gesture safety and Ocean Park
-        run: godot --headless --path . --script tests/animal_scroll_smoke.gd
+        run: timeout --signal=TERM 90s godot --headless --path . --script tests/animal_scroll_smoke.gd
       - name: Exercise all picture-choice levels
         run: |
           godot --headless --path . --script tests/ui_smoke.gd
