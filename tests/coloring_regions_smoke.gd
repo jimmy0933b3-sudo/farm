@@ -16,8 +16,8 @@ func _screen(art: Control, world: Vector2) -> Vector2:
 func _run() -> void:
 	var contents=FileAccess.get_file_as_string("res://data/animals.json")
 	var animals=JSON.parse_string(contents)
-	if not animals is Array or animals.size()!=19:
-		_fail("19 expected animals missing")
+	if not animals is Array or animals.size()!=25:
+		_fail("25 expected animals missing")
 		return
 	var art=Art.new()
 	root.add_child(art)
@@ -113,7 +113,7 @@ func _run() -> void:
 	if progress.get_coloring("deer").get("strokes_v2",[]).size()!=1:
 		_fail("Antler color stroke was filtered out of save data")
 		return
-	print("PASS: 19 animal region maps; ears, coat patches, snout, feet, crest, antlers, snake coils/neck, save")
+	print("PASS: 25 animal region maps; ears, coat patches, snout, feet, crest, antlers, snake coils/neck, save")
 	canvas.queue_free()
 	art.queue_free()
 	await process_frame
