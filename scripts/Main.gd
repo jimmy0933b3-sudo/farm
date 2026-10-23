@@ -153,7 +153,8 @@ func _button(title: String, action: Callable, color: Color = Color("#FFF7E7"), m
 	pressed.bg_color = color.darkened(0.12)
 	button.add_theme_stylebox_override("pressed", pressed)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	button.pressed.connect(action)
+	if action.is_valid():
+		button.pressed.connect(action)
 	return button
 
 func _header(layout: VBoxContainer, name: String, back: Callable = Callable()) -> void:

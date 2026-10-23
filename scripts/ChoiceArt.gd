@@ -95,6 +95,21 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"ocean_park":
+			# A different home icon from ocean searching: smiling sea friends.
+			_oval(0,60,105,44,Color("#7DD6E1"))
+			_oval(-39,19,50,39,Color("#F49D62"))
+			_shape([Vector2(-77,18),Vector2(-103,-8),Vector2(-103,47)],Color("#E97A63"))
+			_oval(-47,6,6,6,Color("#33566B"))
+			_oval(52,-5,49,39,Color("#7CB4D2"))
+			_shape([Vector2(27,-32),Vector2(46,-76),Vector2(65,-31)],Color("#629CBF"))
+			_oval(69,-18,6,7,Color("#2B5362"))
+			_oval(77,-44,9,9,Color("#E2FAFB"))
+			_oval(90,-68,6,6,Color("#E2FAFB"))
+			for j in range(4):
+				var x=-75+float(j)*50
+				_line(Vector2(x,91),Vector2(x+8,67),Color("#3DAE9C"),7)
+				_oval(x+9,75,8,14,Color("#77CEB0"))
 		"ocean":
 			# Oversized unmistakable fish icon with coral and bubbles.
 			_oval(0,38,108,78,Color("#55BCD7"))
