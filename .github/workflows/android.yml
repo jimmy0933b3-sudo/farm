@@ -41,6 +41,10 @@ jobs:
         run: |
           godot --version
           godot --headless --editor --path . --import --quit
+      - name: Check private farm and roaming actor GDScript parsing
+        run: |
+          godot --headless --path . --check-only --script scripts/RoamingAnimal.gd
+          godot --headless --path . --check-only --script scripts/PrivateFarm.gd
       - name: Run game data tests
         run: godot --headless --path . --script tests/validate.gd
       - name: Configure Android paths
