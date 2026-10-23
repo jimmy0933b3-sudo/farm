@@ -54,10 +54,16 @@ jobs:
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$HOME/.android/debug.keystore" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android" >> "$GITHUB_ENV"
+      - name: Diagnose Android configuration
+        run: |
+          echo "Android SDK: $ANDROID_HOME; JDK: $JAVA_HOME"
+          ls -l "$ANDROID_HOME/platform-tools/adb" "$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          find "$HOME/.config/godot" -maxdepth 2 -type f -name 'editor_settings*' -print -exec grep -E 'export/android/(java_sdk_path|android_sdk_path)' {} \; || true
+          godot --headless --editor --path . --script tools/check_android.gd
       - name: Export installable debug APK
         run: |
           mkdir -p build
-          godot --headless --path . --export-debug Android build/AnimalAdventureIsland-debug.apk
+          godot --headless --verbose --path . --export-debug Android build/AnimalAdventureIsland-debug.apk
           test -s build/AnimalAdventureIsland-debug.apk
       - name: Verify APK signature
         run: |
