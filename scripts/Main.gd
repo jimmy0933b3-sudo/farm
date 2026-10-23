@@ -52,7 +52,7 @@ func _ready() -> void:
 	sound.speech_enabled = bool(progress.data["settings"].get("speech", true))
 	var saved_screen = str(progress.data.get("last_screen","home"))
 	match saved_screen:
-		"farm", "forest", "ocean_park":
+		"farm", "forest", "zoo", "ocean_park":
 			show_zone("ocean" if saved_screen=="ocean_park" else saved_screen)
 		"care":
 			show_care()
@@ -93,7 +93,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","care","album","forest_search","private_farm","coloring","ocean_search","ocean_park"]:
+	if name in ["home","farm","forest","zoo","care","album","forest_search","private_farm","coloring","ocean_search","ocean_park"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -225,7 +225,7 @@ func _animal(id: String) -> Dictionary:
 
 func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
 	var color_choices={
-		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),
+		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),"zoo":Color("#FFE8C3"),
 		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),
 		"coloring":Color("#F6E5F7"),"care":Color("#FDECD5"),
 		"album":Color("#F1E3CE"),"forest_explore":Color("#E4F1D9"),
@@ -290,6 +290,7 @@ func show_home() -> void:
 	var places = [
 		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
 		{"title":"森林樂園","sub":"認識動物＋探索大森林","zone":"forest"},
+		{"title":"動物園樂園","sub":"獅子、老虎、大象和動物朋友","zone":"zoo"},
 		{"title":"海底樂園","sub":"認識海洋朋友＋海底尋寶","zone":"ocean_park"},
 		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
 		{"title":"動物著色屋","sub":"幫收集到的動物上顏色","zone":"coloring"},
@@ -309,7 +310,7 @@ func show_home() -> void:
 
 func _go(where: String) -> void:
 	match where:
-		"farm", "forest":
+		"farm", "forest", "zoo":
 			show_zone(where)
 		"care":
 			show_care()
@@ -329,7 +330,7 @@ func _go(where: String) -> void:
 func show_zone(zone: String) -> void:
 	current_zone = zone
 	var layout = _switch("ocean_park" if zone=="ocean" else zone, zone)
-	_header(layout, "農場樂園" if zone == "farm" else ("森林樂園" if zone=="forest" else "海底樂園"), Callable(self,"show_home"))
+	_header(layout, "農場樂園" if zone == "farm" else ("森林樂園" if zone=="forest" else ("動物園樂園" if zone=="zoo" else "海底樂園")), Callable(self,"show_home"))
 	layout.add_child(_label("挑一位動物朋友，一起玩吧！", 25,HORIZONTAL_ALIGNMENT_CENTER,Color("#39766D")))
 	if zone in ["forest","ocean"]:
 		var seek_button = _picture_button("forest_explore" if zone=="forest" else "ocean","🌲 去大森林找動物" if zone=="forest" else "🐠 去海底找朋友",Callable(self,"show_forest_search") if zone=="forest" else Callable(self,"show_ocean_search"),Vector2(300,95))
@@ -348,10 +349,10 @@ func show_zone(zone: String) -> void:
 	grid.add_theme_constant_override("v_separation", 10)
 	scroll.add_child(grid)
 	for info in animals:
-		if str(info.get("zone","")) == zone:
-			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"])),false,scroll))
-	layout.add_child(_label("點圖片聽介紹、玩關卡，或上面按探索去找動物！", 19,HORIZONTAL_ALIGNMENT_CENTER,Color("#527975")))
-	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else ("森林" if zone=="forest" else "海底樂園")))
+		if str(info.get("zone","")) == zone or (zone=="zoo" and str(info.get("id",""))=="monkey"):
+			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"]),zone),false,scroll))
+	layout.add_child(_label("點動物圖片聽介紹、摸摸牠、玩小遊戲！", 19,HORIZONTAL_ALIGNMENT_CENTER,Color("#527975")))
+	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else ("森林" if zone=="forest" else ("動物園" if zone=="zoo" else "海底樂園"))))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
 
 func show_ocean_search() -> void:
@@ -372,12 +373,12 @@ func show_ocean_search() -> void:
 func show_ocean_complete() -> void:
 	var layout=_switch("ocean_done","home")
 	_header(layout,"海底探險完成！",Callable(self,"show_zone").bind("ocean"))
-	layout.add_child(_label("太棒了！六種海底生物都找到了！",31))
+	layout.add_child(_label("太棒了！七種海底生物都找到了！",31))
 	var panel=_panel()
 	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	layout.add_child(panel)
 	var grid=GridContainer.new()
-	grid.columns=6
+	grid.columns=7
 	grid.add_theme_constant_override("h_separation",8)
 	panel.add_child(grid)
 	for info in animals:
@@ -390,7 +391,7 @@ func show_ocean_complete() -> void:
 	layout.add_child(actions)
 	actions.add_child(_button("再找一次",Callable(self,"show_ocean_search"),Color("#E5EFFF"),Vector2(220,72)))
 	actions.add_child(_button("海底樂園",Callable(self,"show_zone").bind("ocean"),Color("#DEEFDA"),Vector2(220,72)))
-	_narrate("六種海洋朋友都找到囉！可以再玩一次，也可以把牠們帶去私人農場的大水池！")
+	_narrate("七種海洋朋友都找到囉！可以再玩一次，也可以把牠們帶去私人農場的大水池！")
 
 func show_coloring() -> void:
 	var layout=_switch("coloring","home")
@@ -451,13 +452,13 @@ func show_forest_complete() -> void:
 	row.add_child(_button("回森林樂園",Callable(self,"show_zone").bind("forest"),Color("#E0E7FA"),Vector2(210,85)))
 	_narrate("太棒了！完成大森林探索！十二隻森林動物都找到了！要再玩一次，還是回首頁呢？")
 
-func show_animal(id: String) -> void:
+func show_animal(id: String, source_zone: String = "") -> void:
 	var info = _animal(id)
 	if info.is_empty():
 		show_home()
 		return
 	selected_animal = id
-	current_zone = str(info["zone"])
+	current_zone = source_zone if not source_zone.is_empty() else str(info["zone"])
 	progress.unlock(id)
 	var layout = _switch("animal",current_zone)
 	_header(layout, str(info["name"]) + " 來啦！", Callable(self,"show_zone").bind(current_zone))

@@ -134,9 +134,13 @@ func _draw() -> void:
 	if scale_value <= 0.0:
 		return
 	draw_set_transform(Vector2(size.x * 0.5, size.y * 0.52), 0.0, Vector2(scale_value, scale_value))
-	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish"]:
+	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]:
 		_draw_ocean_animal()
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+		return
+	if animal_id in ["camel","lion","tiger","elephant","hippo"]:
+		_draw_zoo_animal()
+		draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 		return
 	if animal_id == "snake":
 		_draw_snake()
@@ -394,6 +398,19 @@ func _draw_ocean_animal() -> void:
 			_oval(-27,-29,6,9,COLOR_INK)
 			_oval(29,-29,6,9,COLOR_INK)
 			draw_arc(Vector2(0,13),20,0.12,PI-0.12,17,COLOR_INK,3.2,true)
+		"seal":
+			# Streamlined seal, distinct rounded flippers and pale muzzle.
+			_oval(-89,48,27,34,dark)
+			_oval(83,49,27,34,dark)
+			_poly([Vector2(-76,12),Vector2(-119,-27),Vector2(-97,59)],dark)
+			_oval(0,15,94,65,tint)
+			_oval(13,35,73,41,belly)
+			_oval(65,-31,49,49,tint)
+			_oval(88,-23,30,26,belly)
+			_oval(59,-45,8,10,COLOR_INK)
+			_oval(63,-48,2.5,3.2,Color.WHITE)
+			_oval(102,-17,8,6,COLOR_INK)
+			draw_arc(Vector2(91,0),12,0.2,PI-0.2,14,COLOR_INK,2.6,true)
 		"seahorse":
 			_poly([Vector2(14,48),Vector2(-56,77),Vector2(-41,26)],dark)
 			_oval(-8,32,38,73,tint)
@@ -416,3 +433,110 @@ func _draw_ocean_animal() -> void:
 	elif mood=="eating":
 		_oval(90,-20,8,9,Color("#FFF1A9"))
 	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+
+
+func _draw_zoo_animal() -> void:
+	# Five new zoo species use the SAME vector rendering primitives as the
+	# original album, interactive pet area and black-white finger coloring.
+	# Detailed distinctive silhouettes make them identifiable without reading.
+	var dark=COLOR_INK if coloring_mode else tint.darkened(0.27)
+	var light=Color.WHITE if coloring_mode else tint.lightened(0.27)
+	var ink=Color("#333F46")
+	var face=Vector2(0,-29)
+	_oval(0,73,81,10,Color("#67806B",0.13))
+	match animal_id:
+		"camel":
+			_oval(-40,63,16,37,dark)
+			_oval(45,63,16,37,dark)
+			_oval(-28,17,47,43,tint)
+			_oval(-48,-30,31,53,tint)
+			_oval(17,-29,33,59,tint)
+			_oval(61,-34,24,51,tint)
+			_oval(63,6,30,41,tint)
+			_oval(63,-53,37,34,tint)
+			_oval(93,-42,29,20,light)
+			_oval(44,-92,11,27,dark)
+			_oval(77,-91,11,27,dark)
+			_oval(71,-66,9,12,ink)
+			_oval(72,-69,3,4,Color.WHITE)
+			draw_arc(Vector2(94,-23),12,0.2,PI-0.2,16,ink,3,true)
+			face=Vector2(68,-42)
+		"lion":
+			_oval(68,28,24,54,dark)
+			_oval(-42,65,23,35,tint)
+			_oval(43,65,23,35,tint)
+			_oval(0,12,74,74,tint)
+			_oval(0,-28,87,92,dark)
+			_oval(0,-30,68,72,tint)
+			_oval(-58,-87,24,28,dark)
+			_oval(58,-87,24,28,dark)
+			_oval(-58,-88,12,14,light)
+			_oval(58,-88,12,14,light)
+			_oval(0,5,38,27,light)
+		"tiger":
+			_oval(79,29,18,56,dark)
+			_oval(-47,64,25,34,tint)
+			_oval(45,64,25,34,tint)
+			_oval(0,14,79,73,tint)
+			_oval(-60,-84,28,32,dark)
+			_oval(60,-84,28,32,dark)
+			_oval(0,-30,73,70,tint)
+			_oval(-60,-84,13,18,light)
+			_oval(60,-84,13,18,light)
+			_oval(0,8,41,30,light)
+			for i in range(3):
+				var bx=-62+float(i)*53
+				_poly([Vector2(bx,-81),Vector2(bx+21,-78),Vector2(bx+13,-56)],dark)
+				_poly([Vector2(bx-7,32),Vector2(bx+13,42),Vector2(bx-9,61)],dark)
+			_poly([Vector2(-73,-33),Vector2(-52,-25),Vector2(-73,-14)],dark)
+			_poly([Vector2(73,-33),Vector2(52,-25),Vector2(73,-14)],dark)
+		"elephant":
+			_oval(-57,65,22,38,dark)
+			_oval(53,65,22,38,dark)
+			_oval(0,23,83,80,tint)
+			_oval(-76,-27,40,59,tint.lightened(0.12))
+			_oval(76,-27,40,59,tint.lightened(0.12))
+			_oval(0,-30,69,70,tint)
+			_oval(0,15,23,66,tint)
+			_oval(5,64,25,19,tint)
+			_oval(-41,30,10,20,light)
+			_oval(42,30,10,20,light)
+		"hippo":
+			_oval(-48,64,24,30,dark)
+			_oval(46,64,24,30,dark)
+			_oval(0,33,96,69,tint)
+			_oval(-69,-92,22,24,tint)
+			_oval(69,-92,22,24,tint)
+			_oval(0,-32,83,68,tint)
+			_oval(0,7,80,39,tint.lightened(0.09))
+			_oval(-31,6,11,9,dark)
+			_oval(31,6,11,9,dark)
+			_oval(-24,15,5,4,light)
+			_oval(24,15,5,4,light)
+	if animal_id in ["lion","tiger","elephant","hippo"]:
+		var lx=face.x-31.0
+		var rx=face.x+31.0
+		if mood in ["sleep","blink"]:
+			draw_arc(Vector2(lx,-39),12,0.15,PI-0.15,16,ink,3.3,true)
+			draw_arc(Vector2(rx,-39),12,0.15,PI-0.15,16,ink,3.3,true)
+		else:
+			_oval(lx,-39,9,12,ink)
+			_oval(rx,-39,9,12,ink)
+			_oval(lx-3,-42,3,4,Color.WHITE)
+			_oval(rx-3,-42,3,4,Color.WHITE)
+		if animal_id in ["lion","tiger"]:
+			_poly([Vector2(-12,-8),Vector2(12,-8),Vector2(0,3)],dark)
+		if mood in ["happy","play","clean","surprised","eating"]:
+			draw_arc(Vector2(0,9),22,0.15,PI-0.15,20,ink,4,true)
+		elif mood=="sleep":
+			draw_line(Vector2(-14,13),Vector2(14,13),ink,3,true)
+		else:
+			draw_arc(Vector2(0,5),14,0.2,PI-0.2,16,ink,2.5,true)
+	if mood in ["happy","play","clean","surprised"]:
+		for side in [-1,1]:
+			_oval(face.x+float(side)*56,face.y+42,13,8,Color("#F6B7A7"))
+		_oval(90,-119,9,11,Color("#F48DAC"))
+		_oval(106,-122,9,11,Color("#F48DAC"))
+		_poly([Vector2(81,-120),Vector2(115,-120),Vector2(98,-98)],Color("#F48DAC"))
+	elif mood=="eating":
+		_oval(10,45,8,7,Color("#E8C77D"))

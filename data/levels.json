@@ -298,5 +298,77 @@
       "forest"
     ],
     "answer": "ocean"
+  },
+  {
+    "id": 26,
+    "animal": "camel",
+    "type": "food",
+    "prompt": "駱駝可以吃什麼？",
+    "options": [
+      "牧草",
+      "巧克力",
+      "糖果"
+    ],
+    "answer": "牧草"
+  },
+  {
+    "id": 27,
+    "animal": "lion",
+    "type": "food",
+    "prompt": "獅子喜歡吃什麼？",
+    "options": [
+      "肉",
+      "牧草",
+      "香蕉"
+    ],
+    "answer": "肉"
+  },
+  {
+    "id": 28,
+    "animal": "tiger",
+    "type": "food",
+    "prompt": "老虎喜歡吃什麼？",
+    "options": [
+      "魚",
+      "肉",
+      "糖果"
+    ],
+    "answer": "肉"
+  },
+  {
+    "id": 29,
+    "animal": "elephant",
+    "type": "food",
+    "prompt": "大象喜歡吃什麼？",
+    "options": [
+      "青草",
+      "巧克力",
+      "肉"
+    ],
+    "answer": "青草"
+  },
+  {
+    "id": 30,
+    "animal": "hippo",
+    "type": "food",
+    "prompt": "河馬喜歡吃什麼？",
+    "options": [
+      "青草",
+      "蛋糕",
+      "魚"
+    ],
+    "answer": "青草"
+  },
+  {
+    "id": 31,
+    "animal": "seal",
+    "type": "food",
+    "prompt": "海豹常吃什麼？",
+    "options": [
+      "魚",
+      "牧草",
+      "香蕉"
+    ],
+    "answer": "魚"
   }
 ]

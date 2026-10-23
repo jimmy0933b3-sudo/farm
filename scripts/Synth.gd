@@ -10,7 +10,9 @@ const LABELS = {
 	"hedgehog":"刺蝟","raccoon":"浣熊","boar":"野豬","monkey":"猴子",
 	"snake":"蛇","guinea_pig":"天竺鼠","meerkat":"狐獴",
 	"clownfish":"小丑魚","sea_turtle":"海龜","dolphin":"海豚",
-	"octopus":"章魚","seahorse":"海馬","pufferfish":"河豚"
+	"octopus":"章魚","seahorse":"海馬","pufferfish":"河豚",
+	"seal":"海豹","camel":"駱駝","lion":"獅子","tiger":"老虎",
+	"elephant":"大象","hippo":"河馬"
 }
 
 var player: AudioStreamPlayer
