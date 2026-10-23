@@ -335,6 +335,8 @@ func _draw_ocean_animal() -> void:
 			_poly([Vector2(-60,5),Vector2(-113,-47),Vector2(-111,56)],dark)
 			_oval(0,10,91,53,tint)
 			_poly([Vector2(-27,-28),Vector2(-8,-69),Vector2(19,-37)],dark)
+			_poly([Vector2(-31,46),Vector2(-8,78),Vector2(19,50)],dark)
+			_poly([Vector2(-14,15),Vector2(-43,64),Vector2(24,48)],tint.lightened(0.12))
 			_oval(-34,10,12,51,belly)
 			_oval(20,10,13,50,belly)
 			_oval(68,-6,7,9,COLOR_INK)
