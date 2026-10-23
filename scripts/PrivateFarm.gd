@@ -1,134 +1,155 @@
 extends HBoxContainer
-## Kid-friendly private animal farm: pick any discovered animals, place them
-## in a saved sanctuary, select residents, pet with a tracked finger or play.
-## No live internet, no text-only prerequisites, no forced daily feeding.
+## Private sanctuary: all collected residents roam together in a single scene.
+## Touch the actual moving animal, stroke to pet, tap to select for care actions.
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
-const PettingArea = preload("res://scripts/PettingArea.gd")
-const CareStage = preload("res://scripts/CareStage.gd")
+const RoamingAnimal = preload("res://scripts/RoamingAnimal.gd")
+const TouchHand = preload("res://scripts/TouchHand.gd")
 const Backdrop = preload("res://scripts/Backdrop.gd")
 
-const CAPACITY = 8
+const CAPACITY: int = 8
 
 var animals: Array = []
 var save_data
 var voice
 var active_id: String = ""
-var resident_buttons: Array = []
-var available_buttons: Array = []
+var actors: Dictionary = {}
 var resident_list: HBoxContainer
 var available_list: GridContainer
 var remove_button: Button
 var habitat: Control
-var pet: Control
-var care: Control
+var hand: Control
 var info_label: Label
 var counter: Label
 var commands: HBoxContainer
 var busy: bool = false
+var touching_id: String = ""
+var pointer_index: int = -1
+var mouse_down: bool = false
+var last_touch: Vector2 = Vector2.ZERO
+var pet_feedback_count: int = 0
+var reduce_motion: bool = false
 
 func setup(info: Array, store, narrator) -> void:
 	animals = info
 	save_data = store
 	voice = narrator
+	reduce_motion = bool(store.data["settings"].get("reduce_motion",false))
 
 func _ready() -> void:
-	size_flags_vertical=Control.SIZE_EXPAND_FILL
-	size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	add_theme_constant_override("separation",18)
-	var left=VBoxContainer.new()
-	left.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	left.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	left.add_theme_constant_override("separation",9)
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_theme_constant_override("separation",12)
+
+	var left = VBoxContainer.new()
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.add_theme_constant_override("separation",6)
 	add_child(left)
-	info_label=_label("選一隻動物到你的農場玩！",24)
+
+	info_label = _label("動物們正在散步，摸摸牠們吧！",23)
 	left.add_child(info_label)
-	habitat=Control.new()
-	habitat.clip_contents=true
-	habitat.custom_minimum_size=Vector2(440,270)
-	habitat.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	habitat.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	habitat = Control.new()
+	habitat.custom_minimum_size = Vector2(490,260)
+	habitat.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	habitat.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	habitat.clip_contents = true
+	habitat.mouse_filter = Control.MOUSE_FILTER_STOP
 	left.add_child(habitat)
-	var bg=Backdrop.new()
-	bg.scene_type="farm"
-	bg.mouse_filter=Control.MOUSE_FILTER_IGNORE
+
+	var bg = Backdrop.new()
+	bg.scene_type = "farm"
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	habitat.add_child(bg)
-	commands=HBoxContainer.new()
-	commands.alignment=BoxContainer.ALIGNMENT_CENTER
-	commands.add_theme_constant_override("separation",8)
-	left.add_child(commands)
-	for item in [["pet","摸摸牠"],["feed","餵食"],["play","玩耍"],["sound","聽聲音"]]:
-		var button=_round(str(item[1]),Callable(self,"interact").bind(str(item[0])),Vector2(112,58))
-		buttons_set_visible(button,false)
-		commands.add_child(button)
-	var right=VBoxContainer.new()
-	right.custom_minimum_size=Vector2(370,0)
-	right.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	right.size_flags_horizontal=Control.SIZE_FILL
-	right.add_theme_constant_override("separation",8)
-	add_child(right)
-	var resident_header=HBoxContainer.new()
-	resident_header.alignment=BoxContainer.ALIGNMENT_CENTER
-	right.add_child(resident_header)
-	counter=_label("農場裡的動物",22)
-	counter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	resident_header.add_child(counter)
-	remove_button=_round("移回圖鑑",Callable(self,"remove_current"),Vector2(118,49))
-	resident_header.add_child(remove_button)
-	var chosen_scroller=ScrollContainer.new()
-	chosen_scroller.custom_minimum_size=Vector2(360,148)
-	chosen_scroller.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	chosen_scroller.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
-	chosen_scroller.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	right.add_child(chosen_scroller)
-	resident_list=HBoxContainer.new()
-	resident_list.add_theme_constant_override("separation",9)
-	chosen_scroller.add_child(resident_list)
-	right.add_child(_label("點下方的動物，放進農場",21))
-	var collected_scroller=ScrollContainer.new()
-	collected_scroller.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	collected_scroller.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	collected_scroller.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
-	collected_scroller.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	right.add_child(collected_scroller)
-	available_list=GridContainer.new()
-	available_list.columns=3
-	available_list.add_theme_constant_override("h_separation",6)
-	available_list.add_theme_constant_override("v_separation",8)
-	collected_scroller.add_child(available_list)
-	if not save_data.data["private_farm"].is_empty():
-		active_id=str(save_data.data["private_farm"][0])
-	_rebuild_cards()
-	_set_resident(active_id,false)
-	voice.speak("歡迎來到私人農場！先在右邊點你已認識的動物，把牠帶進農場，再用手指摸摸牠。")
 
-func buttons_set_visible(button: Button, enabled: bool) -> void:
-	button.disabled = not enabled
+	hand = TouchHand.new()
+	hand.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hand.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hand.show_hand = false
+	habitat.add_child(hand)
+	habitat.gui_input.connect(_on_habitat_input)
+	habitat.resized.connect(_layout_residents)
+
+	commands = HBoxContainer.new()
+	commands.alignment = BoxContainer.ALIGNMENT_CENTER
+	commands.add_theme_constant_override("separation",6)
+	left.add_child(commands)
+	for data in [["feed","餵食"],["wash","洗澡"],["play","玩耍"],["sleep","休息"],["sound","聽聲音"]]:
+		var btn = _round(str(data[1]),Callable(self,"interact").bind(str(data[0])),Vector2(99,54))
+		btn.disabled = true
+		commands.add_child(btn)
+
+	var right = VBoxContainer.new()
+	right.custom_minimum_size = Vector2(314,0)
+	right.size_flags_horizontal = Control.SIZE_FILL
+	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right.add_theme_constant_override("separation",5)
+	add_child(right)
+
+	var resident_header = HBoxContainer.new()
+	resident_header.alignment = BoxContainer.ALIGNMENT_CENTER
+	right.add_child(resident_header)
+	counter = _label("農場裡",20)
+	counter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	resident_header.add_child(counter)
+	remove_button = _round("移回圖鑑",Callable(self,"remove_current"),Vector2(102,46))
+	resident_header.add_child(remove_button)
+
+	var resident_scroll = ScrollContainer.new()
+	resident_scroll.custom_minimum_size = Vector2(305,114)
+	resident_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	resident_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	resident_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	right.add_child(resident_scroll)
+	resident_list = HBoxContainer.new()
+	resident_list.add_theme_constant_override("separation",5)
+	resident_scroll.add_child(resident_list)
+
+	right.add_child(_label("點圖片，帶動物進農場",19))
+	var available_scroll = ScrollContainer.new()
+	available_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	available_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	available_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	available_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	right.add_child(available_scroll)
+	available_list = GridContainer.new()
+	available_list.columns = 3
+	available_list.add_theme_constant_override("h_separation",4)
+	available_list.add_theme_constant_override("v_separation",5)
+	available_scroll.add_child(available_list)
+
+	if not save_data.data["private_farm"].is_empty():
+		active_id = str(save_data.data["private_farm"][0])
+	_sync_residents()
+	_rebuild_cards()
+	call_deferred("_layout_residents")
+	voice.speak("這是你的私人農場。小動物會到處散步。直接用手指點牠、摸摸牠，牠會跟你玩！")
 
 func _label(value: String, size_value: int) -> Label:
-	var l=Label.new()
-	l.text=value
-	l.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	var l = Label.new()
+	l.text = value
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.add_theme_font_size_override("font_size",size_value)
 	l.add_theme_color_override("font_color",Color("#31594A"))
-	l.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l
 
 func _round(title: String, action: Callable, minimum: Vector2) -> Button:
-	var b=Button.new()
-	b.text=title
-	b.custom_minimum_size=minimum
-	b.add_theme_font_size_override("font_size",20)
-	b.add_theme_color_override("font_color",Color("#31544C"))
-	var style=StyleBoxFlat.new()
-	style.bg_color=Color("#FFE6AE")
-	style.set_corner_radius_all(20)
+	var btn = Button.new()
+	btn.text = title
+	btn.custom_minimum_size = minimum
+	btn.add_theme_font_size_override("font_size",19)
+	btn.add_theme_color_override("font_color",Color("#31544C"))
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color("#FFE6AE")
+	style.set_corner_radius_all(17)
 	style.set_border_width_all(2)
-	style.border_color=Color.WHITE
-	b.add_theme_stylebox_override("normal",style)
-	b.pressed.connect(action)
-	return b
+	style.border_color = Color.WHITE
+	btn.add_theme_stylebox_override("normal",style)
+	btn.pressed.connect(action)
+	return btn
 
 func _animal(id: String) -> Dictionary:
 	for a in animals:
@@ -137,30 +158,29 @@ func _animal(id: String) -> Dictionary:
 	return {}
 
 func _card(info: Dictionary, action: Callable, selected: bool, is_member: bool) -> Button:
-	var label=str(info.get("name","動物"))
-	var b=_round("",action,Vector2(116,130))
-	var bg=StyleBoxFlat.new()
-	bg.bg_color=Color("#D7F6C7") if selected else (Color("#FFF4D2") if is_member else Color("#F7FEF5"))
-	bg.set_corner_radius_all(18)
-	bg.set_border_width_all(3)
-	bg.border_color=Color("#4DAB72") if selected else Color.WHITE
-	b.add_theme_stylebox_override("normal",bg)
-	b.clip_contents=true
-	var col=VBoxContainer.new()
-	col.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var b = _round("",action,Vector2(94,105))
+	var box = StyleBoxFlat.new()
+	box.bg_color = Color("#D7F6C7") if selected else (Color("#FFF4D2") if is_member else Color("#F7FEF5"))
+	box.set_corner_radius_all(14)
+	box.set_border_width_all(2)
+	box.border_color = Color("#4DAB72") if selected else Color.WHITE
+	b.add_theme_stylebox_override("normal",box)
+	b.clip_contents = true
+	var col = VBoxContainer.new()
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	col.offset_left=8
-	col.offset_right=-8
-	col.offset_top=5
-	col.offset_bottom=-5
+	col.offset_left = 5
+	col.offset_right = -5
+	col.offset_top = 3
+	col.offset_bottom = -4
 	b.add_child(col)
-	var art=AnimalArt.new()
+	var art = AnimalArt.new()
 	art.setup(info)
-	art.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	art.custom_minimum_size=Vector2(92,91)
-	art.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	art.custom_minimum_size = Vector2(78,74)
+	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(art)
-	col.add_child(_label(label,19))
+	col.add_child(_label(str(info.get("name","動物")),17))
 	return b
 
 func _rebuild_cards() -> void:
@@ -170,117 +190,207 @@ func _rebuild_cards() -> void:
 		for child in group.get_children():
 			group.remove_child(child)
 			child.queue_free()
-	resident_buttons.clear()
-	available_buttons.clear()
-	var saved: Array=save_data.data["private_farm"]
-	counter.text="農場裡：%d / %d" % [saved.size(),CAPACITY]
-	if is_instance_valid(remove_button):
-		remove_button.disabled=active_id.is_empty()
-	for id in saved:
-		var info=_animal(str(id))
+	var members: Array = save_data.data["private_farm"]
+	counter.text = "農場：%d / %d" % [members.size(),CAPACITY]
+	remove_button.disabled = active_id.is_empty()
+	for id in members:
+		var info = _animal(str(id))
+		if not info.is_empty():
+			resident_list.add_child(_card(info,Callable(self,"_set_resident").bind(str(id),true),str(id)==active_id,true))
+	var n = 0
+	for info in animals:
+		var id = str(info["id"])
+		if save_data.data["collected"].has(id) and not members.has(id):
+			available_list.add_child(_card(info,Callable(self,"place_animal").bind(id),false,false))
+			n += 1
+	if n == 0:
+		available_list.add_child(_label("先去找更多動物！",17))
+
+func _sync_residents() -> void:
+	var members: Array = save_data.data["private_farm"]
+	for id in actors.keys():
+		if not members.has(id):
+			var stale: Control = actors[id]
+			habitat.remove_child(stale)
+			stale.queue_free()
+			actors.erase(id)
+	for id in members:
+		var name = str(id)
+		if actors.has(name):
+			continue
+		var info = _animal(name)
 		if info.is_empty():
 			continue
-		var button=_card(info,Callable(self,"_set_resident").bind(str(id),true),str(id)==active_id,true)
-		resident_list.add_child(button)
-		resident_buttons.append(button)
-	for a in animals:
-		var id=str(a["id"])
-		if save_data.data["collected"].has(id) and not saved.has(id):
-			var button=_card(a,Callable(self,"place_animal").bind(id),false,false)
-			available_list.add_child(button)
-			available_buttons.append(button)
-	if available_buttons.is_empty():
-		available_list.add_child(_label("先去探索動物，或已全部放入農場！",19))
+		var creature = RoamingAnimal.new()
+		creature.setup(info,reduce_motion)
+		creature.size = Vector2(98,104)
+		creature.petted.connect(_on_animal_petted)
+		creature.reaction_finished.connect(_on_reaction_finished)
+		habitat.add_child(creature)
+		actors[name] = creature
+	if is_instance_valid(hand):
+		habitat.move_child(hand,habitat.get_child_count()-1)
+	for id in actors.keys():
+		actors[id].selected = (str(id)==active_id)
+		actors[id].queue_redraw()
+	call_deferred("_layout_residents")
+
+func _layout_residents() -> void:
+	if not is_instance_valid(habitat) or habitat.size.x < 300.0 or habitat.size.y < 180.0:
+		return
+	var bounds = Rect2(Vector2(22,51),Vector2(habitat.size.x-44,habitat.size.y-71))
+	var ids: Array = save_data.data["private_farm"]
+	for i in range(ids.size()):
+		var id = str(ids[i])
+		if not actors.has(id):
+			continue
+		var col = i%4
+		var row = int(i/4)
+		var center_x = bounds.position.x+bounds.size.x*(float(col)+0.5)/4.0
+		var center_y = bounds.position.y+bounds.size.y*(0.34 if row==0 else 0.77)
+		var creature: Control = actors[id]
+		creature.set_bounds(bounds,Vector2(center_x-creature.size.x*0.5,center_y-creature.size.y*0.5))
 
 func place_animal(id: String) -> void:
 	if not save_data.private_farm_add(id,CAPACITY):
-		voice.speak("農場目前放滿了，可以先讓一隻動物回到圖鑑。")
+		voice.speak("只有已認識的動物才能進來，農場最多住八隻。")
 		return
-	_set_resident(id,false)
+	active_id = id
+	_sync_residents()
 	_rebuild_cards()
-	voice.speak("%s加入農場囉！一起摸摸牠！" % str(_animal(id).get("name","動物")))
+	info_label.text = "%s也來農場散步啦！" % str(_animal(id).get("name","動物"))
+	voice.speak("%s來農場玩囉！" % str(_animal(id).get("name","動物"))
+	_update_command_buttons()
 
 func remove_current() -> void:
 	if active_id.is_empty():
 		return
+	_finish_touch()
 	save_data.private_farm_remove(active_id)
-	active_id=str(save_data.data["private_farm"].front()) if not save_data.data["private_farm"].is_empty() else ""
+	active_id = str(save_data.data["private_farm"][0]) if not save_data.data["private_farm"].is_empty() else ""
+	_sync_residents()
 	_rebuild_cards()
-	_set_resident(active_id,false)
-	voice.speak("動物回到圖鑑了，隨時可以再放回農場。")
+	_update_command_buttons()
+	info_label.text = "動物回圖鑑了，還可以再來玩！"
 
 func _set_resident(id: String, announce: bool = true) -> void:
-	if id != "" and not save_data.data["private_farm"].has(id):
+	if not id.is_empty() and not save_data.data["private_farm"].has(id):
 		return
-	if busy:
-		return
-	active_id=id
-	if is_instance_valid(remove_button):
-		remove_button.disabled=id.is_empty()
-	for child in habitat.get_children():
-		if child.get_script() == PettingArea or child.get_script() == CareStage:
-			habitat.remove_child(child)
-			child.queue_free()
-	pet=null
-	care=null
-	if id.is_empty():
-		info_label.text="從右邊挑選已收集的動物！"
-	else:
-		var info=_animal(id)
-		info_label.text="%s正在農場玩！輕輕摸摸牠！" % str(info.get("name","動物"))
-		pet=PettingArea.new()
-		pet.setup(info,bool(save_data.data["settings"].get("reduce_motion",false)))
-		pet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		pet.stroked.connect(_on_petted)
-		habitat.add_child(pet)
-		care=CareStage.new()
-		care.setup(info,bool(save_data.data["settings"].get("reduce_motion",false)))
-		care.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		care.action_finished.connect(_on_care_finished)
-		care.visible=false
-		habitat.add_child(care)
+	active_id = id
+	for key in actors.keys():
+		var creature: Control = actors[key]
+		creature.selected = (key==id)
+		creature.queue_redraw()
 	_rebuild_cards()
-	for button in commands.get_children():
-		buttons_set_visible(button,not id.is_empty())
+	_update_command_buttons()
+	if not id.is_empty():
+		info_label.text = "摸摸正在散步的%s！" % str(_animal(id).get("name","動物"))
 	if announce and not id.is_empty():
-		voice.speak("這是%s，來摸摸牠吧！" % str(_animal(id).get("name","動物")))
+		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))
 
-func _on_petted() -> void:
-	if not active_id.is_empty():
-		info_label.text="%s好開心！" % str(_animal(active_id).get("name","動物"))
-		if is_instance_valid(pet) and int(pet.strokes)==1:
-			voice.speak("摸得真好！動物很開心！")
+func _update_command_buttons() -> void:
+	for b in commands.get_children():
+		b.disabled = active_id.is_empty() or busy
+
+func _actor_at(point: Vector2) -> String:
+	var winner = ""
+	var best = 1.0e10
+	for key in actors.keys():
+		var creature: Control = actors[key]
+		if creature.contains_touch(point):
+			var distance = creature.distance_to_touch(point)
+			if distance < best:
+				best = distance
+				winner = str(key)
+	return winner
+
+func _start_touch(point: Vector2) -> bool:
+	var id = _actor_at(point)
+	if id.is_empty():
+		return false
+	_set_resident(id,false)
+	touching_id = id
+	last_touch = point
+	var creature: Control = actors[id]
+	creature.begin_pet()
+	hand.show_hand = true
+	hand.hand_position = point
+	hand.queue_redraw()
+	return true
+
+func _move_touch(point: Vector2) -> void:
+	if touching_id.is_empty() or not actors.has(touching_id):
+		return
+	var step = last_touch.distance_to(point)
+	last_touch = point
+	hand.hand_position = point
+	hand.queue_redraw()
+	var creature: Control = actors[touching_id]
+	if creature.contains_touch(point):
+		creature.move_pet(step)
+
+func _finish_touch() -> void:
+	if not touching_id.is_empty() and actors.has(touching_id):
+		actors[touching_id].end_pet()
+	touching_id = ""
+	pointer_index = -1
+	mouse_down = false
+	if is_instance_valid(hand):
+		hand.show_hand = false
+		hand.queue_redraw()
+
+func _on_habitat_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed and pointer_index == -1:
+			if _start_touch(event.position):
+				pointer_index = event.index
+				habitat.accept_event()
+		elif not event.pressed and pointer_index == event.index:
+			_finish_touch()
+			habitat.accept_event()
+	elif event is InputEventScreenDrag and event.index == pointer_index and not touching_id.is_empty():
+		_move_touch(event.position)
+		habitat.accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and pointer_index == -1:
+		if event.pressed:
+			mouse_down = _start_touch(event.position)
+		elif mouse_down:
+			_finish_touch()
+		habitat.accept_event()
+	elif event is InputEventMouseMotion and mouse_down and pointer_index == -1:
+		_move_touch(event.position)
+		habitat.accept_event()
+
+func _on_animal_petted(id: String) -> void:
+	pet_feedback_count += 1
+	info_label.text = "%s好開心，還想讓你摸摸！" % str(_animal(id).get("name","動物"))
+	hand.celebrating = true
+	hand.effect_time = 0.0
+	hand.queue_redraw()
+	if pet_feedback_count == 1:
+		voice.speak("摸得真好！牠好開心！")
 
 func interact(action: String) -> void:
-	if active_id.is_empty() or busy:
+	if active_id.is_empty() or not actors.has(active_id) or busy:
 		return
-	match action:
-		"pet":
-			if is_instance_valid(pet):
-				pet.guide()
-			voice.speak("把手指放在動物身上，輕輕來回滑動。")
-		"sound":
-			voice.play_animal(active_id)
-		"feed","play":
-			if not is_instance_valid(care) or not care.play_action(action):
-				return
-			busy=true
-			pet.visible=false
-			care.visible=true
-			for b in commands.get_children():
-				b.disabled=true
-			save_data.care_for(active_id,action)
-			info_label.text="吃得好開心！" if action=="feed" else "玩得好開心！"
-			voice.speak("吃東西囉！" if action=="feed" else "一起玩球！")
+	if action == "sound":
+		voice.play_animal(active_id)
+		return
+	var creature: Control = actors[active_id]
+	if not creature.perform(action):
+		return
+	save_data.care_for(active_id,action)
+	busy = true
+	_update_command_buttons()
+	var msg: Dictionary = {
+		"feed":"吃得好開心！",
+		"wash":"好多泡泡，好乾淨！",
+		"play":"一起玩，好開心！",
+		"sleep":"牠正在休息，輕聲一點喔。"
+	}
+	info_label.text = str(msg.get(action,"動物很開心！"))
+	voice.speak(info_label.text)
 
-func _on_care_finished(_action: String) -> void:
-	busy=false
-	if is_instance_valid(care):
-		care.visible=false
-	if is_instance_valid(pet):
-		pet.visible=true
-		pet.avatar.set("mood","happy")
-		pet.joy_time=1.2
-		pet.avatar.queue_redraw()
-	for b in commands.get_children():
-		b.disabled=false
+func _on_reaction_finished(_id: String) -> void:
+	busy = false
+	_update_command_buttons()
