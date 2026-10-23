@@ -11,14 +11,23 @@ func _run() -> void:
 	await process_frame
 	game.show_home()
 	await process_frame
-	var icon_found=false
+	var home_explore=false
 	for child in _descendants(game):
 		if child.get_script() == ChoiceArt and str(child.get("item_id"))=="forest_explore":
-			icon_found=true
-	if not icon_found:
-		_fail("Home lacks an independent illustrated forest exploration icon")
+			home_explore=true
+	if home_explore:
+		_fail("Large forest should be nested inside Forest Park, not another home icon")
 		return
-	game._go("forest_explore")
+	game._go("forest")
+	await process_frame
+	var inner_explore=false
+	for child in _descendants(game):
+		if child.get_script()==ChoiceArt and str(child.get("item_id"))=="forest_explore":
+			inner_explore=true
+	if not inner_explore:
+		_fail("Forest Park missing illustrated large-forest discovery entry")
+		return
+	game.show_forest_search()
 	await process_frame
 	if game.screen!="forest_search" or not is_instance_valid(game.forest_game):
 		_fail("Forest home icon did not directly launch the game")
@@ -53,7 +62,9 @@ func _run() -> void:
 		return
 	game.show_home()
 	await process_frame
-	game._go("forest_explore")
+	game.show_zone("forest")
+	await process_frame
+	game.show_forest_search()
 	await process_frame
 	seek=game.forest_game
 	if seek.round_index!=1 or seek.found.size()!=1:
@@ -78,7 +89,7 @@ func _run() -> void:
 	if seek.round_index!=0 or seek.found.size()!=0:
 		_fail("Replay should generate a fresh session")
 		return
-	print("PASS: large map, independent home icon, panning, hints, persisted resume, 12 finds and replay")
+	print("PASS: large map, nested Forest Park discovery, panning, hints, persisted resume, 12 finds and replay")
 	game.queue_free()
 	await process_frame
 	quit(0)

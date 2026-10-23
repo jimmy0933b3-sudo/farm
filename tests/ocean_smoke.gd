@@ -9,14 +9,23 @@ func _run() -> void:
 	await process_frame
 	game.show_home()
 	await process_frame
-	var icon_found=false
+	var home_explore=false
 	for node in _children(game):
 		if node.get_script()==ChoiceArt and str(node.get("item_id"))=="ocean":
-			icon_found=true
-	if not icon_found:
-		_fail("Ocean picture icon missing")
+			home_explore=true
+	if home_explore:
+		_fail("Ocean search should be inside Ocean Park, not a separate home tile")
 		return
-	game._go("ocean")
+	game._go("ocean_park")
+	await process_frame
+	var park_entry=false
+	for node in _children(game):
+		if node.get_script()==ChoiceArt and str(node.get("item_id"))=="ocean":
+			park_entry=true
+	if not park_entry:
+		_fail("Ocean Park missing seek-and-find entrance")
+		return
+	game.show_ocean_search()
 	await process_frame
 	if game.screen!="ocean_search":
 		_fail("Ocean icon did not open game")
