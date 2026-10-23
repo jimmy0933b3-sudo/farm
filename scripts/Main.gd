@@ -270,6 +270,8 @@ func _go(where: String) -> void:
 			show_care()
 		"album":
 			show_album()
+		"forest_explore":
+			show_forest_search()
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
