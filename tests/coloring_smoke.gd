@@ -112,6 +112,11 @@ func _run() -> void:
 	if page.get("strokes_v2",[]).size()<count_before:
 		_fail("Previous paint was lost")
 		return
+	# Undo acts on gestures in the current animal page, before switching.
+	room.undo()
+	if game.progress.get_coloring("rabbit")!=first_page:
+		_fail("Undo must remove only the last gesture, preserving earlier marks")
+		return
 	# Leaving and reopening a coloring page must keep the partial scribbles.
 	room.select_animal("snake",false)
 	if not game.progress.get_coloring("snake").is_empty():
@@ -125,10 +130,6 @@ func _run() -> void:
 	loaded.load_save()
 	if loaded.get_coloring("rabbit").get("strokes_v2",[]).is_empty():
 		_fail("Saved partial painting was lost after reloading the save file")
-		return
-	room.undo()
-	if game.progress.get_coloring("rabbit")!=first_page:
-		_fail("Undo must remove only the most recent gesture, preserving earlier marks")
 		return
 	room.reset_coloring()
 	if game.progress.get_coloring("rabbit").is_empty():
