@@ -112,7 +112,7 @@ func _switch(name: String, bg: String = "home") -> VBoxContainer:
 		margin.add_theme_constant_override("margin_" + side, 12)
 	add_child(margin)
 	var layout = VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 16)
+	layout.add_theme_constant_override("separation", 12)
 	margin.add_child(layout)
 	return layout
 
@@ -138,8 +138,11 @@ func _button(title: String, action: Callable, color: Color = Color("#FFF7E7"), m
 	button.add_theme_color_override("font_focus_color", Color("#344658"))
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = color
-	sb.border_color = Color("#EBE4D7")
-	sb.set_border_width_all(3)
+	sb.border_color = Color("#FFFFFF")
+	sb.set_border_width_all(2)
+	sb.shadow_color = Color("#264D59",0.15)
+	sb.shadow_size = 5
+	sb.anti_aliasing = true
 	sb.set_corner_radius_all(24)
 	sb.content_margin_left = 16
 	sb.content_margin_right = 16
@@ -147,10 +150,12 @@ func _button(title: String, action: Callable, color: Color = Color("#FFF7E7"), m
 	sb.content_margin_bottom = 12
 	button.add_theme_stylebox_override("normal", sb)
 	var hover = sb.duplicate()
-	hover.bg_color = color.lightened(0.1)
+	hover.bg_color = color.lightened(0.14)
+	hover.shadow_size = 8
 	button.add_theme_stylebox_override("hover", hover)
 	var pressed = sb.duplicate()
-	pressed.bg_color = color.darkened(0.12)
+	pressed.bg_color = color.darkened(0.09)
+	pressed.shadow_size = 2
 	button.add_theme_stylebox_override("pressed", pressed)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	if action.is_valid():
@@ -165,7 +170,7 @@ func _header(layout: VBoxContainer, name: String, back: Callable = Callable()) -
 		header.add_child(_button("返回", back, Color("#FFFFFF"), Vector2(116, 58)))
 	else:
 		header.add_child(_label("✿", 34))
-	var title = _label(name, 37, HORIZONTAL_ALIGNMENT_LEFT)
+	var title = _label(name, 36, HORIZONTAL_ALIGNMENT_LEFT, Color("#28554D"))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	header.add_child(_button("家長", Callable(self,"show_parent_gate"), Color("#FFFFFF"), Vector2(112, 58)))
@@ -178,19 +183,21 @@ func _spacer() -> Control:
 func _panel() -> PanelContainer:
 	var panel = PanelContainer.new()
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color("#FFFDF1")
-	style.set_corner_radius_all(28)
+	style.bg_color = Color("#FFFEF8",0.97)
+	style.set_corner_radius_all(26)
 	style.set_border_width_all(3)
 	style.border_color = Color("#FFFFFF")
 	style.content_margin_left = 22
 	style.content_margin_right = 22
 	style.content_margin_top = 16
 	style.content_margin_bottom = 16
+	style.shadow_color = Color("#42696E",0.12)
+	style.shadow_size = 7
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
 
 func _animal_button(info: Dictionary, action: Callable, locked: bool = false, scroll: ScrollContainer = null) -> Button:
-	var card = _button("", action if scroll==null else Callable(), Color("#FFFDF3"), Vector2(165, 199))
+	var card = _button("", action if scroll==null else Callable(), Color("#F0F8E9") if str(info.get("zone",""))=="farm" else (Color("#EDF6E5") if str(info.get("zone",""))=="forest" else Color("#E6F7FC")), Vector2(165, 199))
 	if scroll!=null:
 		scroll.wire_button(card,action)
 	var column = VBoxContainer.new()
@@ -215,7 +222,14 @@ func _animal(id: String) -> Dictionary:
 	return Data.get_animal(animals, id)
 
 func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
-	var card = _button("", action if scroll==null else Callable(), Color("#FFFDF3"), minimum)
+	var color_choices={
+		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),
+		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),
+		"coloring":Color("#F6E5F7"),"care":Color("#FDECD5"),
+		"album":Color("#F1E3CE"),"forest_explore":Color("#E4F1D9"),
+		"ocean":Color("#DDF6FC")
+	}
+	var card = _button("", action if scroll==null else Callable(), color_choices.get(item_id,Color("#FFFDF3")), minimum)
 	if scroll!=null:
 		scroll.wire_button(card,action)
 	var container = VBoxContainer.new()
@@ -257,7 +271,7 @@ func _large_art(info: Dictionary, minimum: Vector2 = Vector2(320,320)) -> Contro
 func show_home() -> void:
 	var layout = _switch("home")
 	_header(layout,"動物探險島")
-	layout.add_child(_label("今天想去哪裡玩？",31))
+	layout.add_child(_label("今天一起探索哪個世界？ ✨",29,HORIZONTAL_ALIGNMENT_CENTER,Color("#3F7165")))
 	# Three columns across two rows leave generous hit targets on 16:9 phones.
 	var scrolling = TouchAnimalScroll.new()
 	scrolling.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -288,7 +302,7 @@ func show_home() -> void:
 		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(190,132) if wide else Vector2(158,116),scrolling))
 		# Picture + title already convey the action; avoid a second line that overflows small landscape screens.
 	var count = int(progress.data["collected"].size())
-	layout.add_child(_label("已認識 %d / %d 位動物朋友" % [count,animals.size()],24))
+	layout.add_child(_label("★ 已認識 %d / %d 位動物朋友！" % [count,animals.size()],23,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
 	_narrate("歡迎來到動物探險島！先選森林樂園或海底樂園，可以看動物，也可以在裡面找動物朋友！")
 
 func _go(where: String) -> void:
@@ -314,9 +328,9 @@ func show_zone(zone: String) -> void:
 	current_zone = zone
 	var layout = _switch("ocean_park" if zone=="ocean" else zone, zone)
 	_header(layout, "農場樂園" if zone == "farm" else ("森林樂園" if zone=="forest" else "海底樂園"), Callable(self,"show_home"))
-	layout.add_child(_label("點一下動物，認識新朋友吧！", 28))
+	layout.add_child(_label("挑一位動物朋友，一起玩吧！", 25,HORIZONTAL_ALIGNMENT_CENTER,Color("#39766D")))
 	if zone in ["forest","ocean"]:
-		var seek_button = _picture_button("forest_explore" if zone=="forest" else "ocean","大森林探索" if zone=="forest" else "海底找動物",Callable(self,"show_forest_search") if zone=="forest" else Callable(self,"show_ocean_search"),Vector2(285,92))
+		var seek_button = _picture_button("forest_explore" if zone=="forest" else "ocean","🌲 去大森林找動物" if zone=="forest" else "🐠 去海底找朋友",Callable(self,"show_forest_search") if zone=="forest" else Callable(self,"show_ocean_search"),Vector2(300,95))
 		seek_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		layout.add_child(seek_button)
 	var panel = _panel()
@@ -334,7 +348,7 @@ func show_zone(zone: String) -> void:
 	for info in animals:
 		if str(info.get("zone","")) == zone:
 			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"])),false,scroll))
-	layout.add_child(_label("小提示：所有動物都可以反覆點擊、聽聲音和玩遊戲。", 22))
+	layout.add_child(_label("點圖片聽介紹、玩關卡，或上面按探索去找動物！", 19,HORIZONTAL_ALIGNMENT_CENTER,Color("#527975")))
 	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else ("森林" if zone=="forest" else "海底樂園")))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
 
