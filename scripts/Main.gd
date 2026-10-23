@@ -637,7 +637,7 @@ func show_care(id: String = "", announce: bool = true) -> void:
 	for animal in animals:
 		if bool(animal.get("care",false)):
 			var aid = str(animal["id"])
-			var button=_button(str(animal["name"]),Callable(),Color("#D9F2D9") if aid == selected_animal else Color("#FFFDF1"),Vector2(150,58))
+			var button=_button(str(animal["name"]),Callable(),Color("#D9F2D9") if aid == selected_animal else Color("#FFFDF1"),Vector2(190,58))
 			tab_scroll.wire_button(button,Callable(self,"show_care").bind(aid,false))
 			tabs.add_child(button)
 	var center = HBoxContainer.new()
