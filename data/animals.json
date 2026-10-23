@@ -158,5 +158,25 @@
     "sound": "喳喳",
     "desc": "猴子會爬樹，喜歡和同伴一起生活。",
     "care": false
+  },
+  {
+    "id": "snake",
+    "name": "蛇",
+    "zone": "forest",
+    "color": "#72BB80",
+    "food": "小型獵物",
+    "sound": "吐信與摩擦聲",
+    "desc": "蛇沒有腳，會用身體慢慢爬行。看到野生蛇要保持距離。",
+    "care": false
+  },
+  {
+    "id": "guinea_pig",
+    "name": "天竺鼠",
+    "zone": "farm",
+    "color": "#DBA882",
+    "food": "牧草",
+    "sound": "吱吱",
+    "desc": "天竺鼠有圓圓的小耳朵，喜歡吃牧草。",
+    "care": true
   }
 ]

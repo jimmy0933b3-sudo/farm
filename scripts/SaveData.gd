@@ -16,6 +16,7 @@ func _fresh() -> Dictionary:
 		"forest_explore_session": {},
 		"forest_explore_runs": 0,
 		"forest_explore_previous": [],
+		"private_farm": [],
 		"care": {},
 		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
 		"last_screen": "home"
@@ -84,51 +85,67 @@ func mark_forest_found(animal_id: String) -> void:
 
 func get_forest_explore_session(order: Array) -> Dictionary:
 	var session = data.get("forest_explore_session",{})
-	# Expand existing six-animal sessions without erasing animals the child
-	# already found before updating. The remaining animals are added at the end.
+	# Extend previous valid sessions on new species releases without losing finds.
 	if session is Dictionary and session.get("placement",null) is Array and session.get("found",null) is Array:
-		var old_positions: Array = session["placement"]
-		var old_found: Array = session["found"]
-		if old_positions.size() == 6 and order.size() > 6 and old_found.size() <= 6:
-			var legacy_order: Array = order.slice(0,6)
-			var can_migrate: bool = true
-			for id in legacy_order:
-				if old_positions.count(id) != 1:
-					can_migrate = false
-			for i in range(old_found.size()):
-				if old_found[i] != legacy_order[i]:
-					can_migrate = false
-			if can_migrate:
-				var extended: Array = old_positions.duplicate()
-				var extras: Array = order.slice(6,order.size())
-				extras.shuffle()
-				extended.append_array(extras)
-				session = {"placement":extended,"found":old_found.duplicate()}
-				data["forest_explore_session"] = session
+		var previous_positions: Array=session["placement"]
+		var previous_found: Array=session["found"]
+		if previous_positions.size()>0 and previous_positions.size()<order.size():
+			var previous_order: Array=order.slice(0,previous_positions.size())
+			var compatible: bool=true
+			for id in previous_order:
+				if previous_positions.count(id)!=1:
+					compatible=false
+			for i in range(previous_found.size()):
+				if i>=previous_order.size() or previous_found[i]!=previous_order[i]:
+					compatible=false
+			if compatible:
+				var expanded: Array=previous_positions.duplicate()
+				var extra: Array=order.slice(previous_positions.size(),order.size())
+				extra.shuffle()
+				expanded.append_array(extra)
+				session={"placement":expanded,"found":previous_found.duplicate()}
+				data["forest_explore_session"]=session
 				save()
-	var valid = session is Dictionary
+	var valid=session is Dictionary
 	if valid:
-		valid = session.get("placement",null) is Array and session.get("found",null) is Array
+		valid=session.get("placement",null) is Array and session.get("found",null) is Array
 	if valid:
-		var positions: Array = session["placement"]
-		var old_found: Array = session["found"]
-		valid = positions.size() == order.size() and old_found.size() < order.size()
+		var positions: Array=session["placement"]
+		var previous_found: Array=session["found"]
+		valid=positions.size()==order.size() and previous_found.size()<order.size()
 		if valid:
 			for id in order:
 				if positions.count(id)!=1:
 					valid=false
-			for i in range(old_found.size()):
-				if old_found[i] != order[i]:
+			for i in range(previous_found.size()):
+				if previous_found[i]!=order[i]:
 					valid=false
 	if not valid:
 		var positions: Array=order.duplicate()
 		positions.shuffle()
 		if positions==data.get("forest_explore_previous",[]):
 			positions.reverse()
-		session = {"placement":positions,"found":[]}
+		session={"placement":positions,"found":[]}
 		data["forest_explore_session"]=session
 		save()
 	return session
+
+func private_farm_add(animal_id: String, capacity: int = 8) -> bool:
+	if not data["collected"].has(animal_id):
+		return false
+	var residents: Array=data["private_farm"]
+	if residents.has(animal_id):
+		return true
+	if residents.size()>=capacity:
+		return false
+	residents.append(animal_id)
+	save()
+	return true
+
+func private_farm_remove(animal_id: String) -> void:
+	var residents: Array=data["private_farm"]
+	residents.erase(animal_id)
+	save()
 
 func record_forest_explore_found(animal_id: String) -> void:
 	var session: Dictionary = data.get("forest_explore_session",{})

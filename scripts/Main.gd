@@ -6,6 +6,7 @@ const Data = preload("res://scripts/GameData.gd")
 const Store = preload("res://scripts/SaveData.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const PettingArea = preload("res://scripts/PettingArea.gd")
+const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
 const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
 const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
@@ -30,6 +31,7 @@ var care_feedback: Label
 var care_action_buttons: Array = []
 var care_intro_count: int = 0
 var forest_game: Control
+var private_farm_game: Control
 
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
@@ -49,6 +51,8 @@ func _ready() -> void:
 			show_care()
 		"album":
 			show_album()
+		"private_farm":
+			show_private_farm()
 		"forest_explore":
 			show_forest_search()
 		"forest_search":
@@ -76,7 +80,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","care","album","forest_search"]:
+	if name in ["home","farm","forest","care","album","forest_search","private_farm"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -250,6 +254,7 @@ func show_home() -> void:
 		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
 		{"title":"森林樂園","sub":"看看森林有哪些動物","zone":"forest"},
 		{"title":"大森林探索","sub":"左右滑動森林找動物","zone":"forest_explore"},
+		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
 		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
 		{"title":"動物圖鑑","sub":"收集可愛的動物貼紙","zone":"album"}
 	]
@@ -274,6 +279,8 @@ func _go(where: String) -> void:
 			show_album()
 		"forest_explore":
 			show_forest_search()
+		"private_farm":
+			show_private_farm()
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
@@ -304,6 +311,15 @@ func show_zone(zone: String) -> void:
 	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else "森林"))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
 
+func show_private_farm() -> void:
+	var layout = _switch("private_farm","farm")
+	_header(layout,"私人農場",Callable(self,"show_home"))
+	private_farm_game = PrivateFarm.new()
+	private_farm_game.setup(animals,progress,sound)
+	private_farm_game.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	private_farm_game.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(private_farm_game)
+
 func show_forest_search() -> void:
 	current_zone = "forest"
 	var layout = _switch("forest_search","forest")
@@ -321,13 +337,13 @@ func show_forest_search() -> void:
 
 func show_forest_complete() -> void:
 	var layout = _switch("forest_done","forest")
-	_header(layout,"十位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
+	_header(layout,"十一位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
 	layout.add_child(_label("太棒了！大森林探索完成！",35))
 	var box=_panel()
 	box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(box)
 	var grid=GridContainer.new()
-	grid.columns=5
+	grid.columns=6
 	grid.add_theme_constant_override("h_separation",10)
 	grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	box.add_child(grid)
@@ -343,7 +359,7 @@ func show_forest_complete() -> void:
 	row.add_child(_button("再找一次",Callable(self,"show_forest_search"),Color("#FCE1AB"),Vector2(250,85)))
 	row.add_child(_button("回首頁",Callable(self,"show_home"),Color("#D8EED4"),Vector2(210,85)))
 	row.add_child(_button("回森林樂園",Callable(self,"show_zone").bind("forest"),Color("#E0E7FA"),Vector2(210,85)))
-	_narrate("太棒了！完成大森林探索！十隻森林動物都找到了！要再玩一次，還是回首頁呢？")
+	_narrate("太棒了！完成大森林探索！十一隻森林動物都找到了！要再玩一次，還是回首頁呢？")
 
 func show_animal(id: String) -> void:
 	var info = _animal(id)

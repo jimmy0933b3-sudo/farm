@@ -6,7 +6,9 @@ const WAV_FOLDER = "res://assets/audio/animals/"
 const LABELS = {
 	"cow":"乳牛","pig":"小豬","sheep":"綿羊","chicken":"公雞",
 	"duck":"鴨子","horse":"馬","rabbit":"兔子","squirrel":"松鼠",
-	"fox":"狐狸","deer":"鹿","bear":"熊","owl":"貓頭鷹"
+	"fox":"狐狸","deer":"鹿","bear":"熊","owl":"貓頭鷹",
+	"hedgehog":"刺蝟","raccoon":"浣熊","boar":"野豬","monkey":"猴子",
+	"snake":"蛇","guinea_pig":"天竺鼠"
 }
 
 var player: AudioStreamPlayer

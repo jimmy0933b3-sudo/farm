@@ -190,5 +190,29 @@
       "洋蔥"
     ],
     "answer": "香蕉"
+  },
+  {
+    "id": 17,
+    "animal": "snake",
+    "type": "habitat",
+    "prompt": "幫蛇找到森林的家。",
+    "options": [
+      "forest",
+      "farm",
+      "ocean"
+    ],
+    "answer": "forest"
+  },
+  {
+    "id": 18,
+    "animal": "guinea_pig",
+    "type": "food",
+    "prompt": "天竺鼠的主食是什麼？",
+    "options": [
+      "牧草",
+      "糖果",
+      "巧克力"
+    ],
+    "answer": "牧草"
   }
 ]

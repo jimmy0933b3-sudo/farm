@@ -205,7 +205,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 		return
 	active_id=id
 	for child in habitat.get_children():
-		if child is PettingArea or child is CareStage:
+		if child.get_script() == PettingArea or child.get_script() == CareStage:
 			habitat.remove_child(child)
 			child.queue_free()
 	pet=null
