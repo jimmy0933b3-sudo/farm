@@ -190,7 +190,7 @@ func _show_target(first_round: bool) -> void:
 	var animal=_get_animal(current_target())
 	target_art.setup(animal)
 	target_label.text="找一找：%s" % str(animal.get("name","動物"))
-	status_label.text="★ %d / %d" % found.size()
+	status_label.text="★ %d / %d" % [found.size(),ORDER.size()]
 	subtitle.text="左右滑動森林，再點樹叢找找看！"
 	for spot in spots:
 		spot.set_hint(false)
