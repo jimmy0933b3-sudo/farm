@@ -3,8 +3,8 @@ extends SceneTree
 func _initialize() -> void:
 	var a = _read("res://data/animals.json")
 	var l = _read("res://data/levels.json")
-	if a.size() != 18 or l.size() != 18:
-		push_error("Expected exactly 18 animals and 18 levels")
+	if a.size() != 19 or l.size() != 19:
+		push_error("Expected exactly 19 animals and 19 levels")
 		quit(1)
 		return
 	var known = {}
@@ -24,8 +24,8 @@ func _initialize() -> void:
 			forest_count += 1
 		if bool(animal.get("care",false)):
 			care_count += 1
-	if farm_count != 7 or forest_count != 11 or care_count != 7:
-		push_error("Expected 7 farm + 11 forest + 7 care animals")
+	if farm_count != 7 or forest_count != 12 or care_count != 7:
+		push_error("Expected 7 farm + 12 forest + 7 care animals")
 		quit(1)
 		return
 	for level in l:
@@ -40,7 +40,7 @@ func _initialize() -> void:
 			push_error("Level missing valid options/answer: "+str(level.get("id")))
 			quit(1)
 			return
-	print("PASS: 18 animals, 18 valid levels, 2 habitats and 7 care animals")
+	print("PASS: 19 animals, 19 valid levels, 2 habitats and 7 care animals")
 	quit(0)
 
 func _read(path: String) -> Array:

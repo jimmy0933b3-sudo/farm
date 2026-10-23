@@ -4,10 +4,10 @@ extends Control
 signal hideout_tapped(index: int)
 
 const Hideout = preload("res://scripts/ForestHideSpot.gd")
-const WORLD_WIDTH: float = 5180.0
-const X_POSITIONS: Array = [300.0, 745.0, 1190.0, 1635.0, 2080.0, 2525.0, 2970.0, 3415.0, 3860.0, 4305.0, 4770.0]
-const Y_FRACTIONS: Array = [0.64, 0.37, 0.62, 0.38, 0.65, 0.40, 0.63, 0.38, 0.65, 0.41, 0.62]
-const COVER_TYPES: Array = ["bush","trunk","flowers","log","rocks","branch","flowers","trunk","rocks","bush","log"]
+const WORLD_WIDTH: float = 5680.0
+const X_POSITIONS: Array = [300.0, 745.0, 1190.0, 1635.0, 2080.0, 2525.0, 2970.0, 3415.0, 3860.0, 4305.0, 4770.0, 5270.0]
+const Y_FRACTIONS: Array = [0.64, 0.37, 0.62, 0.38, 0.65, 0.40, 0.63, 0.38, 0.65, 0.41, 0.62, 0.41]
+const COVER_TYPES: Array = ["bush","trunk","flowers","log","rocks","branch","flowers","trunk","rocks","bush","log","bush"]
 
 var animals: Array = []
 var placements: Array = []
@@ -168,7 +168,7 @@ func _draw() -> void:
 	_disc(2560.0,height*0.94,920.0,height*0.63,Color("#6ABB90"))
 	_disc(3890.0,height*0.95,1020.0,height*0.63,Color("#89C993"))
 	draw_rect(Rect2(0,height*0.80,WORLD_WIDTH,height*0.24),Color("#77BF84"))
-	for i in range(52):
+	for i in range(57):
 		var x=50.0+float(i)*101.0
 		var r=32.0+float(i%4)*8.0
 		_leaves(x,height*0.32+float(i%3)*21.0,r,i)

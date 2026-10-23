@@ -214,5 +214,17 @@
       "巧克力"
     ],
     "answer": "牧草"
+  },
+  {
+    "id": 19,
+    "animal": "meerkat",
+    "type": "food",
+    "prompt": "狐獴最愛吃什麼？",
+    "options": [
+      "昆蟲",
+      "巧克力",
+      "汽水"
+    ],
+    "answer": "昆蟲"
   }
 ]

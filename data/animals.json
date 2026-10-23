@@ -178,5 +178,15 @@
     "sound": "吱吱",
     "desc": "天竺鼠有圓圓的小耳朵，喜歡吃牧草。",
     "care": true
+  },
+  {
+    "id": "meerkat",
+    "name": "狐獴",
+    "zone": "forest",
+    "color": "#D5AE78",
+    "food": "昆蟲",
+    "sound": "吱吱警戒叫聲",
+    "desc": "狐獴會直立站起來觀察四周，和家人輪流守望。",
+    "care": false
   }
 ]

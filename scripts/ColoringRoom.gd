@@ -235,7 +235,7 @@ func _on_color_region(region: String) -> void:
 		history.pop_front()
 	if store.color_animal_region(selected_id,region,selected_color):
 		canvas.colors=store.get_coloring(selected_id)
-		canvas.queue_redraw()
+		canvas.refresh_colors()
 		guide.text="好漂亮！繼續選顏色，點動物其他地方！"
 		undo_button.disabled=false
 		clear_armed=false
@@ -244,7 +244,7 @@ func undo() -> void:
 	if selected_id=="" or history.is_empty(): return
 	store.replace_coloring(selected_id,history.pop_back())
 	canvas.colors=store.get_coloring(selected_id)
-	canvas.queue_redraw()
+	canvas.refresh_colors()
 	undo_button.disabled=history.is_empty()
 	guide.text="退回上一步，可以繼續上色喔！"
 
@@ -258,7 +258,7 @@ func reset_coloring() -> void:
 	history.append(store.get_coloring(selected_id).duplicate(true))
 	store.replace_coloring(selected_id,{})
 	canvas.colors={}
-	canvas.queue_redraw()
+	canvas.refresh_colors()
 	undo_button.disabled=false
 	clear_armed=false
 	guide.text="變回黑白線稿了！選顏色，再畫一次！"

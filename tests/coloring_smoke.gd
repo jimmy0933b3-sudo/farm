@@ -47,7 +47,11 @@ func _run() -> void:
 		return
 	for info in game.animals:
 		canvas.setup(str(info["id"]),{})
-		if canvas.parts.size()<5:
+		await process_frame
+		if canvas.avatar.get_script()!=preload("res://scripts/AnimalArt.gd"):
+			_fail("Coloring must use actual original AnimalArt, never a duplicate shape renderer")
+			return
+		if canvas.get_regions().size()<5:
 			_fail("Missing outlined and colorable pieces for "+str(info["id"]))
 			return
 		for id in canvas.colors.keys():
@@ -56,11 +60,11 @@ func _run() -> void:
 				return
 	room.select_animal("rabbit",false)
 	await process_frame
-	var scale=minf(canvas.size.x/340.0,canvas.size.y/365.0)
+	var scale=minf(canvas.size.x/220.0,canvas.size.y/220.0)
 	if scale<=0:
 		_fail("Canvas size not laid out")
 		return
-	var spot=Vector2(canvas.size.x*.5,canvas.size.y*.58)+Vector2(0,64)*scale
+	var spot=Vector2(canvas.size.x*.5,canvas.size.y*.52)+Vector2(0,24)*scale
 	var region=canvas.region_at(spot)
 	if region.is_empty():
 		_fail("Cannot tap and fill the animal's body")
@@ -107,7 +111,7 @@ func _run() -> void:
 	game.progress.data["collected"]=original_collected
 	game.progress.data["coloring_pages"]=old_pages
 	game.progress.save()
-	print("PASS: separate coloring icon, 18 outline animals, collection gate, region fill, undo, reset confirmation and save")
+	print("PASS: separate coloring icon, 19 original-art outline animals, collection gate, region fill, undo, reset confirmation and save")
 	game.queue_free()
 	await process_frame
 	quit(0)

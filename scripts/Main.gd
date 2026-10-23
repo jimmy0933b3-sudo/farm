@@ -358,7 +358,7 @@ func show_forest_search() -> void:
 
 func show_forest_complete() -> void:
 	var layout = _switch("forest_done","forest")
-	_header(layout,"十一位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
+	_header(layout,"十二位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
 	layout.add_child(_label("太棒了！大森林探索完成！",35))
 	var box=_panel()
 	box.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -380,7 +380,7 @@ func show_forest_complete() -> void:
 	row.add_child(_button("再找一次",Callable(self,"show_forest_search"),Color("#FCE1AB"),Vector2(250,85)))
 	row.add_child(_button("回首頁",Callable(self,"show_home"),Color("#D8EED4"),Vector2(210,85)))
 	row.add_child(_button("回森林樂園",Callable(self,"show_zone").bind("forest"),Color("#E0E7FA"),Vector2(210,85)))
-	_narrate("太棒了！完成大森林探索！十一隻森林動物都找到了！要再玩一次，還是回首頁呢？")
+	_narrate("太棒了！完成大森林探索！十二隻森林動物都找到了！要再玩一次，還是回首頁呢？")
 
 func show_animal(id: String) -> void:
 	var info = _animal(id)

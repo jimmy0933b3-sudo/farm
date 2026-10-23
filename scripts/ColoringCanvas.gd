@@ -21,8 +21,8 @@ func _ready() -> void:
 	mouse_filter=Control.MOUSE_FILTER_STOP
 	avatar=OriginalArt.new()
 	avatar.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	avatar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(avatar)
+	avatar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	avatar.setup({"id":animal_id,"color":"#FFFFFF"})
 	avatar.set_coloring(true,colors)
 

@@ -5,7 +5,7 @@ signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const Map = preload("res://scripts/ForestPanMap.gd")
-const ORDER: Array = ["rabbit","squirrel","fox","deer","bear","owl","hedgehog","raccoon","boar","monkey","snake"]
+const ORDER: Array = ["rabbit","squirrel","fox","deer","bear","owl","hedgehog","raccoon","boar","monkey","snake","meerkat"]
 
 var animal_info: Array = []
 var save_data
