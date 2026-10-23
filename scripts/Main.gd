@@ -37,6 +37,8 @@ var forest_game: Control
 var ocean_game: Control
 var private_farm_game: Control
 var coloring_game: Control
+var settings_scroll: ScrollContainer
+var parent_scroll_y: int=0
 
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
@@ -747,10 +749,12 @@ func show_parent_gate() -> void:
 	layout.add_child(_spacer())
 
 func show_settings() -> void:
+	var restore_y=parent_scroll_y
 	var layout = _switch("settings")
 	_header(layout,"家長設定",Callable(self,"show_home"))
 	# The header stays fixed. All settings AND explanatory information scroll.
 	var scroll = TouchAnimalScroll.new()
+	settings_scroll=scroll
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(scroll)
@@ -794,6 +798,11 @@ func show_settings() -> void:
 		note_label.custom_minimum_size=Vector2(0,68)
 		panel.add_child(note_label)
 	content.add_child(_label("往上滑動，可以查看所有家長設定與說明。",17,HORIZONTAL_ALIGNMENT_LEFT,Color("#6F8391")))
+	_restore_parent_scroll.call_deferred(scroll,restore_y)
+
+func _restore_parent_scroll(scroll: ScrollContainer, value: int) -> void:
+	if is_instance_valid(scroll):
+		scroll.scroll_vertical=value
 
 func _section_title(message: String, symbol: String) -> HBoxContainer:
 	var row=HBoxContainer.new()
@@ -803,6 +812,8 @@ func _section_title(message: String, symbol: String) -> HBoxContainer:
 	return row
 
 func _toggle(key: String) -> void:
+	if is_instance_valid(settings_scroll):
+		parent_scroll_y=settings_scroll.scroll_vertical
 	progress.toggle_setting(key)
 	sound.enabled = bool(progress.data["settings"].get("sound",true))
 	sound.speech_enabled = bool(progress.data["settings"].get("speech",true))
