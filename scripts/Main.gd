@@ -9,6 +9,7 @@ const PettingArea = preload("res://scripts/PettingArea.gd")
 const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
+const OceanDiscovery = preload("res://scripts/OceanDiscovery.gd")
 const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
 const Backdrop = preload("res://scripts/Backdrop.gd")
@@ -32,6 +33,7 @@ var care_feedback: Label
 var care_action_buttons: Array = []
 var care_intro_count: int = 0
 var forest_game: Control
+var ocean_game: Control
 var private_farm_game: Control
 var coloring_game: Control
 
@@ -61,6 +63,8 @@ func _ready() -> void:
 			show_forest_search()
 		"forest_search":
 			show_forest_search()
+		"ocean", "ocean_search":
+			show_ocean_search()
 		_:
 			show_home()
 
@@ -78,13 +82,15 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				show_zone(current_zone)
 			elif screen in ["forest_search","forest_done"]:
 				show_zone("forest")
+			elif screen in ["ocean_search","ocean_done"]:
+				show_home()
 			else:
 				show_home()
 
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","care","album","forest_search","private_farm","coloring"]:
+	if name in ["home","farm","forest","care","album","forest_search","private_farm","coloring","ocean_search"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -263,6 +269,7 @@ func show_home() -> void:
 		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
 		{"title":"森林樂園","sub":"看看森林有哪些動物","zone":"forest"},
 		{"title":"大森林探索","sub":"左右滑動森林找動物","zone":"forest_explore"},
+		{"title":"海底生物區","sub":"海裡找六位動物朋友","zone":"ocean"},
 		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
 		{"title":"動物著色屋","sub":"幫收集到的動物上顏色","zone":"coloring"},
 		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
@@ -293,11 +300,13 @@ func _go(where: String) -> void:
 			show_private_farm()
 		"coloring":
 			show_coloring()
+		"ocean":
+			show_ocean_search()
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
 	var layout = _switch(zone, zone)
-	_header(layout, "農場樂園" if zone == "farm" else "森林樂園", Callable(self,"show_home"))
+	_header(layout, "農場樂園" if zone == "farm" else ("森林樂園" if zone=="forest" else "海底生物區"), Callable(self,"show_home"))
 	layout.add_child(_label("點一下動物，認識新朋友吧！", 28))
 	if zone == "forest":
 		var seek_button = _picture_button("forest_explore","大森林探索",Callable(self,"show_forest_search"),Vector2(320,112))
@@ -322,6 +331,44 @@ func show_zone(zone: String) -> void:
 	layout.add_child(_label("小提示：所有動物都可以反覆點擊、聽聲音和玩遊戲。", 22))
 	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else "森林"))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
+
+func show_ocean_search() -> void:
+	current_zone="ocean"
+	var layout=_switch("ocean_search","home")
+	_header(layout,"海底生物區",Callable(self,"show_home"))
+	var ocean_animals: Array=[]
+	for info in animals:
+		if str(info.get("zone",""))=="ocean":
+			ocean_animals.append(info)
+	ocean_game=OceanDiscovery.new()
+	ocean_game.setup(ocean_animals,progress,sound)
+	ocean_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	ocean_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	ocean_game.completed.connect(Callable(self,"show_ocean_complete"))
+	layout.add_child(ocean_game)
+
+func show_ocean_complete() -> void:
+	var layout=_switch("ocean_done","home")
+	_header(layout,"海底探險完成！",Callable(self,"show_home"))
+	layout.add_child(_label("太棒了！六種海底生物都找到了！",31))
+	var panel=_panel()
+	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	layout.add_child(panel)
+	var grid=GridContainer.new()
+	grid.columns=6
+	grid.add_theme_constant_override("h_separation",8)
+	panel.add_child(grid)
+	for info in animals:
+		if str(info.get("zone",""))=="ocean":
+			var tile=_animal_button(info,Callable(self,"show_animal").bind(str(info["id"])))
+			tile.custom_minimum_size=Vector2(140,150)
+			grid.add_child(tile)
+	var actions=HBoxContainer.new()
+	actions.alignment=BoxContainer.ALIGNMENT_CENTER
+	layout.add_child(actions)
+	actions.add_child(_button("再找一次",Callable(self,"show_ocean_search"),Color("#E5EFFF"),Vector2(220,72)))
+	actions.add_child(_button("回首頁",Callable(self,"show_home"),Color("#DEEFDA"),Vector2(220,72)))
+	_narrate("六種海洋朋友都找到囉！可以再玩一次，也可以把牠們帶去私人農場的大水池！")
 
 func show_coloring() -> void:
 	var layout=_switch("coloring","home")

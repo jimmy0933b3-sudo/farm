@@ -226,5 +226,77 @@
       "汽水"
     ],
     "answer": "昆蟲"
+  },
+  {
+    "id": 20,
+    "animal": "clownfish",
+    "type": "habitat",
+    "prompt": "小丑魚住在哪裡？",
+    "options": [
+      "ocean",
+      "forest",
+      "farm"
+    ],
+    "answer": "ocean"
+  },
+  {
+    "id": 21,
+    "animal": "sea_turtle",
+    "type": "food",
+    "prompt": "海龜可以吃什麼？",
+    "options": [
+      "海草",
+      "糖果",
+      "巧克力"
+    ],
+    "answer": "海草"
+  },
+  {
+    "id": 22,
+    "animal": "dolphin",
+    "type": "habitat",
+    "prompt": "海豚住在哪裡？",
+    "options": [
+      "farm",
+      "ocean",
+      "forest"
+    ],
+    "answer": "ocean"
+  },
+  {
+    "id": 23,
+    "animal": "octopus",
+    "type": "habitat",
+    "prompt": "章魚住在哪裡？",
+    "options": [
+      "forest",
+      "ocean",
+      "farm"
+    ],
+    "answer": "ocean"
+  },
+  {
+    "id": 24,
+    "animal": "seahorse",
+    "type": "food",
+    "prompt": "海馬會吃什麼？",
+    "options": [
+      "小型甲殼類",
+      "糖果",
+      "汽水"
+    ],
+    "answer": "小型甲殼類"
+  },
+  {
+    "id": 25,
+    "animal": "pufferfish",
+    "type": "habitat",
+    "prompt": "河豚住在哪裡？",
+    "options": [
+      "ocean",
+      "farm",
+      "forest"
+    ],
+    "answer": "ocean"
   }
 ]

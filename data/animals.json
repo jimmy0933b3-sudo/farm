@@ -188,5 +188,65 @@
     "sound": "吱吱警戒叫聲",
     "desc": "狐獴會直立站起來觀察四周，和家人輪流守望。",
     "care": false
+  },
+  {
+    "id": "clownfish",
+    "name": "小丑魚",
+    "zone": "ocean",
+    "color": "#F39847",
+    "food": "浮游生物",
+    "sound": "水下游動",
+    "desc": "小丑魚喜歡躲在海葵的觸手間。",
+    "care": false
+  },
+  {
+    "id": "sea_turtle",
+    "name": "海龜",
+    "zone": "ocean",
+    "color": "#70B59A",
+    "food": "海草",
+    "sound": "水下划水",
+    "desc": "海龜在海裡游泳，也會到沙灘產卵。",
+    "care": false
+  },
+  {
+    "id": "dolphin",
+    "name": "海豚",
+    "zone": "ocean",
+    "color": "#78B7D4",
+    "food": "小魚",
+    "sound": "口哨與喀答",
+    "desc": "海豚是哺乳動物，必須到水面呼吸空氣。",
+    "care": false
+  },
+  {
+    "id": "octopus",
+    "name": "章魚",
+    "zone": "ocean",
+    "color": "#D48CAD",
+    "food": "甲殼類",
+    "sound": "柔軟腕足",
+    "desc": "章魚有八隻腕足，會用吸盤抓住東西。",
+    "care": false
+  },
+  {
+    "id": "seahorse",
+    "name": "海馬",
+    "zone": "ocean",
+    "color": "#F0BB66",
+    "food": "小型甲殼類",
+    "sound": "輕輕游動",
+    "desc": "海馬會用尾巴勾住海草，慢慢地游泳。",
+    "care": false
+  },
+  {
+    "id": "pufferfish",
+    "name": "河豚",
+    "zone": "ocean",
+    "color": "#E6CE83",
+    "food": "貝類",
+    "sound": "緩慢游動",
+    "desc": "河豚遇到危險可能鼓起身體，野外不要碰牠。",
+    "care": false
   }
 ]

@@ -8,7 +8,9 @@ const LABELS = {
 	"duck":"鴨子","horse":"馬","rabbit":"兔子","squirrel":"松鼠",
 	"fox":"狐狸","deer":"鹿","bear":"熊","owl":"貓頭鷹",
 	"hedgehog":"刺蝟","raccoon":"浣熊","boar":"野豬","monkey":"猴子",
-	"snake":"蛇","guinea_pig":"天竺鼠","meerkat":"狐獴"
+	"snake":"蛇","guinea_pig":"天竺鼠","meerkat":"狐獴",
+	"clownfish":"小丑魚","sea_turtle":"海龜","dolphin":"海豚",
+	"octopus":"章魚","seahorse":"海馬","pufferfish":"河豚"
 }
 
 var player: AudioStreamPlayer

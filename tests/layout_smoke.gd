@@ -20,8 +20,8 @@ func _run() -> void:
 		for node in _descendants(game):
 			if node is Button and _has_picture(node):
 				cards.append(node)
-		if cards.size()!=7:
-			_fail("Home must show exactly 7 fully illustrated actions, got "+str(cards.size()))
+		if cards.size()!=8:
+			_fail("Home must show exactly 8 fully illustrated actions, got "+str(cards.size()))
 			return
 		for i in range(cards.size()):
 			var a: Rect2=cards[i].get_global_rect()

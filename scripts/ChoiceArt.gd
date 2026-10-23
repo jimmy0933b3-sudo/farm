@@ -95,6 +95,20 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"ocean":
+			# Oversized unmistakable fish icon with coral and bubbles.
+			_oval(0,38,108,78,Color("#55BCD7"))
+			_oval(-28,30,65,38,Color("#F39B60"))
+			_shape([Vector2(-74,31),Vector2(-115,-1),Vector2(-115,67)],Color("#E97A63"))
+			for i in range(3):
+				_oval(-48+float(i)*31,30,8,35,Color.WHITE)
+			_oval(15,18,8,8,Color("#294757"))
+			for i in range(3):
+				_oval(44+float(i)*19,-34-float(i%2)*20,10,10,Color("#E5FAFE"))
+			for i in range(6):
+				var xx=-87+float(i)*35
+				_line(Vector2(xx,93),Vector2(xx+float(i%2)*13,58),Color("#2FA982"),8)
+				_oval(xx+8,72,11,19,Color("#69CBA3"))
 		"coloring":
 			# Crayon + black outline rabbit for the separate homepage tile.
 			_oval(-16,39,63,65,Color.WHITE)
