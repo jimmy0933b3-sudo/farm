@@ -10,6 +10,7 @@ const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
 const OceanDiscovery = preload("res://scripts/OceanDiscovery.gd")
+const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
 const Backdrop = preload("res://scripts/Backdrop.gd")
@@ -49,8 +50,8 @@ func _ready() -> void:
 	sound.speech_enabled = bool(progress.data["settings"].get("speech", true))
 	var saved_screen = str(progress.data.get("last_screen","home"))
 	match saved_screen:
-		"farm", "forest":
-			show_zone(saved_screen)
+		"farm", "forest", "ocean_park":
+			show_zone("ocean" if saved_screen=="ocean_park" else saved_screen)
 		"care":
 			show_care()
 		"album":
@@ -90,7 +91,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","care","album","forest_search","private_farm","coloring","ocean_search"]:
+	if name in ["home","farm","forest","care","album","forest_search","private_farm","coloring","ocean_search","ocean_park"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -187,8 +188,10 @@ func _panel() -> PanelContainer:
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
 
-func _animal_button(info: Dictionary, action: Callable, locked: bool = false) -> Button:
-	var card = _button("", action, Color("#FFFDF3"), Vector2(165, 199))
+func _animal_button(info: Dictionary, action: Callable, locked: bool = false, scroll: ScrollContainer = null) -> Button:
+	var card = _button("", action if scroll==null else Callable(), Color("#FFFDF3"), Vector2(165, 199))
+	if scroll!=null:
+		scroll.wire_button(card,action)
 	var column = VBoxContainer.new()
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -210,8 +213,10 @@ func _animal_button(info: Dictionary, action: Callable, locked: bool = false) ->
 func _animal(id: String) -> Dictionary:
 	return Data.get_animal(animals, id)
 
-func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226)) -> Button:
-	var card = _button("", action, Color("#FFFDF3"), minimum)
+func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
+	var card = _button("", action if scroll==null else Callable(), Color("#FFFDF3"), minimum)
+	if scroll!=null:
+		scroll.wire_button(card,action)
 	var container = VBoxContainer.new()
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -253,7 +258,7 @@ func show_home() -> void:
 	_header(layout,"動物探險島")
 	layout.add_child(_label("今天想去哪裡玩？",31))
 	# Three columns across two rows leave generous hit targets on 16:9 phones.
-	var scrolling = ScrollContainer.new()
+	var scrolling = TouchAnimalScroll.new()
 	scrolling.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scrolling.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scrolling.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -269,7 +274,8 @@ func show_home() -> void:
 		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
 		{"title":"森林樂園","sub":"看看森林有哪些動物","zone":"forest"},
 		{"title":"大森林探索","sub":"左右滑動森林找動物","zone":"forest_explore"},
-		{"title":"海底生物區","sub":"海裡找六位動物朋友","zone":"ocean"},
+		{"title":"海底樂園","sub":"認識六位海洋動物朋友","zone":"ocean_park"},
+		{"title":"海底生物區","sub":"左右滑動海底尋找動物","zone":"ocean"},
 		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
 		{"title":"動物著色屋","sub":"幫收集到的動物上顏色","zone":"coloring"},
 		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
@@ -280,7 +286,7 @@ func show_home() -> void:
 		var outer = VBoxContainer.new()
 		outer.add_theme_constant_override("separation",5)
 		cards.add_child(outer)
-		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(197,142) if wide else Vector2(171,125)))
+		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(190,132) if wide else Vector2(158,116),scrolling))
 		# Picture + title already convey the action; avoid a second line that overflows small landscape screens.
 	var count = int(progress.data["collected"].size())
 	layout.add_child(_label("已認識 %d / %d 位動物朋友" % [count,animals.size()],24))
@@ -302,34 +308,35 @@ func _go(where: String) -> void:
 			show_coloring()
 		"ocean":
 			show_ocean_search()
+		"ocean_park":
+			show_zone("ocean")
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
-	var layout = _switch(zone, zone)
-	_header(layout, "農場樂園" if zone == "farm" else ("森林樂園" if zone=="forest" else "海底生物區"), Callable(self,"show_home"))
+	var layout = _switch("ocean_park" if zone=="ocean" else zone, zone)
+	_header(layout, "農場樂園" if zone == "farm" else ("森林樂園" if zone=="forest" else "海底樂園"), Callable(self,"show_home"))
 	layout.add_child(_label("點一下動物，認識新朋友吧！", 28))
-	if zone == "forest":
-		var seek_button = _picture_button("forest_explore","大森林探索",Callable(self,"show_forest_search"),Vector2(320,112))
+	if zone in ["forest","ocean"]:
+		var seek_button = _picture_button("forest_explore" if zone=="forest" else "ocean","大森林探索" if zone=="forest" else "海底找動物",Callable(self,"show_forest_search") if zone=="forest" else Callable(self,"show_ocean_search"),Vector2(285,92))
 		seek_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		layout.add_child(seek_button)
 	var panel = _panel()
 	layout.add_child(panel)
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	var scroll = ScrollContainer.new()
+	var scroll = TouchAnimalScroll.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(scroll)
 	var grid = GridContainer.new()
-	grid.columns = 6 if zone == "farm" else 5
+	grid.columns = 5 if get_viewport_rect().size.x>=1150 else 4
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 10)
 	scroll.add_child(grid)
 	for info in animals:
 		if str(info.get("zone","")) == zone:
-			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"]))))
+			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"])),false,scroll))
 	layout.add_child(_label("小提示：所有動物都可以反覆點擊、聽聲音和玩遊戲。", 22))
-	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else "森林"))
+	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else ("森林" if zone=="forest" else "海底樂園")))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
 
 func show_ocean_search() -> void:
@@ -588,18 +595,18 @@ func show_album() -> void:
 	var layout = _switch("album")
 	_header(layout,"我的動物圖鑑",Callable(self,"show_home"))
 	layout.add_child(_label("已收集 %d / %d 張動物貼紙" % [int(progress.data["collected"].size()),animals.size()],29))
-	var scroll = ScrollContainer.new()
+	var scroll = TouchAnimalScroll.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(scroll)
 	var grid = GridContainer.new()
-	grid.columns = 8
+	grid.columns = 5 if get_viewport_rect().size.x>=1150 else 4
 	grid.add_theme_constant_override("h_separation",10)
 	grid.add_theme_constant_override("v_separation",18)
 	scroll.add_child(grid)
 	for info in animals:
 		var is_collected = progress.data["collected"].has(str(info["id"]))
 		var callback: Callable = Callable(self,"show_animal").bind(str(info["id"])) if is_collected else Callable(self,"_locked")
-		grid.add_child(_animal_button(info,callback,not is_collected))
+		grid.add_child(_animal_button(info,callback,not is_collected,scroll))
 	layout.add_child(_label("探索時點擊動物，就能找到更多朋友！",21))
 	_narrate("這是你的動物圖鑑。亮亮的貼紙，是你認識過的動物朋友。")
 
@@ -616,14 +623,22 @@ func show_care(id: String = "", announce: bool = true) -> void:
 		info = _animal(selected_animal)
 	var layout = _switch("care","farm")
 	_header(layout,"動物之家",Callable(self,"show_home"))
+	var tab_scroll = TouchAnimalScroll.new()
+	tab_scroll.custom_minimum_size=Vector2(0,66)
+	tab_scroll.size_flags_vertical=Control.SIZE_SHRINK_BEGIN
+	tab_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	tab_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
+	tab_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	layout.add_child(tab_scroll)
 	var tabs = HBoxContainer.new()
-	tabs.alignment = BoxContainer.ALIGNMENT_CENTER
 	tabs.add_theme_constant_override("separation",12)
-	layout.add_child(tabs)
+	tab_scroll.add_child(tabs)
 	for animal in animals:
 		if bool(animal.get("care",false)):
 			var aid = str(animal["id"])
-			tabs.add_child(_button(str(animal["name"]),Callable(self,"show_care").bind(aid,false),Color("#D9F2D9") if aid == selected_animal else Color("#FFFDF1"),Vector2(150,58)))
+			var button=_button(str(animal["name"]),Callable(),Color("#D9F2D9") if aid == selected_animal else Color("#FFFDF1"),Vector2(150,58))
+			tab_scroll.wire_button(button,Callable(self,"show_care").bind(aid,false))
+			tabs.add_child(button)
 	var center = HBoxContainer.new()
 	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center.add_theme_constant_override("separation",20)
