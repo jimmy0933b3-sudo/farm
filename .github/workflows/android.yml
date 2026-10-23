@@ -64,6 +64,12 @@ jobs:
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd
+      - name: Check coloring canvas and room syntax
+        run: |
+          godot --headless --path . --check-only --script scripts/ColoringCanvas.gd
+          godot --headless --path . --check-only --script scripts/ColoringRoom.gd
+      - name: Test black-white coloring game, touch fill and autosave
+        run: godot --headless --path . --script tests/coloring_smoke.gd
       - name: Launch game smoke test
         run: |
           godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1
