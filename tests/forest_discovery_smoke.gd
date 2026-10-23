@@ -17,7 +17,7 @@ func _run() -> void:
 	var entry_found=false
 	for node in _all_children(game):
 		if node is Button and str(node.text) == "":
-			# Illustrated, blank-title button with ChoiceArt forest_seek.
+			# Illustrated, blank-title button with ChoiceArt forest_explore.
 			if _has_seek_picture(node):
 				entry_found=true
 	if not entry_found:
@@ -93,7 +93,7 @@ func _all_children(node: Node) -> Array:
 
 func _has_seek_picture(node: Node) -> bool:
 	for child in _all_children(node):
-		if child.get_script()!=null and str(child.get("item_id"))=="forest_seek":
+		if child.get_script()!=null and str(child.get("item_id"))=="forest_explore":
 			return true
 	return false
 
