@@ -57,6 +57,8 @@ jobs:
       - name: Exercise all picture-choice levels
         run: |
           godot --headless --path . --script tests/ui_smoke.gd
+      - name: Check touch petting and persistent care animations
+        run: godot --headless --path . --script tests/interaction_smoke.gd
       - name: Launch game smoke test
         run: |
           godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1

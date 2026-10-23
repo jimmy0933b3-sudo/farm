@@ -64,3 +64,10 @@ Audio re-used from Freesound as independently licensed CC0 recordings, transferr
 - Owl: [Gerent / owl_hooting](https://freesound.org/people/Gerent/sounds/558397/)
 
 Every source has its own CC0 license; see linked Freesound listing.
+
+## V0.3 Interactive petting and expressive care
+
+- In the animal profile, drag a finger over the animal to control a visible hand. A continuous stroke, not a button click, earns a happy face and floating hearts. The petting button demonstrates the gesture.
+- Animal Care shows distinct animations for feeding (moving food bowl and chewing), washing (bubbles), playing (bouncing ball), resting (sleeping eyes and blanket).
+- Each care action saves the changed stat and animates its progress bar on the same scene. Entry narration plays only when entering Animal Home; actions use short action-specific responses.
+- The interaction smoke test simulates finger strokes and checks all four care actions without recreating the page or repeating the introduction.
