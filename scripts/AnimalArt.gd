@@ -4,6 +4,45 @@ extends Control
 var animal_id: String = "cow"
 var tint: Color = Color("#F1F0E8")
 var mood: String = "idle"
+# The coloring room uses this very same original artist, in monochrome mode.
+var coloring_mode: bool = false
+var coloring_colors: Dictionary = {}
+var color_shapes: Array = []
+const COLOR_INK = Color("#27323B")
+
+func _colorable(points: PackedVector2Array, original: Color, fillable: bool) -> void:
+	if not coloring_mode:
+		draw_colored_polygon(points,original)
+		return
+	if not fillable:
+		draw_colored_polygon(points,COLOR_INK if original.get_luminance()<0.42 and original.a>0.8 else Color.WHITE)
+		return
+	var id="piece_%d" % color_shapes.size()
+	color_shapes.append({"id":id,"points":points.duplicate()})
+	var code=str(coloring_colors.get(id,"#FFFFFF"))
+	draw_colored_polygon(points,Color(code) if Color.html_is_valid(code) else Color.WHITE)
+	var border=points.duplicate()
+	border.append(points[0])
+	draw_polyline(border,COLOR_INK,3.0,true)
+
+func get_coloring_regions() -> Array:
+	return color_shapes.duplicate(true)
+
+func color_region_at(local_pos: Vector2) -> String:
+	var scale_value=minf(size.x/220.0,size.y/220.0)
+	if scale_value<=0.0:
+		return ""
+	var p=(local_pos-Vector2(size.x*0.5,size.y*0.52))/scale_value
+	for i in range(color_shapes.size()-1,-1,-1):
+		if Geometry2D.is_point_in_polygon(p,color_shapes[i]["points"]):
+			return str(color_shapes[i]["id"])
+	return ""
+
+func set_coloring(enabled: bool, page: Dictionary={}) -> void:
+	coloring_mode=enabled
+	coloring_colors=page.duplicate(true)
+	queue_redraw()
+
 
 func setup(info: Dictionary) -> void:
 	animal_id = str(info.get("id", "cow"))
@@ -15,15 +54,16 @@ func _oval(x: float, y: float, rx: float, ry: float, color: Color) -> void:
 	for n in range(32):
 		var angle = float(n) * TAU / 32.0
 		polygon.append(Vector2(x + cos(angle) * rx, y + sin(angle) * ry))
-	draw_colored_polygon(polygon, color)
+	_colorable(polygon,color,rx>=13.0 and ry>=12.0 and color.a>0.6)
 
 func _poly(points: Array, color: Color) -> void:
 	var packed = PackedVector2Array()
 	for p in points:
 		packed.append(p)
-	draw_colored_polygon(packed, color)
+	_colorable(packed,color,true)
 
 func _draw() -> void:
+	color_shapes.clear()
 	var scale_value = minf(size.x / 220.0, size.y / 220.0)
 	if scale_value <= 0.0:
 		return
@@ -32,15 +72,15 @@ func _draw() -> void:
 		_draw_snake()
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
 		return
-	var dark = tint.darkened(0.24)
-	var cheek = Color("#F5AAB2")
+	var dark = COLOR_INK if coloring_mode else tint.darkened(0.24)
+	var cheek = Color.WHITE if coloring_mode else Color("#F5AAB2")
 	var ink = Color("#323746")
 	_oval(0, 75, 72, 12, Color(0.27, 0.34, 0.29, 0.14))
 	# Body and feet.
 	_oval(-39, 67, 20, 27, dark)
 	_oval(39, 67, 20, 27, dark)
 	_oval(0, 24, 79, 76, tint)
-	if animal_id in ["fox", "squirrel"]:
+	if animal_id in ["fox", "squirrel", "meerkat"]:
 		_oval(73, 22, 31, 57, dark)
 		_oval(78, 11, 25, 42, tint.lightened(0.18))
 	# Distinctive silhouettes.
@@ -56,7 +96,7 @@ func _draw() -> void:
 		"fox", "squirrel":
 			_poly([Vector2(-67,-45),Vector2(-67,-111),Vector2(-19,-73)],dark)
 			_poly([Vector2(67,-45),Vector2(67,-111),Vector2(19,-73)],dark)
-		"raccoon", "boar", "hedgehog", "monkey":
+		"raccoon", "boar", "hedgehog", "monkey", "meerkat":
 			_oval(-63,-63,27,30,dark)
 			_oval(63,-63,27,30,dark)
 		"chicken", "duck", "owl":
@@ -67,6 +107,14 @@ func _draw() -> void:
 			_oval(61, -62, 23, 26, dark)
 	# Head.
 	_oval(0, -31, 70, 70, tint)
+	if animal_id == "meerkat":
+		# Slim upright meerkat with mask, raised lookout stance and long tail.
+		_oval(0,35,40,67,tint.lightened(0.15))
+		_oval(-32,-43,22,25,Color("#59473F"))
+		_oval(32,-43,22,25,Color("#59473F"))
+		_oval(-74,-40,20,25,tint.darkened(0.12))
+		_oval(74,-40,20,25,tint.darkened(0.12))
+		_oval(0,-8,34,24,Color("#F2D6B2"))
 	if animal_id == "guinea_pig":
 		_oval(-60,-59,25,28,Color("#E7B99F"))
 		_oval(60,-59,25,28,Color("#E7B99F"))
@@ -156,14 +204,18 @@ func _draw() -> void:
 
 func _draw_snake() -> void:
 	# Curled limbless body, tongue, and raised head distinguish the snake.
-	var dark=tint.darkened(0.24)
+	var dark=COLOR_INK if coloring_mode else tint.darkened(0.24)
 	var ink=Color("#355448")
 	_oval(0,78,88,11,Color(0.24,0.40,0.29,0.16))
 	draw_arc(Vector2(-13,45),61.0,0.1,TAU*0.93,50,dark,49.0,true)
-	draw_arc(Vector2(-13,45),59.0,0.1,TAU*0.93,50,tint,39.0,true)
+	draw_arc(Vector2(-13,45),59.0,0.1,TAU*0.93,50,Color(str(coloring_colors.get("snake_coils","#FFFFFF"))) if coloring_mode else tint,39.0,true)
+	if coloring_mode:
+		color_shapes.append({"id":"snake_coils","points":_circle_polygon(-13,45,84,84)})
 	_oval(-25,45,28,28,Color("#E8DBA5"))
 	draw_line(Vector2(40,42),Vector2(43,-49),dark,48.0,true)
-	draw_line(Vector2(40,42),Vector2(43,-49),tint,37.0,true)
+	draw_line(Vector2(40,42),Vector2(43,-49),Color(str(coloring_colors.get("snake_neck","#FFFFFF"))) if coloring_mode else tint,37.0,true)
+	if coloring_mode:
+		color_shapes.append({"id":"snake_neck","points":PackedVector2Array([Vector2(19,43),Vector2(64,43),Vector2(64,-48),Vector2(19,-48)])})
 	_oval(42,-67,61,42,tint)
 	_oval(42,-48,46,24,Color("#E7DAA2"))
 	if mood in ["happy","play","clean"]:
@@ -177,6 +229,13 @@ func _draw_snake() -> void:
 		_oval(68,-79,7,9,ink)
 	_oval(40,-53,4,4,ink)
 	if mood!="sleep":
-		draw_line(Vector2(42,-45),Vector2(42,-23),Color("#E78795"),3.0,true)
-		draw_line(Vector2(42,-23),Vector2(32,-17),Color("#E78795"),2.0,true)
-		draw_line(Vector2(42,-23),Vector2(52,-17),Color("#E78795"),2.0,true)
+		draw_line(Vector2(42,-45),Vector2(42,-23),COLOR_INK if coloring_mode else Color("#E78795"),3.0,true)
+		draw_line(Vector2(42,-23),Vector2(32,-17),COLOR_INK if coloring_mode else Color("#E78795"),2.0,true)
+		draw_line(Vector2(42,-23),Vector2(52,-17),COLOR_INK if coloring_mode else Color("#E78795"),2.0,true)
+
+func _circle_polygon(x: float,y: float,rx: float,ry: float) -> PackedVector2Array:
+	var pts=PackedVector2Array()
+	for i in range(44):
+		var a=TAU*float(i)/44.0
+		pts.append(Vector2(x+cos(a)*rx,y+sin(a)*ry))
+	return pts
