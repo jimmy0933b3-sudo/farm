@@ -1,6 +1,6 @@
 extends SceneTree
 ## Regression for real finger and mouse swipes over ANIMAL buttons.
-## Includes ocean park cards, 25-sticker album, coloring gallery and care tabs.
+## Includes ocean park cards, 31-sticker album, coloring gallery and care tabs.
 const DragScroll=preload("res://scripts/TouchAnimalScroll.gd")
 const ChoiceArt=preload("res://scripts/ChoiceArt.gd")
 func _initialize() -> void:
@@ -18,7 +18,7 @@ func _run() -> void:
 	for node in _children(game):
 		if node.get_script()==ChoiceArt:
 			icons[str(node.get("item_id"))]=true
-	if not icons.has("ocean_park") or not icons.has("forest"):
+	if not icons.has("ocean_park") or not icons.has("forest") or not icons.has("zoo"):
 		_fail("Merged home must show forest and ocean parks")
 		return
 	if icons.has("ocean") or icons.has("forest_explore"):
@@ -39,8 +39,8 @@ func _run() -> void:
 			for item in _children(node):
 				if item.get_script()==preload("res://scripts/AnimalArt.gd"):
 					num_ocean+=1
-	if num_ocean!=6:
-		_fail("Ocean park should show six animal image cards, got "+str(num_ocean))
+	if num_ocean!=7:
+		_fail("Ocean park should show seven animal image cards, got "+str(num_ocean))
 		return
 	var has_ocean_explore=false
 	for node in _children(game):
@@ -66,8 +66,8 @@ func _run() -> void:
 		return
 	var scroll=scrollers[0]
 	var grid=scroll.get_child(0)
-	if grid.get_child_count()!=25:
-		_fail("Album did not show all 25 animal cards")
+	if grid.get_child_count()!=31:
+		_fail("Album did not show all 31 animal cards")
 		return
 	if scroll.get_v_scroll_bar().max_value-scroll.size.y<100.0:
 		_fail("Album cannot move vertically across rows of animal cards")

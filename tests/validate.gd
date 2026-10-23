@@ -3,8 +3,8 @@ extends SceneTree
 func _initialize() -> void:
 	var a = _read("res://data/animals.json")
 	var l = _read("res://data/levels.json")
-	if a.size() != 25 or l.size() != 25:
-		push_error("Expected exactly 25 animals and 25 levels")
+	if a.size() != 31 or l.size() != 31:
+		push_error("Expected exactly 31 animals and 31 levels")
 		quit(1)
 		return
 	var known = {}
@@ -12,6 +12,7 @@ func _initialize() -> void:
 	var forest_count = 0
 	var care_count = 0
 	var ocean_count = 0
+	var zoo_count = 0
 	for animal in a:
 		var id = str(animal.get("id",""))
 		if id.is_empty() or known.has(id):
@@ -25,10 +26,12 @@ func _initialize() -> void:
 			forest_count += 1
 		if animal.get("zone") == "ocean":
 			ocean_count += 1
+		if animal.get("zone") == "zoo":
+			zoo_count += 1
 		if bool(animal.get("care",false)):
 			care_count += 1
-	if farm_count != 7 or forest_count != 12 or ocean_count != 6 or care_count != 7:
-		push_error("Expected 7 farm + 12 forest + 6 ocean + 7 care animals")
+	if farm_count != 7 or forest_count != 12 or ocean_count != 7 or zoo_count != 5 or care_count != 7:
+		push_error("Expected 7 farm + 12 forest + 7 ocean + 5 zoo + 7 care animals (monkey reused in zoo)")
 		quit(1)
 		return
 	for level in l:
@@ -43,7 +46,7 @@ func _initialize() -> void:
 			push_error("Level missing valid options/answer: "+str(level.get("id")))
 			quit(1)
 			return
-	print("PASS: 25 animals, 25 valid levels, 3 habitats and 7 care animals")
+	print("PASS: 31 animals, 31 valid levels, 4 habitats plus shared monkey and 7 care animals")
 	quit(0)
 
 func _read(path: String) -> Array:
