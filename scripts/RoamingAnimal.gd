@@ -24,6 +24,7 @@ var reaction_time: float = 0.0
 var reaction_action: String = ""
 var heart_time: float = 0.0
 var stroke_distance: float = 0.0
+var pet_cooldown: float = 0.0
 var strokes: int = 0
 var selected: bool = false
 
@@ -95,6 +96,7 @@ func _process(delta: float) -> void:
 			_new_destination()
 
 	step_time += delta
+	pet_cooldown = maxf(0.0,pet_cooldown-delta)
 	if reaction_time > 0.0:
 		reaction_time = maxf(0.0, reaction_time-delta)
 		effects.set("phase",1.0-reaction_time/1.65)
@@ -105,7 +107,7 @@ func _process(delta: float) -> void:
 			avatar.set("mood","idle")
 			reaction_finished.emit(animal_id)
 	elif not is_touched:
-		avatar.set("mood","idle") if walking else ("blink" if fmod(step_time,4.8)<0.14 else "idle")
+		avatar.set("mood","happy" if heart_time > 0.0 else ("idle" if walking else ("blink" if fmod(step_time,4.8)<0.14 else "idle")))
 	if heart_time > 0.0:
 		heart_time = maxf(0.0,heart_time-delta)
 	if not reduce_motion and not is_touched and reaction_time <= 0.0:
@@ -132,7 +134,8 @@ func move_pet(distance: float) -> void:
 	if not is_touched:
 		return
 	stroke_distance += minf(distance,65.0)
-	if stroke_distance >= 42.0 and heart_time <= 0.0:
+	if stroke_distance >= 42.0 and pet_cooldown <= 0.0:
+		pet_cooldown = 0.55
 		stroke_distance = 0.0
 		heart_time = 1.15
 		strokes += 1
