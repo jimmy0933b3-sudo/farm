@@ -60,7 +60,7 @@ def main() -> None:
     if not pkg or pkg.group(1) != "com.jimmy0933.animalisland":
         raise SystemExit("Android package ID changed unexpectedly")
     if int(pkg.group(2)) != 1000 + int(os.environ["GITHUB_RUN_NUMBER"]):
-        raise SystemExit("APK versionCode did not match the CI increment")
+        raise SystemExit(f"APK versionCode {pkg.group(2)} did not match CI expected {1000 + int(os.environ['GITHUB_RUN_NUMBER'])}")
 
     message = (
         "Package: " + pkg.group(1) + "\n"

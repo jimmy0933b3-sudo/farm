@@ -65,7 +65,78 @@ def main() -> None:
         raise SystemExit("Invalid generated Android version code")
 
     body, count = re.subn(
-        r'(?m)^package/version_code=[0-9]+[ \t]*$',
+        r'(?m)^version/code=[0-9]+[ \t]*,
+        f"version/code={code}",
+        body,
+    )
+    if count != 1:
+        raise SystemExit("Could not update Android versionCode")
+    body, count = re.subn(
+        r'(?m)^version/name="[^"]+"[ \t]*,
+        f'version/name="0.6.{run}"',
+        body,
+    )
+    if count != 1:
+        raise SystemExit("Could not update Android versionName")
+    preset.write_text(body, encoding="utf-8")
+    print(f"Fixed keystore ready. versionCode={code}, versionName=0.6.{run}")
+    print("Keystore bytes and passwords are never committed or uploaded.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except subprocess.CalledProcessError:
+        raise SystemExit(
+            "Cannot read the supplied keystore/alias/private key. "
+            "Check the four GitHub repository secrets."
+        ) from None
+,
+        f"package/version_code={code}",
+        body,
+    )
+    if count != 1:
+        raise SystemExit("Could not update Android versionCode")
+    body, count = re.subn(
+        r'(?m)^package/version_name="[^"]+"[ \t]*$',
+        f'package/version_name="0.6.{run}"',
+        body,
+    )
+    if count != 1:
+        raise SystemExit("Could not update Android versionName")
+    preset.write_text(body, encoding="utf-8")
+    print(f"Fixed keystore ready. versionCode={code}, versionName=0.6.{run}")
+    print("Keystore bytes and passwords are never committed or uploaded.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except subprocess.CalledProcessError:
+        raise SystemExit(
+            "Cannot read the supplied keystore/alias/private key. "
+            "Check the four GitHub repository secrets."
+        ) from None
+,
+        f'package/version_name="0.6.{run}"',
+        body,
+    )
+    if count != 1:
+        raise SystemExit("Could not update Android versionName")
+    preset.write_text(body, encoding="utf-8")
+    print(f"Fixed keystore ready. versionCode={code}, versionName=0.6.{run}")
+    print("Keystore bytes and passwords are never committed or uploaded.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except subprocess.CalledProcessError:
+        raise SystemExit(
+            "Cannot read the supplied keystore/alias/private key. "
+            "Check the four GitHub repository secrets."
+        ) from None
+,
         f"package/version_code={code}",
         body,
     )
