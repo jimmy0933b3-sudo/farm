@@ -13,6 +13,9 @@ func _fresh() -> Dictionary:
 		"collected": [],
 		"completed": [],
 		"forest_found": [],
+		"forest_explore_session": {},
+		"forest_explore_runs": 0,
+		"forest_explore_previous": [],
 		"care": {},
 		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
 		"last_screen": "home"
@@ -77,6 +80,54 @@ func mark_forest_found(animal_id: String) -> void:
 	if not data["forest_found"].has(animal_id):
 		data["forest_found"].append(animal_id)
 	unlock(animal_id)
+	save()
+
+func get_forest_explore_session(order: Array) -> Dictionary:
+	var session = data.get("forest_explore_session",{})
+	var valid = session is Dictionary
+	if valid:
+		valid = session.get("placement",null) is Array and session.get("found",null) is Array
+	if valid:
+		var positions: Array = session["placement"]
+		var old_found: Array = session["found"]
+		valid = positions.size() == order.size() and old_found.size() < order.size()
+		if valid:
+			for id in order:
+				if positions.count(id)!=1:
+					valid=false
+			for i in range(old_found.size()):
+				if old_found[i] != order[i]:
+					valid=false
+	if not valid:
+		var positions: Array=order.duplicate()
+		positions.shuffle()
+		if positions==data.get("forest_explore_previous",[]):
+			positions.reverse()
+		session = {"placement":positions,"found":[]}
+		data["forest_explore_session"]=session
+		save()
+	return session
+
+func record_forest_explore_found(animal_id: String) -> void:
+	var session: Dictionary = data.get("forest_explore_session",{})
+	if session.is_empty():
+		return
+	var discovered: Array = session.get("found",[])
+	if not discovered.has(animal_id):
+		discovered.append(animal_id)
+	if not data["forest_found"].has(animal_id):
+		data["forest_found"].append(animal_id)
+	if not data["collected"].has(animal_id):
+		data["collected"].append(animal_id)
+	save()
+
+func finish_forest_explore(order: Array) -> void:
+	var session: Dictionary=data.get("forest_explore_session",{})
+	if session.get("found",[])!=order:
+		return
+	data["forest_explore_runs"]=int(data.get("forest_explore_runs",0))+1
+	data["forest_explore_previous"]=session.get("placement",[]).duplicate()
+	data["forest_explore_session"]={}
 	save()
 
 func care_stats(animal_id: String) -> Dictionary:
