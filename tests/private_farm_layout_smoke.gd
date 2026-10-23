@@ -80,6 +80,9 @@ func _run() -> void:
 	if landscape_count!=1:
 		_fail("Private Farm must use the new illustrated pastoral ground map")
 		return
+	# Slot replacement may schedule an additional Control layout pass.
+	await process_frame
+	await process_frame
 	for animal in farm.actors.values():
 		var floor_y: float=animal.position.y+animal.size.y
 		if floor_y<farm.habitat.size.y*0.62 or floor_y>farm.habitat.size.y+2.0:

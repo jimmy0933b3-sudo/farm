@@ -231,6 +231,9 @@ func _sync_residents() -> void:
 	for id in actors.keys():
 		actors[id].selected = (str(id)==active_id)
 		actors[id].queue_redraw()
+	# Place newcomers on the grass immediately; defer once more if the
+	# containing page has not yet received its first layout pass.
+	_layout_residents()
 	call_deferred("_layout_residents")
 
 func _layout_residents() -> void:
