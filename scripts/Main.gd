@@ -92,9 +92,9 @@ func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	var margin = MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right"]:
-		margin.add_theme_constant_override("margin_" + side, 28)
-	for side in ["top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 20)
+	for side in ["top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 12)
 	add_child(margin)
 	var layout = VBoxContainer.new()
 	layout.add_theme_constant_override("separation", 16)
@@ -205,14 +205,16 @@ func _picture_button(item_id: String, caption: String, action: Callable, minimum
 	container.offset_top = 8
 	container.offset_right = -10
 	container.offset_bottom = -7
+	card.clip_contents = true
 	card.add_child(container)
 	var drawing = ChoiceArt.new()
 	drawing.setup(item_id)
 	drawing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	drawing.custom_minimum_size = Vector2(155, 150)
+	drawing.custom_minimum_size = Vector2(145, maxf(58.0, minimum.y - 65.0))
+	drawing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	drawing.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	container.add_child(drawing)
-	container.add_child(_label(caption, 24))
+	container.add_child(_label(caption, 23))
 	return card
 
 func _narrate(message: String) -> void:
@@ -238,7 +240,7 @@ func show_home() -> void:
 	layout.add_child(_label("今天想去哪裡玩？",31))
 	# Three columns across two rows leave generous hit targets on 16:9 phones.
 	var cards = GridContainer.new()
-	cards.columns = 3
+	cards.columns = 3 if get_viewport_rect().size.x >= 980.0 else 2
 	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	cards.add_theme_constant_override("h_separation",22)
@@ -256,10 +258,10 @@ func show_home() -> void:
 		var outer = VBoxContainer.new()
 		outer.add_theme_constant_override("separation",5)
 		cards.add_child(outer)
-		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(240,169)))
-		outer.add_child(_label(str(place["sub"]),18))
+		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(228,178)))
+		# Picture + title already convey the action; avoid a second line that overflows small landscape screens.
 	var count = int(progress.data["collected"].size())
-	layout.add_child(_label("已認識 %d / 12 位動物朋友" % count,24))
+	layout.add_child(_label("已認識 %d / %d 位動物朋友" % [count,animals.size()],24))
 	_narrate("歡迎來到動物探險島！點大森林探索的圖片，就能左右滑動森林，找小動物喔！")
 
 func _go(where: String) -> void:
@@ -314,20 +316,20 @@ func show_forest_search() -> void:
 
 func show_forest_complete() -> void:
 	var layout = _switch("forest_done","forest")
-	_header(layout,"六位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
-	layout.add_child(_label("太棒了！森林尋寶完成！",35))
+	_header(layout,"十位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
+	layout.add_child(_label("太棒了！大森林探索完成！",35))
 	var box=_panel()
 	box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(box)
 	var grid=GridContainer.new()
-	grid.columns=6
+	grid.columns=5
 	grid.add_theme_constant_override("h_separation",10)
 	grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	box.add_child(grid)
 	for a in animals:
 		if str(a.get("zone",""))=="forest":
 			var avatar=_animal_button(a,Callable(self,"show_animal").bind(str(a["id"])))
-			avatar.custom_minimum_size=Vector2(155,180)
+			avatar.custom_minimum_size=Vector2(135,145)
 			grid.add_child(avatar)
 	var row=HBoxContainer.new()
 	row.alignment=BoxContainer.ALIGNMENT_CENTER
@@ -336,7 +338,7 @@ func show_forest_complete() -> void:
 	row.add_child(_button("再找一次",Callable(self,"show_forest_search"),Color("#FCE1AB"),Vector2(250,85)))
 	row.add_child(_button("回首頁",Callable(self,"show_home"),Color("#D8EED4"),Vector2(210,85)))
 	row.add_child(_button("回森林樂園",Callable(self,"show_zone").bind("forest"),Color("#E0E7FA"),Vector2(210,85)))
-	_narrate("太棒了！完成大森林探索！六隻森林動物都找到了！要再玩一次，還是回首頁呢？")
+	_narrate("太棒了！完成大森林探索！十隻森林動物都找到了！要再玩一次，還是回首頁呢？")
 
 func show_animal(id: String) -> void:
 	var info = _animal(id)
@@ -501,8 +503,8 @@ func show_album() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(scroll)
 	var grid = GridContainer.new()
-	grid.columns = 6
-	grid.add_theme_constant_override("h_separation",18)
+	grid.columns = 8
+	grid.add_theme_constant_override("h_separation",10)
 	grid.add_theme_constant_override("v_separation",18)
 	scroll.add_child(grid)
 	for info in animals:

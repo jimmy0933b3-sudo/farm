@@ -1,4 +1,4 @@
-extends Button
+extends Control
 ## Large illustrated hiding place. Each press checks a real hidden animal,
 ## rather than a text quiz. Tappable surfaces are at least 140 px wide.
 
@@ -18,21 +18,15 @@ func setup(index: int, cover: String, info: Dictionary) -> void:
 	animal_info = info
 
 func _ready() -> void:
-	text = ""
-	focus_mode = Control.FOCUS_NONE
-	mouse_filter = Control.MOUSE_FILTER_STOP
-	for name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		add_theme_stylebox_override(name,StyleBoxEmpty.new())
-	pressed.connect(_pressed_slot)
+	# Decorative only. The parent map detects both taps and drags.
+	# Never inherit Button theme background or steal swipe gestures.
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	avatar = AnimalArt.new()
 	avatar.setup(animal_info)
 	avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	avatar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	avatar.visible = false
 	add_child(avatar)
-
-func _pressed_slot() -> void:
-	inspected.emit(slot_index)
 
 func set_hint(active: bool) -> void:
 	hint = active

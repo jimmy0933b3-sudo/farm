@@ -29,8 +29,8 @@ func _run() -> void:
 	if not is_instance_valid(seek) or game.screen!="forest_search":
 		_fail("Forest search screen didn't open")
 		return
-	if seek.spots.size()!=6 or seek.placement.size()!=6:
-		_fail("Missing forest hiding places")
+	if seek.spots.size()!=10 or seek.placement.size()!=10:
+		_fail("Missing forest hideouts for 10 animals")
 		return
 	if seek.stage.size.x < 400 or seek.stage.size.y < 260:
 		_fail("Forest stage too small for young children")
@@ -50,7 +50,7 @@ func _run() -> void:
 	if not seek.spots[seek.target_spot()].hint:
 		_fail("Two wrong attempts didn't reveal visual hint")
 		return
-	for round in range(6):
+	for round in range(10):
 		var target=seek.current_target()
 		var slot=seek.target_spot()
 		if slot<0 or seek.spots[slot].revealed:
@@ -68,7 +68,7 @@ func _run() -> void:
 			return
 		await create_timer(1.75).timeout
 	if game.screen!="forest_done":
-		_fail("All six animals were found but completion screen is missing")
+		_fail("All ten animals were found but completion screen is missing")
 		return
 	game.show_forest_search()
 	await process_frame
@@ -76,10 +76,10 @@ func _run() -> void:
 	if seek.round_index!=0 or seek.found.size()!=0:
 		_fail("Replay did not reset the current session")
 		return
-	if seek.placement.size()!=6:
+	if seek.placement.size()!=10:
 		_fail("Replay lost a hideout")
 		return
-	print("PASS: forest entry, six hideouts, hints, discovery, saved progress, completion, replay")
+	print("PASS: forest entry, ten hideouts, hints, discovery, saved progress, completion, replay")
 	game.queue_free()
 	await process_frame
 	quit(0)

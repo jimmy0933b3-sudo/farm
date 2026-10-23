@@ -28,7 +28,7 @@ func _run() -> void:
 	if map.WORLD_WIDTH <= map.size.x*1.7:
 		_fail("Forest world must be substantially wider than the viewport")
 		return
-	if seek.spots.size()!=6 or seek.placement.size()!=6:
+	if seek.spots.size()!=10 or seek.placement.size()!=10:
 		_fail("Six real hideouts must appear in the large map")
 		return
 	var initial: float=map.camera_x
@@ -63,11 +63,11 @@ func _run() -> void:
 		_fail("Previously discovered animal not visible on resumed map")
 		return
 	var previous_runs=int(game.progress.data["forest_explore_runs"])
-	for current in range(1,6):
+	for current in range(1,10):
 		seek.attempt_spot(seek.target_spot())
 		await create_timer(1.73).timeout
 	if game.screen!="forest_done":
-		_fail("Six discoveries did not finish the adventure")
+		_fail("Ten discoveries did not finish the adventure")
 		return
 	if int(game.progress.data["forest_explore_runs"])!=previous_runs+1:
 		_fail("Completed run count not saved")
@@ -78,7 +78,7 @@ func _run() -> void:
 	if seek.round_index!=0 or seek.found.size()!=0:
 		_fail("Replay should generate a fresh session")
 		return
-	print("PASS: large map, independent home icon, panning, hints, persisted resume, 6 finds and replay")
+	print("PASS: large map, independent home icon, panning, hints, persisted resume, 10 finds and replay")
 	game.queue_free()
 	await process_frame
 	quit(0)

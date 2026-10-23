@@ -4,10 +4,10 @@ extends Control
 signal hideout_tapped(index: int)
 
 const Hideout = preload("res://scripts/ForestHideSpot.gd")
-const WORLD_WIDTH: float = 2920.0
-const X_POSITIONS: Array = [310.0, 800.0, 1280.0, 1760.0, 2240.0, 2730.0]
-const Y_FRACTIONS: Array = [0.64, 0.37, 0.62, 0.38, 0.65, 0.40]
-const COVER_TYPES: Array = ["bush","trunk","flowers","log","rocks","branch"]
+const WORLD_WIDTH: float = 4720.0
+const X_POSITIONS: Array = [300.0, 745.0, 1190.0, 1635.0, 2080.0, 2525.0, 2970.0, 3415.0, 3860.0, 4305.0]
+const Y_FRACTIONS: Array = [0.64, 0.37, 0.62, 0.38, 0.65, 0.40, 0.63, 0.38, 0.65, 0.41]
+const COVER_TYPES: Array = ["bush","trunk","flowers","log","rocks","branch","flowers","trunk","rocks","bush"]
 
 var animals: Array = []
 var placements: Array = []
@@ -35,10 +35,10 @@ func _ready() -> void:
 	for i in range(placements.size()):
 		var node = Hideout.new()
 		node.setup(i,str(COVER_TYPES[i]),_get_animal(str(placements[i])))
-		node.custom_minimum_size = Vector2(194,174)
+		node.custom_minimum_size = Vector2.ZERO
 		add_child(node)
 		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		node.focus_mode = Control.FOCUS_NONE
+
 		spots.append(node)
 	resized.connect(_relayout)
 	call_deferred("_relayout")
@@ -53,7 +53,7 @@ func _relayout() -> void:
 	if size.x <= 0.0 or size.y <= 0.0:
 		return
 	camera_x = clampf(camera_x,0.0,maxf(0.0,WORLD_WIDTH-size.x))
-	var diameter = minf(196.0,maxf(135.0,size.y*0.48))
+	var diameter = minf(178.0,maxf(122.0,size.y*0.57))
 	for i in range(spots.size()):
 		var spot: Control = spots[i]
 		spot.size = Vector2(diameter,diameter*0.89)
@@ -166,8 +166,9 @@ func _draw() -> void:
 	_disc(430.0,height*0.95,760.0,height*0.58,Color("#95D9A6"))
 	_disc(1480.0,height*0.95,880.0,height*0.54,Color("#78CB9A"))
 	_disc(2560.0,height*0.94,920.0,height*0.63,Color("#6ABB90"))
+	_disc(3890.0,height*0.95,1020.0,height*0.63,Color("#89C993"))
 	draw_rect(Rect2(0,height*0.80,WORLD_WIDTH,height*0.24),Color("#77BF84"))
-	for i in range(29):
+	for i in range(47):
 		var x=50.0+float(i)*101.0
 		var r=32.0+float(i%4)*8.0
 		_leaves(x,height*0.32+float(i%3)*21.0,r,i)
@@ -200,7 +201,12 @@ func _draw() -> void:
 		_disc(mx,height*0.88,18,10,Color("#E58A77"))
 		_disc(mx,height*0.92,7,14,Color("#F6EBDB"))
 	draw_line(Vector2(2515,height*0.82),Vector2(2715,height*0.74),Color("#966E4B"),24.0,true)
-	for i in range(13):
+	# Additional woodland clearings, mushrooms and a second winding creek.
+	for i in range(12):
+		var fx=3290.0+float(i)*95.0
+		_disc(fx,height*(0.85+0.03*float(i%2)),14,11,Color("#F8D7A1"))
+		_disc(fx+9.0,height*0.87,6,18,Color("#D88182"))
+	for i in range(21):
 		var px=85.0+float(i)*225.0
 		_disc(px,height*0.94,16,7,Color("#E7E5AE",0.9))
 	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)

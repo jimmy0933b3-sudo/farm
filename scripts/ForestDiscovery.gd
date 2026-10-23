@@ -5,7 +5,7 @@ signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const Map = preload("res://scripts/ForestPanMap.gd")
-const ORDER: Array = ["rabbit","squirrel","fox","deer","bear","owl"]
+const ORDER: Array = ["rabbit","squirrel","fox","deer","bear","owl","hedgehog","raccoon","boar","monkey"]
 
 var animal_info: Array = []
 var save_data
@@ -28,7 +28,7 @@ func setup(animals: Array, store, narrator) -> void:
 	sound = narrator
 
 func _ready() -> void:
-	add_theme_constant_override("separation",8)
+	add_theme_constant_override("separation",5)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var session: Dictionary = save_data.get_forest_explore_session(ORDER)
@@ -42,7 +42,7 @@ func _ready() -> void:
 	banner.add_theme_constant_override("separation",12)
 	add_child(banner)
 	var target_frame=PanelContainer.new()
-	target_frame.custom_minimum_size=Vector2(140,112)
+	target_frame.custom_minimum_size=Vector2(128,86)
 	var style=StyleBoxFlat.new()
 	style.bg_color=Color("#FFFAE8")
 	style.set_corner_radius_all(22)
@@ -55,22 +55,22 @@ func _ready() -> void:
 	target_frame.add_theme_stylebox_override("panel",style)
 	banner.add_child(target_frame)
 	target_art = AnimalArt.new()
-	target_art.custom_minimum_size=Vector2(122,105)
+	target_art.custom_minimum_size=Vector2(110,82)
 	target_art.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	target_frame.add_child(target_art)
 	var words=VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	words.alignment=BoxContainer.ALIGNMENT_CENTER
 	banner.add_child(words)
-	target_label=_text("找找看，動物藏哪裡？",29)
+	target_label=_text("找找看，動物藏哪裡？",26)
 	words.add_child(target_label)
-	status_label=_text("★ 0 / 6",26)
+	status_label=_text("★ 0 / %d" % ORDER.size(),24)
 	words.add_child(status_label)
-	banner.add_child(_rounded("🔊 再聽一次",Callable(self,"repeat_hint"),Vector2(164,75)))
-	banner.add_child(_rounded("✨ 找找提示",Callable(self,"hint_target"),Vector2(164,75)))
+	banner.add_child(_rounded("再聽一次",Callable(self,"repeat_hint"),Vector2(156,59)))
+	banner.add_child(_rounded("找找提示",Callable(self,"hint_target"),Vector2(156,59)))
 	stage=Map.new()
 	stage.setup(animal_info,placement,bool(save_data.data["settings"].get("reduce_motion",false)))
-	stage.custom_minimum_size=Vector2(550,320)
+	stage.custom_minimum_size=Vector2(420,205)
 	stage.hideout_tapped.connect(attempt_spot)
 	stage.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	stage.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -83,10 +83,10 @@ func _ready() -> void:
 	arrows.add_theme_constant_override("separation",24)
 	arrows.alignment=BoxContainer.ALIGNMENT_CENTER
 	add_child(arrows)
-	arrows.add_child(_rounded("◀ 往左",Callable(self,"_move_left"),Vector2(175,64)))
-	arrows.add_child(_text("用手指拖動森林找動物",22))
-	arrows.add_child(_rounded("往右 ▶",Callable(self,"_move_right"),Vector2(175,64)))
-	subtitle=_text("看看樹洞、草叢和小溪旁！",22)
+	arrows.add_child(_rounded("◀ 往左",Callable(self,"_move_left"),Vector2(150,52)))
+	arrows.add_child(_text("左右滑動森林",21))
+	arrows.add_child(_rounded("往右 ▶",Callable(self,"_move_right"),Vector2(150,52)))
+	subtitle=_text("看看樹洞、草叢和小溪旁！",20)
 	subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	add_child(subtitle)
 	_show_target(true)
@@ -110,7 +110,8 @@ func _rounded(label: String, action: Callable, minimum: Vector2) -> Button:
 	var button=Button.new()
 	button.text=label
 	button.custom_minimum_size=minimum
-	button.add_theme_font_size_override("font_size",22)
+	button.add_theme_font_size_override("font_size",21)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	button.add_theme_color_override("font_color",Color("#31564C"))
 	var style=StyleBoxFlat.new()
 	style.bg_color=Color("#FFF1D0")
@@ -167,7 +168,7 @@ func attempt_spot(index: int) -> void:
 	var id=current_target()
 	spots[index].reveal()
 	save_data.record_forest_explore_found(id)
-	status_label.text="★ %d / 6" % found.size()
+	status_label.text="★ %d / %d" % [found.size(),ORDER.size()]
 	subtitle.text="找到%s了！" % str(_get_animal(id).get("name","動物"))
 	sound.speak("找到啦！這是%s！好厲害！" % str(_get_animal(id).get("name","動物")))
 	_continue_later(round_index)
@@ -189,7 +190,7 @@ func _show_target(first_round: bool) -> void:
 	var animal=_get_animal(current_target())
 	target_art.setup(animal)
 	target_label.text="找一找：%s" % str(animal.get("name","動物"))
-	status_label.text="★ %d / 6" % found.size()
+	status_label.text="★ %d / %d" % found.size()
 	subtitle.text="左右滑動森林，再點樹叢找找看！"
 	for spot in spots:
 		spot.set_hint(false)

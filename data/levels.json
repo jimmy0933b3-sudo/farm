@@ -142,5 +142,53 @@
       "bear"
     ],
     "answer": "owl"
+  },
+  {
+    "id": 13,
+    "animal": "hedgehog",
+    "type": "habitat",
+    "prompt": "幫刺蝟找到森林的家。",
+    "options": [
+      "farm",
+      "forest",
+      "ocean"
+    ],
+    "answer": "forest"
+  },
+  {
+    "id": 14,
+    "animal": "raccoon",
+    "type": "food",
+    "prompt": "找找看浣熊會吃什麼？",
+    "options": [
+      "果實",
+      "巧克力",
+      "汽水"
+    ],
+    "answer": "果實"
+  },
+  {
+    "id": 15,
+    "animal": "boar",
+    "type": "food",
+    "prompt": "選出野豬可以吃的食物。",
+    "options": [
+      "根莖",
+      "糖果",
+      "汽水"
+    ],
+    "answer": "根莖"
+  },
+  {
+    "id": 16,
+    "animal": "monkey",
+    "type": "food",
+    "prompt": "幫猴子選適合的食物。",
+    "options": [
+      "香蕉",
+      "巧克力",
+      "洋蔥"
+    ],
+    "answer": "香蕉"
   }
 ]

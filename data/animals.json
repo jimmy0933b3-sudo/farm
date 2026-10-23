@@ -118,5 +118,45 @@
     "sound": "咕咕",
     "desc": "很多貓頭鷹晚上比較活躍。",
     "care": false
+  },
+  {
+    "id": "hedgehog",
+    "name": "刺蝟",
+    "zone": "forest",
+    "color": "#C8AB7B",
+    "food": "昆蟲",
+    "sound": "細小鼻息",
+    "desc": "刺蝟背上有刺，遇到危險會縮成一團。",
+    "care": false
+  },
+  {
+    "id": "raccoon",
+    "name": "浣熊",
+    "zone": "forest",
+    "color": "#A6A6A4",
+    "food": "果實",
+    "sound": "吱吱和咕嚕",
+    "desc": "浣熊眼睛周圍有黑色花紋，喜歡探索。",
+    "care": false
+  },
+  {
+    "id": "boar",
+    "name": "野豬",
+    "zone": "forest",
+    "color": "#946B4A",
+    "food": "根莖",
+    "sound": "呼嚕",
+    "desc": "野豬有長長的鼻子，會用鼻子尋找食物。",
+    "care": false
+  },
+  {
+    "id": "monkey",
+    "name": "猴子",
+    "zone": "forest",
+    "color": "#CBA174",
+    "food": "香蕉",
+    "sound": "喳喳",
+    "desc": "猴子會爬樹，喜歡和同伴一起生活。",
+    "care": false
   }
 ]

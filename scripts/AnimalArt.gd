@@ -52,6 +52,9 @@ func _draw() -> void:
 		"fox", "squirrel":
 			_poly([Vector2(-67,-45),Vector2(-67,-111),Vector2(-19,-73)],dark)
 			_poly([Vector2(67,-45),Vector2(67,-111),Vector2(19,-73)],dark)
+		"raccoon", "boar", "hedgehog", "monkey":
+			_oval(-63,-63,27,30,dark)
+			_oval(63,-63,27,30,dark)
 		"chicken", "duck", "owl":
 			_oval(-68, 7, 28, 45, tint.darkened(0.12))
 			_oval(68, 7, 28, 45, tint.darkened(0.12))
@@ -60,6 +63,21 @@ func _draw() -> void:
 			_oval(61, -62, 23, 26, dark)
 	# Head.
 	_oval(0, -31, 70, 70, tint)
+	if animal_id == "hedgehog":
+		for i in range(11):
+			var x=-69.0+float(i)*14.0
+			_poly([Vector2(x-9,-64),Vector2(x,-125-12*float(i%2)),Vector2(x+13,-75)],dark)
+	if animal_id == "raccoon":
+		_oval(-29,-42,29,27,Color("#54585A"))
+		_oval(29,-42,29,27,Color("#54585A"))
+		for i in range(3):
+			_oval(90,12+float(i)*19.0,15,8,Color("#54585A"))
+	if animal_id == "monkey":
+		_oval(-72,-35,29,30,tint.darkened(0.08))
+		_oval(72,-35,29,30,tint.darkened(0.08))
+		_oval(-72,-35,15,17,Color("#E9B99D"))
+		_oval(72,-35,15,17,Color("#E9B99D"))
+		_oval(0,-11,50,48,Color("#E8BC94"))
 	if animal_id == "sheep":
 		for cx in [-55.0, -28.0, 0.0, 28.0, 55.0]:
 			_oval(cx, -90, 27, 25, Color("#FFFDF4"))
@@ -107,6 +125,10 @@ func _draw() -> void:
 		else:
 			draw_line(Vector2(-9,-3),Vector2(0,3),ink,2.0)
 			draw_line(Vector2(0,3),Vector2(9,-3),ink,2.0)
+	if animal_id == "boar":
+		_oval(0,-4,32,28,Color("#BD8A68"))
+		_poly([Vector2(-28,11),Vector2(-43,1),Vector2(-34,26)],Color("#FFF6DA"))
+		_poly([Vector2(28,11),Vector2(43,1),Vector2(34,26)],Color("#FFF6DA"))
 	if animal_id == "pig":
 		_oval(-66,-67,22,27,tint)
 		_oval(66,-67,22,27,tint)

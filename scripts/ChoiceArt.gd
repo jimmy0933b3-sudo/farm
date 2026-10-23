@@ -29,6 +29,26 @@ func _draw() -> void:
 		return
 	draw_set_transform(Vector2(size.x*0.5,size.y*0.54),0.0,Vector2(unit,unit))
 	match item_id:
+		"昆蟲":
+			_oval(0,17,43,60,Color("#80694D"))
+			_oval(0,-35,30,25,Color("#80694D"))
+			_oval(-14,-41,5,5,Color.WHITE)
+			_oval(14,-41,5,5,Color.WHITE)
+			for j in range(3):
+				var y=-19.0+float(j)*34.0
+				_line(Vector2(-33,y),Vector2(-79,y-23),Color("#80694D"),5.0)
+				_line(Vector2(33,y),Vector2(79,y-23),Color("#80694D"),5.0)
+		"根莖":
+			for j in range(4):
+				var x=-64.0+float(j)*42.0
+				_shape([Vector2(x-18,-14),Vector2(x+19,-14),Vector2(x,75)],Color("#F0A355"))
+				_oval(x-9,-27,18,25,Color("#69BA7D"))
+				_oval(x+10,-28,14,25,Color("#58A469"))
+		"香蕉":
+			_oval(-7,18,76,63,Color("#E9BF4A"))
+			_oval(1,-2,66,51,Color("#FFF4E5"))
+			_oval(-8,39,55,29,Color("#F1C854"))
+			_oval(57,-27,9,12,Color("#9F8051"))
 		"牧草", "乾草", "葉子":
 			for i in range(7):
 				var x = -74.0 + i*25.0
