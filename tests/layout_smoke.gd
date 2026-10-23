@@ -20,8 +20,8 @@ func _run() -> void:
 		for node in _descendants(game):
 			if node is Button and _has_picture(node):
 				cards.append(node)
-		if cards.size()!=9:
-			_fail("Home must show exactly 9 fully illustrated actions, got "+str(cards.size()))
+		if cards.size()!=7:
+			_fail("Home must show exactly 7 fully illustrated actions, got "+str(cards.size()))
 			return
 		for i in range(cards.size()):
 			var a: Rect2=cards[i].get_global_rect()
@@ -32,7 +32,9 @@ func _run() -> void:
 				if a.intersects(cards[j].get_global_rect()):
 					_fail("Home cards overlap at "+str(viewport_size))
 					return
-		game._go("forest_explore")
+		game._go("forest")
+		await process_frame
+		game.show_forest_search()
 		await process_frame
 		if game.screen!="forest_search":
 			_fail("Large forest screen did not open")

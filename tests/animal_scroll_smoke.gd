@@ -14,14 +14,15 @@ func _run() -> void:
 	game.progress.unlock("cow")
 	game.show_home()
 	await process_frame
-	var ocean_park_icon=false
-	var ocean_search_icon=false
+	var icons={}
 	for node in _children(game):
 		if node.get_script()==ChoiceArt:
-			ocean_park_icon=ocean_park_icon or str(node.get("item_id"))=="ocean_park"
-			ocean_search_icon=ocean_search_icon or str(node.get("item_id"))=="ocean"
-	if not ocean_park_icon or not ocean_search_icon:
-		_fail("Home requires separate ocean park and ocean search picture icons")
+			icons[str(node.get("item_id"))]=true
+	if not icons.has("ocean_park") or not icons.has("forest"):
+		_fail("Merged home must show forest and ocean parks")
+		return
+	if icons.has("ocean") or icons.has("forest_explore"):
+		_fail("Exploration icons must be nested inside their own parks")
 		return
 	game._go("ocean_park")
 	await process_frame
@@ -40,6 +41,22 @@ func _run() -> void:
 					num_ocean+=1
 	if num_ocean!=6:
 		_fail("Ocean park should show six animal image cards, got "+str(num_ocean))
+		return
+	var has_ocean_explore=false
+	for node in _children(game):
+		if node.get_script()==ChoiceArt and str(node.get("item_id"))=="ocean":
+			has_ocean_explore=true
+	if not has_ocean_explore:
+		_fail("Ocean Park must include a visible ocean exploration action")
+		return
+	game.show_zone("forest")
+	await process_frame
+	var has_forest_explore=false
+	for node in _children(game):
+		if node.get_script()==ChoiceArt and str(node.get("item_id"))=="forest_explore":
+			has_forest_explore=true
+	if not has_forest_explore:
+		_fail("Forest Park must include a forest exploration action")
 		return
 	game.show_album()
 	await process_frame
@@ -133,7 +150,7 @@ func _run() -> void:
 	if game.screen!="ocean_search":
 		_fail("Original ocean find-six game no longer exists")
 		return
-	print("PASS: distinct Ocean Park/search, album swipe/tap isolation, care tabs, coloring and private farm lists")
+	print("PASS: merged park exploration menus, album swipe/tap isolation, care tabs, coloring and private farm lists")
 	game.queue_free()
 	await process_frame
 	quit(0)
