@@ -259,7 +259,7 @@ func place_animal(id: String) -> void:
 	_sync_residents()
 	_rebuild_cards()
 	info_label.text = "%s也來農場散步啦！" % str(_animal(id).get("name","動物"))
-	voice.speak("%s來農場玩囉！" % str(_animal(id).get("name","動物"))
+	voice.speak("%s來農場玩囉！" % str(_animal(id).get("name","動物")))
 	_update_command_buttons()
 
 func remove_current() -> void:
