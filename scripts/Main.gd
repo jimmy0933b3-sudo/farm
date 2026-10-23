@@ -6,6 +6,7 @@ const Data = preload("res://scripts/GameData.gd")
 const Store = preload("res://scripts/SaveData.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const PettingArea = preload("res://scripts/PettingArea.gd")
+const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
 const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
 const Backdrop = preload("res://scripts/Backdrop.gd")
@@ -28,6 +29,7 @@ var care_bars: Dictionary = {}
 var care_feedback: Label
 var care_action_buttons: Array = []
 var care_intro_count: int = 0
+var forest_game: Control
 
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
@@ -47,6 +49,8 @@ func _ready() -> void:
 			show_care()
 		"album":
 			show_album()
+		"forest_search":
+			show_forest_search()
 		_:
 			show_home()
 
@@ -60,15 +64,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			if screen == "home":
 				return
-			if screen == "animal" or screen == "game" or screen == "complete":
+			if screen in ["animal","game","complete"]:
 				show_zone(current_zone)
+			elif screen in ["forest_search","forest_done"]:
+				show_zone("forest")
 			else:
 				show_home()
 
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","care","album"]:
+	if name in ["home","farm","forest","care","album","forest_search"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -264,6 +270,10 @@ func show_zone(zone: String) -> void:
 	var layout = _switch(zone, zone)
 	_header(layout, "農場樂園" if zone == "farm" else "森林樂園", Callable(self,"show_home"))
 	layout.add_child(_label("點一下動物，認識新朋友吧！", 28))
+	if zone == "forest":
+		var seek_button = _picture_button("forest_seek","森林尋寶：找動物",Callable(self,"show_forest_search"),Vector2(320,112))
+		seek_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		layout.add_child(seek_button)
 	var panel = _panel()
 	layout.add_child(panel)
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -277,6 +287,47 @@ func show_zone(zone: String) -> void:
 			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"]))))
 	layout.add_child(_label("小提示：所有動物都可以反覆點擊、聽聲音和玩遊戲。", 22))
 	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else "森林"))
+	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
+
+func show_forest_search() -> void:
+	current_zone = "forest"
+	var layout = _switch("forest_search","forest")
+	_header(layout,"森林尋寶：找動物",Callable(self,"show_zone").bind("forest"))
+	var forest_animals: Array = []
+	for a in animals:
+		if str(a.get("zone",""))=="forest":
+			forest_animals.append(a)
+	forest_game = ForestDiscovery.new()
+	forest_game.setup(forest_animals,progress,sound)
+	forest_game.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	forest_game.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	forest_game.completed.connect(Callable(self,"show_forest_complete"))
+	layout.add_child(forest_game)
+
+func show_forest_complete() -> void:
+	var layout = _switch("forest_done","forest")
+	_header(layout,"六位動物朋友都找到了！",Callable(self,"show_zone").bind("forest"))
+	layout.add_child(_label("太棒了！森林尋寶完成！",35))
+	var box=_panel()
+	box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(box)
+	var grid=GridContainer.new()
+	grid.columns=6
+	grid.add_theme_constant_override("h_separation",10)
+	grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	box.add_child(grid)
+	for a in animals:
+		if str(a.get("zone",""))=="forest":
+			var avatar=_animal_button(a,Callable(self,"show_animal").bind(str(a["id"])))
+			avatar.custom_minimum_size=Vector2(155,180)
+			grid.add_child(avatar)
+	var row=HBoxContainer.new()
+	row.alignment=BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation",28)
+	layout.add_child(row)
+	row.add_child(_button("再找一次",Callable(self,"show_forest_search"),Color("#FCE1AB"),Vector2(250,85)))
+	row.add_child(_button("回到森林",Callable(self,"show_zone").bind("forest"),Color("#D8EED4"),Vector2(250,85)))
+	_narrate("太棒了！六位森林動物都找到了！想再玩一次嗎？每次動物藏的位置都不一樣喔。")
 
 func show_animal(id: String) -> void:
 	var info = _animal(id)

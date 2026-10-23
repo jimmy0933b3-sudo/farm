@@ -75,6 +75,15 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"forest_seek":
+			# Magnifying glass and a leafy tree for non-readers.
+			draw_line(Vector2(-55,59),Vector2(-6,10),Color("#9B8067"),18.0,true)
+			_oval(23,-14,48,48,Color("#D8FAEC"))
+			draw_arc(Vector2(23,-14),49.0,0.0,TAU,36,Color("#549E83"),11.0,true)
+			draw_rect(Rect2(16,-10,15,55),Color("#89694F"))
+			_oval(23,-40,34,32,Color("#4BB479"))
+			_oval(2,-24,23,24,Color("#8CDD9D"))
+			_oval(42,-26,25,27,Color("#6CCA8C"))
 		"farm":
 			_oval(0,76,110,45,Color("#8FD19A"))
 			draw_rect(Rect2(-65,-4,130,78),Color("#EA8B7D"))

@@ -59,6 +59,8 @@ jobs:
           godot --headless --path . --script tests/ui_smoke.gd
       - name: Check touch petting and persistent care animations
         run: godot --headless --path . --script tests/interaction_smoke.gd
+      - name: Test forest animal discovery mini-game
+        run: godot --headless --path . --script tests/forest_discovery_smoke.gd
       - name: Launch game smoke test
         run: |
           godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1

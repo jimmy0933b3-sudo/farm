@@ -12,6 +12,7 @@ func _fresh() -> Dictionary:
 		"schema_version": 1,
 		"collected": [],
 		"completed": [],
+		"forest_found": [],
 		"care": {},
 		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
 		"last_screen": "home"
@@ -69,6 +70,12 @@ func unlock(animal_id: String) -> void:
 func complete(level_id: int, animal_id: String) -> void:
 	if not data["completed"].has(level_id):
 		data["completed"].append(level_id)
+	unlock(animal_id)
+	save()
+
+func mark_forest_found(animal_id: String) -> void:
+	if not data["forest_found"].has(animal_id):
+		data["forest_found"].append(animal_id)
 	unlock(animal_id)
 	save()
 

@@ -71,3 +71,12 @@ Every source has its own CC0 license; see linked Freesound listing.
 - Animal Care shows distinct animations for feeding (moving food bowl and chewing), washing (bubbles), playing (bouncing ball), resting (sleeping eyes and blanket).
 - Each care action saves the changed stat and animates its progress bar on the same scene. Entry narration plays only when entering Animal Home; actions use short action-specific responses.
 - The interaction smoke test simulates finger strokes and checks all four care actions without recreating the page or repeating the introduction.
+
+## V0.4 森林尋寶
+
+- 森林樂園新增「森林尋寶：找動物」入口。
+- 6 種森林動物隨機躲在樹洞、花叢、石頭、木頭、樹枝及草叢。
+- 大幅可點擊的隱藏地點、目標動物圖片、中文語音提示。
+- 找錯不扣分，連續兩次找錯，正確躲藏處會亮出金色提示圈，也可按提示按鈕。
+- 找對後顯示動物和動畫，解鎖圖鑑並把發現紀錄存到 forest_found；找到全部六隻可重玩，位置重新洗牌。
+- 音效與語音遵守原有設定，沒有計時、強制扣分與付費。
