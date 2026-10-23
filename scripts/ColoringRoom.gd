@@ -3,6 +3,7 @@ extends HBoxContainer
 ## Only already-collected animals may be colored. Finger strokes autosave on release.
 const Canvas = preload("res://scripts/ColoringCanvas.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
+const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 
 const PALETTE = [
 	"#F26A72","#F49E50","#FFD95B","#81CA78","#3FBBAD","#67C8F3","#7189ED",
@@ -17,6 +18,7 @@ var selected_color: String=PALETTE[0]
 var canvas: Control
 var palette_buttons: Array=[]
 var gallery: GridContainer
+var gallery_scroll: ScrollContainer
 var guide: Label
 var count_label: Label
 var clear_armed: bool=false
@@ -103,7 +105,8 @@ func _ready() -> void:
 	frame.border_color=Color("#FFFFFF")
 	panel.add_theme_stylebox_override("panel",frame)
 	right.add_child(panel)
-	var scroll=ScrollContainer.new()
+	var scroll=TouchAnimalScroll.new()
+	gallery_scroll=scroll
 	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
@@ -153,7 +156,8 @@ func _button(label: String, callback: Callable, minimum: Vector2) -> Button:
 	style.set_border_width_all(2)
 	style.border_color=Color("#FFFFFF")
 	b.add_theme_stylebox_override("normal",style)
-	b.pressed.connect(callback)
+	if callback.is_valid():
+		b.pressed.connect(callback)
 	return b
 
 func _info(id: String) -> Dictionary:
@@ -172,7 +176,8 @@ func _rebuild_gallery() -> void:
 		if not store.data["collected"].has(id):
 			continue
 		count+=1
-		var b=_button("",Callable(self,"select_animal").bind(id,true),Vector2(85,91))
+		var b=_button("",Callable(),Vector2(85,91))
+		gallery_scroll.wire_button(b,Callable(self,"select_animal").bind(id,true))
 		var panel=StyleBoxFlat.new()
 		panel.bg_color=Color("#D8F4DD") if id==selected_id else Color("#FFFFFF")
 		panel.border_color=Color("#55A77A") if id==selected_id else Color("#E4E4D8")

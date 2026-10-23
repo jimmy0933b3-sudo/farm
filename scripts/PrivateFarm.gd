@@ -4,6 +4,7 @@ extends HBoxContainer
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const RoamingAnimal = preload("res://scripts/RoamingAnimal.gd")
 const SwimmingAnimal = preload("res://scripts/SwimmingAnimal.gd")
+const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 const TouchHand = preload("res://scripts/TouchHand.gd")
 const PrivateFarmLandscape = preload("res://scripts/PrivateFarmLandscape.gd")
 
@@ -16,6 +17,7 @@ var active_id: String = ""
 var actors: Dictionary = {}
 var resident_list: GridContainer
 var available_list: GridContainer
+var available_scroll: ScrollContainer
 var remove_button: Button
 var habitat: Control
 var hand: Control
@@ -105,7 +107,7 @@ func _ready() -> void:
 	right.add_child(resident_list)
 
 	right.add_child(_label("點圖片，帶動物進農場",19))
-	var available_scroll = ScrollContainer.new()
+	available_scroll = TouchAnimalScroll.new()
 	available_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	available_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	available_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -147,7 +149,8 @@ func _round(title: String, action: Callable, minimum: Vector2) -> Button:
 	style.set_border_width_all(2)
 	style.border_color = Color.WHITE
 	btn.add_theme_stylebox_override("normal",style)
-	btn.pressed.connect(action)
+	if action.is_valid():
+		btn.pressed.connect(action)
 	return btn
 
 func _animal(id: String) -> Dictionary:
@@ -157,7 +160,9 @@ func _animal(id: String) -> Dictionary:
 	return {}
 
 func _card(info: Dictionary, action: Callable, selected: bool, is_member: bool) -> Button:
-	var b = _round("",action,Vector2(73,80) if is_member else Vector2(94,105))
+	var b = _round("",action if is_member else Callable(),Vector2(73,80) if is_member else Vector2(94,105))
+	if not is_member:
+		available_scroll.wire_button(b,action)
 	var box = StyleBoxFlat.new()
 	box.bg_color = Color("#D7F6C7") if selected else (Color("#FFF4D2") if is_member else Color("#F7FEF5"))
 	box.set_corner_radius_all(14)
