@@ -18,6 +18,8 @@ var reward_cooldown: float = 0.0
 var joy_time: float = 0.0
 var reduce_motion: bool = false
 var strokes: int = 0
+var idle_phase: float=0.0
+var reaction_variant: int=0
 
 func setup(info: Dictionary, motion_reduced: bool = false) -> void:
 	animal_info = info
@@ -74,7 +76,8 @@ func move_stroke(pos: Vector2) -> void:
 		reward_cooldown = 0.55
 		joy_time = 1.25
 		strokes += 1
-		avatar.set("mood","happy")
+		reaction_variant=strokes%3
+		avatar.set("mood","surprised" if reaction_variant==1 else "happy")
 		avatar.queue_redraw()
 		hand.celebrating = true
 		hand.effect_time = 0.0
@@ -118,6 +121,7 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 
 func _process(delta: float) -> void:
+	idle_phase+=delta
 	reward_cooldown = maxf(0.0,reward_cooldown-delta)
 	joy_time = maxf(0.0,joy_time-delta)
 	if hand.celebrating:
@@ -129,9 +133,15 @@ func _process(delta: float) -> void:
 		avatar.set("mood","happy")
 		if not reduce_motion:
 			avatar.pivot_offset = avatar.size*0.5
-			avatar.rotation = sin(joy_time*11.0)*0.025
+			avatar.rotation = sin(joy_time*(11.0+float(reaction_variant)*2.0))*0.052
+			avatar.scale=Vector2.ONE*(1.0+0.035*sin(joy_time*12.0))
+			avatar.position.y=-absf(sin(joy_time*9.0))*7.0
 		avatar.queue_redraw()
 	elif not dragging:
-		avatar.set("mood","idle")
+		avatar.set("mood","blink" if fmod(idle_phase,4.3)<0.18 else "idle")
 		avatar.rotation = 0.0
+		avatar.position.y=0.0
+		avatar.scale=Vector2.ONE
+		if not reduce_motion:
+			avatar.scale=Vector2.ONE*(1.0+sin(idle_phase*2.1)*0.009)
 		avatar.queue_redraw()

@@ -13,6 +13,8 @@ var elapsed: float = 0.0
 var duration: float = 1.8
 var animating: bool = false
 var reduce_motion: bool = false
+var idle_phase: float=0.0
+var afterglow: float=0.0
 
 func setup(info: Dictionary, motion_reduced: bool = false) -> void:
 	animal_info = info
@@ -38,6 +40,7 @@ func play_action(next_action: String) -> bool:
 	action = next_action
 	elapsed = 0.0
 	animating = true
+	afterglow=0.0
 	avatar.set("mood",{"feed":"eating","wash":"clean","play":"play","sleep":"sleep"}[action])
 	overlay.set("action",action)
 	overlay.set("phase",0.0)
@@ -46,7 +49,20 @@ func play_action(next_action: String) -> bool:
 	return true
 
 func _process(delta: float) -> void:
+	idle_phase+=delta
 	if not animating:
+		if afterglow>0.0:
+			afterglow=maxf(0.0,afterglow-delta)
+			if afterglow<=0.0:
+				avatar.set("mood","idle")
+		elif fmod(idle_phase,4.6)<0.18:
+			avatar.set("mood","blink")
+		else:
+			avatar.set("mood","idle")
+		if not reduce_motion:
+			avatar.pivot_offset=avatar.size*.5
+			avatar.scale=Vector2.ONE*(1.0+sin(idle_phase*2.0)*0.01)
+		avatar.queue_redraw()
 		return
 	elapsed += delta
 	var phase = clampf(elapsed/duration,0.0,1.0)
@@ -56,18 +72,21 @@ func _process(delta: float) -> void:
 	if not reduce_motion:
 		match action:
 			"feed":
-				avatar.rotation = sin(phase*TAU*6.0)*0.015
+				avatar.rotation = sin(phase*TAU*7.0)*0.05
+				avatar.position.y=-absf(sin(phase*TAU*3.0))*5.0
 			"wash":
-				avatar.rotation = sin(phase*TAU*4.0)*0.025
+				avatar.rotation = sin(phase*TAU*7.0)*0.055
+				avatar.scale=Vector2.ONE*(1.0+0.025*sin(phase*TAU*5.0))
 			"play":
-				avatar.position.y = -absf(sin(phase*TAU*3.0))*16.0
-				avatar.rotation = sin(phase*TAU*3.0)*0.035
+				avatar.position.y = -absf(sin(phase*TAU*3.0))*22.0
+				avatar.rotation = sin(phase*TAU*3.0)*0.07
 			"sleep":
 				avatar.rotation = 0.0
-				avatar.scale = Vector2.ONE*(1.0-0.018*sin(phase*TAU*2.0))
+				avatar.scale = Vector2.ONE*(1.0-0.028*sin(phase*TAU*2.0))
 	avatar.queue_redraw()
 	if phase >= 1.0:
 		animating = false
+		afterglow=1.35
 		overlay.set("action","")
 		overlay.queue_redraw()
 		avatar.rotation = 0.0

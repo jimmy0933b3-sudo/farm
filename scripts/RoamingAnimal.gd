@@ -27,6 +27,7 @@ var stroke_distance: float = 0.0
 var pet_cooldown: float = 0.0
 var strokes: int = 0
 var selected: bool = false
+var reaction_variant: int=0
 
 func setup(info: Dictionary, gentle_motion: bool = false) -> void:
 	animal_info = info
@@ -112,8 +113,12 @@ func _process(delta: float) -> void:
 		heart_time = maxf(0.0,heart_time-delta)
 	if not reduce_motion and not is_touched and reaction_time <= 0.0:
 		avatar.position.y = -absf(sin(step_time*8.0))*2.7 if walking else sin(step_time*1.5)*1.2
+		avatar.rotation = sin(step_time*9.0)*0.052 if is_touched or heart_time>0.0 else (sin(step_time*4.0)*0.017 if walking else 0.0)
+		avatar.scale = Vector2.ONE*(1.0+0.024*sin(step_time*10.0)) if heart_time>0.0 else Vector2.ONE
 	else:
 		avatar.position.y = 0.0
+		avatar.rotation=0.0
+		avatar.scale=Vector2.ONE
 	avatar.queue_redraw()
 	queue_redraw()
 
@@ -139,7 +144,8 @@ func move_pet(distance: float) -> void:
 		stroke_distance = 0.0
 		heart_time = 1.15
 		strokes += 1
-		avatar.set("mood","happy")
+		reaction_variant=strokes%3
+		avatar.set("mood","surprised" if reaction_variant==1 else "happy")
 		petted.emit(animal_id)
 
 func end_pet() -> void:
@@ -151,7 +157,7 @@ func tap_reaction() -> void:
 	idle_timer = 1.3
 	walking = false
 	heart_time = 0.7
-	avatar.set("mood","happy")
+	avatar.set("mood","surprised")
 	avatar.queue_redraw()
 
 func perform(action: String) -> bool:
