@@ -41,6 +41,12 @@ jobs:
         run: |
           godot --version
           godot --headless --editor --path . --import --quit
+      - name: Check startup, zoo art and ocean map scripts directly
+        run: |
+          godot --headless --path . --check-only --script scripts/Backdrop.gd
+          godot --headless --path . --check-only --script scripts/AnimalArt.gd
+          godot --headless --path . --check-only --script scripts/OceanMap.gd
+          godot --headless --path . --check-only --script scripts/Main.gd
       - name: Check private farm and roaming actor GDScript parsing
         run: |
           godot --headless --path . --check-only --script scripts/RoamingAnimal.gd
