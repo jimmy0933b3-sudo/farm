@@ -60,6 +60,8 @@ jobs:
         run: godot --headless --path . --script tests/large_forest_smoke.gd
       - name: Test landscape UI boundaries and no white hideout buttons
         run: godot --headless --path . --script tests/layout_smoke.gd
+      - name: Test grounded farm map and 8-slot resident capacity
+        run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd
       - name: Launch game smoke test
