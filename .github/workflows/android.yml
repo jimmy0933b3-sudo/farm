@@ -64,6 +64,8 @@ jobs:
         run: godot --headless --path . --script tests/forest_discovery_smoke.gd
       - name: Test independent large forest adventure
         run: godot --headless --path . --script tests/large_forest_smoke.gd
+      - name: Test Zoo Park six animals, shared monkey and seal lifecycle
+        run: godot --headless --path . --script tests/zoo_seal_smoke.gd
       - name: Test ocean discovery and pond swimmers
         run: godot --headless --path . --script tests/ocean_smoke.gd
       - name: Test landscape UI boundaries and no white hideout buttons
