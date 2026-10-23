@@ -77,7 +77,7 @@ func move_stroke(pos: Vector2) -> void:
 		joy_time = 1.25
 		strokes += 1
 		reaction_variant=strokes%3
-		avatar.set("mood","surprised" if reaction_variant==1 else "happy")
+		avatar.set("mood","surprised" if reaction_variant==2 else "happy")
 		avatar.queue_redraw()
 		hand.celebrating = true
 		hand.effect_time = 0.0
