@@ -1,0 +1,122 @@
+[
+  {
+    "id": "cow",
+    "name": "乳牛",
+    "zone": "farm",
+    "color": "#F1F0E8",
+    "food": "牧草",
+    "sound": "哞哞",
+    "desc": "乳牛喜歡一起在草地上吃草。",
+    "care": true
+  },
+  {
+    "id": "pig",
+    "name": "小豬",
+    "zone": "farm",
+    "color": "#F3A3B7",
+    "food": "飼料",
+    "sound": "哼哼",
+    "desc": "小豬的鼻子很靈敏，喜歡用鼻子探索。",
+    "care": true
+  },
+  {
+    "id": "sheep",
+    "name": "綿羊",
+    "zone": "farm",
+    "color": "#F9F0DE",
+    "food": "牧草",
+    "sound": "咩咩",
+    "desc": "綿羊身上有柔軟的羊毛。",
+    "care": true
+  },
+  {
+    "id": "chicken",
+    "name": "公雞",
+    "zone": "farm",
+    "color": "#F6B354",
+    "food": "穀粒",
+    "sound": "喔喔啼",
+    "desc": "公雞常在清晨啼叫。",
+    "care": true
+  },
+  {
+    "id": "duck",
+    "name": "鴨子",
+    "zone": "farm",
+    "color": "#F9DB67",
+    "food": "穀粒",
+    "sound": "嘎嘎",
+    "desc": "鴨子的腳有蹼，擅長游泳。",
+    "care": true
+  },
+  {
+    "id": "horse",
+    "name": "馬",
+    "zone": "farm",
+    "color": "#B77952",
+    "food": "乾草",
+    "sound": "嘶嘶",
+    "desc": "馬有長長的鬃毛，跑得很快。",
+    "care": false
+  },
+  {
+    "id": "rabbit",
+    "name": "兔子",
+    "zone": "forest",
+    "color": "#EEE5D8",
+    "food": "牧草",
+    "sound": "輕輕動鼻子",
+    "desc": "兔子有長耳朵，最重要的主食是牧草。",
+    "care": true
+  },
+  {
+    "id": "squirrel",
+    "name": "松鼠",
+    "zone": "forest",
+    "color": "#D68B4A",
+    "food": "堅果",
+    "sound": "吱吱",
+    "desc": "松鼠會把食物藏起來。",
+    "care": false
+  },
+  {
+    "id": "fox",
+    "name": "狐狸",
+    "zone": "forest",
+    "color": "#E5844C",
+    "food": "小型獵物",
+    "sound": "短促叫聲",
+    "desc": "狐狸有蓬鬆的大尾巴。",
+    "care": false
+  },
+  {
+    "id": "deer",
+    "name": "鹿",
+    "zone": "forest",
+    "color": "#D8AB78",
+    "food": "葉子",
+    "sound": "低鳴",
+    "desc": "鹿喜歡吃植物，奔跑時很敏捷。",
+    "care": false
+  },
+  {
+    "id": "bear",
+    "name": "熊",
+    "zone": "forest",
+    "color": "#A67A5C",
+    "food": "果實",
+    "sound": "低吼",
+    "desc": "熊是野生動物，需要自己的森林家園。",
+    "care": false
+  },
+  {
+    "id": "owl",
+    "name": "貓頭鷹",
+    "zone": "forest",
+    "color": "#BE9B6A",
+    "food": "小型獵物",
+    "sound": "咕咕",
+    "desc": "很多貓頭鷹晚上比較活躍。",
+    "care": false
+  }
+]

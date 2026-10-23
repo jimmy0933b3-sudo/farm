@@ -1,0 +1,10 @@
+.godot/
+.build/
+*.apk
+*.aab
+*.keystore
+*.jks
+*.p12
+*.key
+.env
+.DS_Store

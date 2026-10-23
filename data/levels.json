@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "animal": "cow",
+    "type": "sound",
+    "prompt": "聽一聽，找出「乳牛」！",
+    "options": [
+      "cow",
+      "pig",
+      "duck"
+    ],
+    "answer": "cow"
+  },
+  {
+    "id": 2,
+    "animal": "pig",
+    "type": "food",
+    "prompt": "選出適合「小豬」的食物。",
+    "options": [
+      "飼料",
+      "巧克力",
+      "糖果"
+    ],
+    "answer": "飼料"
+  },
+  {
+    "id": 3,
+    "animal": "sheep",
+    "type": "habitat",
+    "prompt": "幫「綿羊」找到正確的家。",
+    "options": [
+      "farm",
+      "forest",
+      "ocean"
+    ],
+    "answer": "farm"
+  },
+  {
+    "id": 4,
+    "animal": "chicken",
+    "type": "sound",
+    "prompt": "聽一聽，找出「公雞」！",
+    "options": [
+      "chicken",
+      "duck",
+      "cow"
+    ],
+    "answer": "chicken"
+  },
+  {
+    "id": 5,
+    "animal": "duck",
+    "type": "food",
+    "prompt": "選出適合「鴨子」的食物。",
+    "options": [
+      "穀粒",
+      "糖果",
+      "洋蔥"
+    ],
+    "answer": "穀粒"
+  },
+  {
+    "id": 6,
+    "animal": "horse",
+    "type": "habitat",
+    "prompt": "幫「馬」找到正確的家。",
+    "options": [
+      "farm",
+      "forest",
+      "ocean"
+    ],
+    "answer": "farm"
+  },
+  {
+    "id": 7,
+    "animal": "rabbit",
+    "type": "food",
+    "prompt": "選出適合「兔子」的食物。",
+    "options": [
+      "牧草",
+      "巧克力",
+      "糖果"
+    ],
+    "answer": "牧草"
+  },
+  {
+    "id": 8,
+    "animal": "squirrel",
+    "type": "sound",
+    "prompt": "聽一聽，找出「松鼠」！",
+    "options": [
+      "squirrel",
+      "rabbit",
+      "fox"
+    ],
+    "answer": "squirrel"
+  },
+  {
+    "id": 9,
+    "animal": "fox",
+    "type": "habitat",
+    "prompt": "幫「狐狸」找到正確的家。",
+    "options": [
+      "farm",
+      "forest",
+      "ocean"
+    ],
+    "answer": "forest"
+  },
+  {
+    "id": 10,
+    "animal": "deer",
+    "type": "habitat",
+    "prompt": "幫「鹿」找到正確的家。",
+    "options": [
+      "farm",
+      "forest",
+      "ocean"
+    ],
+    "answer": "forest"
+  },
+  {
+    "id": 11,
+    "animal": "bear",
+    "type": "food",
+    "prompt": "選出適合「熊」的食物。",
+    "options": [
+      "果實",
+      "糖果",
+      "汽水"
+    ],
+    "answer": "果實"
+  },
+  {
+    "id": 12,
+    "animal": "owl",
+    "type": "sound",
+    "prompt": "聽一聽，找出「貓頭鷹」！",
+    "options": [
+      "owl",
+      "duck",
+      "bear"
+    ],
+    "answer": "owl"
+  }
+]
