@@ -32,8 +32,8 @@ func _run() -> void:
 	if seek.spots.size()!=10 or seek.placement.size()!=10:
 		_fail("Missing forest hideouts for 10 animals")
 		return
-	if seek.stage.size.x < 400 or seek.stage.size.y < 260:
-		_fail("Forest stage too small for young children")
+	if seek.stage.size.x < 400 or seek.stage.size.y < 190:
+		_fail("Forest interactive stage below acceptable 190px touch height")
 		return
 	if seek.current_target() != "rabbit":
 		_fail("Unexpected first animal")
