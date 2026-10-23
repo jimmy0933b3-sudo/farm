@@ -15,7 +15,7 @@ var placement: Array = []
 var found: Array = []
 var round_index: int = 0
 var miss_count: int = 0
-var stage: Control
+var stage
 var target_art: Control
 var target_label: Label
 var status_label: Label
