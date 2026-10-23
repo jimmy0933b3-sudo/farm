@@ -104,7 +104,7 @@ func _run() -> void:
 			_fail("Saved stroke not attached to correct animal part")
 			return
 	var progress=Store.new()
-	progress.data=progress._defaults()
+	progress.data=progress._fresh()
 	progress.data["collected"]=["deer","snake"]
 	var antler={"strokes_v2":[{"region":"line_99","color":"#F26A72","dots":[[-45.0,-118.0],[-43.5,-116.0]]}]}
 	if not progress.replace_coloring("deer",antler):
