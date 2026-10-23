@@ -84,7 +84,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			elif screen in ["forest_search","forest_done"]:
 				show_zone("forest")
 			elif screen in ["ocean_search","ocean_done"]:
-				show_home()
+				show_zone("ocean")
 			else:
 				show_home()
 
@@ -273,10 +273,8 @@ func show_home() -> void:
 	scrolling.add_child(cards)
 	var places = [
 		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
-		{"title":"森林樂園","sub":"看看森林有哪些動物","zone":"forest"},
-		{"title":"大森林探索","sub":"左右滑動森林找動物","zone":"forest_explore"},
-		{"title":"海底樂園","sub":"認識六位海洋動物朋友","zone":"ocean_park"},
-		{"title":"海底生物區","sub":"左右滑動海底尋找動物","zone":"ocean"},
+		{"title":"森林樂園","sub":"認識動物＋探索大森林","zone":"forest"},
+		{"title":"海底樂園","sub":"認識海洋朋友＋海底尋寶","zone":"ocean_park"},
 		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
 		{"title":"動物著色屋","sub":"幫收集到的動物上顏色","zone":"coloring"},
 		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
@@ -291,7 +289,7 @@ func show_home() -> void:
 		# Picture + title already convey the action; avoid a second line that overflows small landscape screens.
 	var count = int(progress.data["collected"].size())
 	layout.add_child(_label("已認識 %d / %d 位動物朋友" % [count,animals.size()],24))
-	_narrate("歡迎來到動物探險島！點大森林探索的圖片，就能左右滑動森林，找小動物喔！")
+	_narrate("歡迎來到動物探險島！先選森林樂園或海底樂園，可以看動物，也可以在裡面找動物朋友！")
 
 func _go(where: String) -> void:
 	match where:
@@ -343,7 +341,7 @@ func show_zone(zone: String) -> void:
 func show_ocean_search() -> void:
 	current_zone="ocean"
 	var layout=_switch("ocean_search","home")
-	_header(layout,"海底生物區",Callable(self,"show_home"))
+	_header(layout,"海底探索",Callable(self,"show_zone").bind("ocean"))
 	var ocean_animals: Array=[]
 	for info in animals:
 		if str(info.get("zone",""))=="ocean":
@@ -357,7 +355,7 @@ func show_ocean_search() -> void:
 
 func show_ocean_complete() -> void:
 	var layout=_switch("ocean_done","home")
-	_header(layout,"海底探險完成！",Callable(self,"show_home"))
+	_header(layout,"海底探險完成！",Callable(self,"show_zone").bind("ocean"))
 	layout.add_child(_label("太棒了！六種海底生物都找到了！",31))
 	var panel=_panel()
 	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -375,7 +373,7 @@ func show_ocean_complete() -> void:
 	actions.alignment=BoxContainer.ALIGNMENT_CENTER
 	layout.add_child(actions)
 	actions.add_child(_button("再找一次",Callable(self,"show_ocean_search"),Color("#E5EFFF"),Vector2(220,72)))
-	actions.add_child(_button("回首頁",Callable(self,"show_home"),Color("#DEEFDA"),Vector2(220,72)))
+	actions.add_child(_button("海底樂園",Callable(self,"show_zone").bind("ocean"),Color("#DEEFDA"),Vector2(220,72)))
 	_narrate("六種海洋朋友都找到囉！可以再玩一次，也可以把牠們帶去私人農場的大水池！")
 
 func show_coloring() -> void:
@@ -737,17 +735,58 @@ func show_parent_gate() -> void:
 func show_settings() -> void:
 	var layout = _switch("settings")
 	_header(layout,"家長設定",Callable(self,"show_home"))
+	# The header stays fixed. All settings AND explanatory information scroll.
+	var scroll = TouchAnimalScroll.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(scroll)
+	var content = VBoxContainer.new()
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation",13)
+	scroll.add_child(content)
 	var settings: Dictionary = progress.data["settings"]
-	for item in [["sound","動物音效"],["speech","中文語音引導"],["reduce_motion","降低動畫強度"]]:
+	content.add_child(_section_title("遊戲體驗","🔊"))
+	for item in [
+		["sound","動物音效","播放動物的聲音與遊戲鼓勵音效"],
+		["speech","中文語音引導","讓還不認識文字的孩子也能玩"],
+		["reduce_motion","溫和動畫","減少快速跳動，維持舒適節奏"]
+	]:
 		var key = str(item[0])
+		var row_panel = _panel()
+		row_panel.custom_minimum_size = Vector2(0,88)
+		content.add_child(row_panel)
 		var row = HBoxContainer.new()
-		row.alignment = BoxContainer.ALIGNMENT_CENTER
-		row.add_theme_constant_override("separation",20)
-		layout.add_child(row)
-		row.add_child(_label(str(item[1]),28))
-		row.add_child(_button("開啟" if bool(settings.get(key,false)) else "關閉", Callable(self,"_toggle").bind(key),Color("#FDEBD3")))
-	layout.add_child(_label("資料會保存在本機。沒有廣告，也不需要登入。",23))
-	layout.add_child(_spacer())
+		row.add_theme_constant_override("separation",14)
+		row_panel.add_child(row)
+		var text_side = VBoxContainer.new()
+		text_side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(text_side)
+		text_side.add_child(_label(str(item[1]),25,HORIZONTAL_ALIGNMENT_LEFT))
+		text_side.add_child(_label(str(item[2]),17,HORIZONTAL_ALIGNMENT_LEFT,Color("#637A83")))
+		var on=bool(settings.get(key,false))
+		var b=_button("✓ 開" if on else "○ 關",Callable(),Color("#D6EEDF") if on else Color("#EAEFF4"),Vector2(120,58))
+		scroll.wire_button(b,Callable(self,"_toggle").bind(key))
+		row.add_child(b)
+	content.add_child(_section_title("陪伴孩子的小提醒","♥"))
+	for note in [
+		"遊戲完全離線，不需要註冊帳號，也沒有廣告。",
+		"動物圖鑑、私人農場住客、著色作品都會保存在此裝置。",
+		"四歲孩子可以用大圖示、觸摸、拖曳與語音來探索。",
+		"長時間遊玩後可以休息、眨眨眼，和家人聊聊認識的新動物。"
+	]:
+		var panel=_panel()
+		content.add_child(panel)
+		var note_label=_label(note,21,HORIZONTAL_ALIGNMENT_LEFT)
+		note_label.custom_minimum_size=Vector2(0,68)
+		panel.add_child(note_label)
+	content.add_child(_label("往上滑動，可以查看所有家長設定與說明。",17,HORIZONTAL_ALIGNMENT_LEFT,Color("#6F8391")))
+
+func _section_title(message: String, symbol: String) -> HBoxContainer:
+	var row=HBoxContainer.new()
+	row.add_theme_constant_override("separation",12)
+	row.add_child(_label(symbol,29,HORIZONTAL_ALIGNMENT_LEFT,Color("#E89A64")))
+	row.add_child(_label(message,28,HORIZONTAL_ALIGNMENT_LEFT,Color("#344658")))
+	return row
 
 func _toggle(key: String) -> void:
 	progress.toggle_setting(key)
