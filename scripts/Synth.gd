@@ -1,38 +1,64 @@
 extends Node
-## Simple offline synthesized cues. Not a substitute for natural animal recordings.
+## Android system Mandarin TTS + bundled genuine animal field recordings.
+## Never synthesize a fake animal voice by shifting a sine-wave pitch.
+
+const WAV_FOLDER = "res://assets/audio/animals/"
+const LABELS = {
+	"cow":"乳牛","pig":"小豬","sheep":"綿羊","chicken":"公雞",
+	"duck":"鴨子","horse":"馬","rabbit":"兔子","squirrel":"松鼠",
+	"fox":"狐狸","deer":"鹿","bear":"熊","owl":"貓頭鷹"
+}
+
 var player: AudioStreamPlayer
+var voice_id: String = ""
+var tts_available: bool = false
+var enabled: bool = true
+var speech_enabled: bool = true
 
 func _ready() -> void:
 	player = AudioStreamPlayer.new()
+	player.volume_db = -4.0
 	add_child(player)
+	if DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH):
+		for locale in ["zh_TW", "zh", "zh_CN"]:
+			var voices = DisplayServer.tts_get_voices_for_language(locale)
+			if not voices.is_empty():
+				voice_id = str(voices[0])
+				break
+		tts_available = not voice_id.is_empty()
+
+func speak(message: String) -> bool:
+	if not enabled or not speech_enabled or not tts_available:
+		return false
+	if message.is_empty():
+		return false
+	DisplayServer.tts_speak(message,voice_id,85,1.06,0.86,0,true)
+	return true
+
+func stop_speaking() -> void:
+	if tts_available:
+		DisplayServer.tts_stop()
+
+func has_natural_sound(id: String) -> bool:
+	return ResourceLoader.exists(WAV_FOLDER+id+".wav")
 
 func play_animal(id: String) -> void:
-	var note: float = float({"cow":145,"pig":230,"sheep":290,"chicken":620,"duck":450,"horse":185,"rabbit":510,"squirrel":740,"fox":365,"deer":260,"bear":125,"owl":400}.get(id,440))
-	_tone(note, 0.52, 1)
+	if not enabled:
+		return
+	var path = WAV_FOLDER+id+".wav"
+	if ResourceLoader.exists(path):
+		var stream = load(path)
+		if stream is AudioStream:
+			player.stop()
+			player.stream = stream
+			player.play()
+			return
+	# No fabricated animal noise. Use spoken name only when a genuine recording
+	# is not supplied. Quiet wildlife is never misrepresented.
+	speak("這是"+str(LABELS.get(id,"動物"))+"。我們一起觀察牠。")
 
 func play_good() -> void:
-	_tone(620.0, 0.36, 2)
+	speak("答對了！你好棒！")
 
 func play_try_again() -> void:
-	_tone(280.0, 0.22, 0)
-
-func _tone(freq: float, duration: float, variant: int) -> void:
-	var sample_rate = 22050
-	var count = int(float(sample_rate) * duration)
-	var raw = PackedByteArray()
-	raw.resize(count * 2)
-	for i in range(count):
-		var t = float(i) / float(sample_rate)
-		var envelope = minf(1.0, t*14.0) * minf(1.0, (duration-t)*8.0)
-		var bend = 1.0 + 0.11*sin(t*18.0) if variant == 1 else 1.0
-		var melody = freq * (1.28 if variant == 2 and t > duration*0.52 else 1.0)
-		var wave = sin(TAU*melody*t*bend)*0.63 + sin(TAU*melody*2.0*t)*0.18
-		var sample = clampi(int(wave*envelope*11500.0), -32767, 32767)
-		raw.encode_s16(i*2,sample)
-	var audio = AudioStreamWAV.new()
-	audio.format = AudioStreamWAV.FORMAT_16_BITS
-	audio.mix_rate = sample_rate
-	audio.stereo = false
-	audio.data = raw
-	player.stream = audio
-	player.play()
+	speak("沒關係，再試試看。")

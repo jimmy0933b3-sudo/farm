@@ -1,0 +1,114 @@
+extends Control
+## Always-visible, original vector illustrations for pre-reader choice cards.
+## Do not rely on fonts or emoji to explain food, habitats or home navigation.
+var item_id: String = "farm"
+
+func setup(id: String) -> void:
+	item_id = id
+	queue_redraw()
+
+func _oval(x: float, y: float, rx: float, ry: float, color: Color) -> void:
+	var pts = PackedVector2Array()
+	for n in range(36):
+		var rad = TAU * float(n) / 36.0
+		pts.append(Vector2(x + cos(rad) * rx, y + sin(rad) * ry))
+	draw_colored_polygon(pts, color)
+
+func _shape(points: Array, color: Color) -> void:
+	var pts = PackedVector2Array()
+	for point in points:
+		pts.append(point)
+	draw_colored_polygon(pts,color)
+
+func _line(a: Vector2, b: Vector2, color: Color, width: float = 5.0) -> void:
+	draw_line(a,b,color,width,true)
+
+func _draw() -> void:
+	var unit = minf(size.x / 220.0,size.y / 185.0)
+	if unit <= 0.0:
+		return
+	draw_set_transform(Vector2(size.x*0.5,size.y*0.54),0.0,Vector2(unit,unit))
+	match item_id:
+		"牧草", "乾草", "葉子":
+			for i in range(7):
+				var x = -74.0 + i*25.0
+				_line(Vector2(x,55),Vector2(x+12,-43 - i%3*8),Color("#489856"),6.0)
+				_oval(x+3,-14,10,24,Color("#80C468"))
+				_oval(x+23,-31,12,26,Color("#4BAE6C"))
+			_oval(0,66,92,15,Color("#B78E58"))
+		"飼料":
+			_oval(0,32,83,31,Color("#678EBC"))
+			_shape([Vector2(-79,17),Vector2(79,17),Vector2(59,75),Vector2(-59,75)],Color("#85B3DE"))
+			_oval(0,18,79,24,Color("#805A35"))
+			for p in [Vector2(-40,6),Vector2(-12,-1),Vector2(20,10),Vector2(52,1),Vector2(-26,28),Vector2(18,28)]:
+				_oval(p.x,p.y,14,9,Color("#C69A5E"))
+		"穀粒", "堅果":
+			_oval(0,57,88,14,Color("#DAC38B"))
+			for i in range(9):
+				var x=-64.0+float(i)*16.0
+				_oval(x,25-abs(i-4)*4,10,24,Color("#F2BF42") if item_id=="穀粒" else Color("#B77A4C"))
+				_line(Vector2(x,3),Vector2(x+7,-12),Color("#8B9951"),3.0)
+		"巧克力":
+			draw_rect(Rect2(-77,-53,154,106),Color("#A76C55"))
+			draw_rect(Rect2(-66,-42,132,84),Color("#5D352F"))
+			for n in range(1,3):
+				_line(Vector2(-65+n*44,-41),Vector2(-65+n*44,40),Color("#AB725B"),4.0)
+			_line(Vector2(-65,-2),Vector2(65,-2),Color("#AB725B"),4.0)
+		"糖果":
+			_shape([Vector2(-85,-18),Vector2(-109,-47),Vector2(-109,44),Vector2(-82,18)],Color("#86D2DB"))
+			_shape([Vector2(85,-18),Vector2(109,-47),Vector2(109,44),Vector2(82,18)],Color("#86D2DB"))
+			_oval(0,0,85,49,Color("#F58EB2"))
+			for n in range(4):
+				_oval(-49+n*32,0,9,22,Color("#FFE3ED"))
+		"洋蔥":
+			_oval(0,18,66,72,Color("#C3A0DF"))
+			_shape([Vector2(-24,-43),Vector2(0,-86),Vector2(24,-43)],Color("#B38DCE"))
+			for n in range(3):
+				_line(Vector2(-18+n*18,-40),Vector2(-18+n*18,73),Color("#A379BB"),3.0)
+		"果實", "蘋果":
+			_oval(-29,8,43,59,Color("#E95B58"))
+			_oval(27,8,44,59,Color("#F36B5D"))
+			_line(Vector2(2,-46),Vector2(10,-72),Color("#79694B"),7.0)
+			_oval(31,-57,22,11,Color("#5CB66C"))
+		"汽水":
+			_shape([Vector2(-57,-55),Vector2(57,-55),Vector2(42,76),Vector2(-42,76)],Color("#86CDEA"))
+			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
+			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
+			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"farm":
+			_oval(0,76,110,45,Color("#8FD19A"))
+			draw_rect(Rect2(-65,-4,130,78),Color("#EA8B7D"))
+			_shape([Vector2(-78,-5),Vector2(0,-78),Vector2(78,-5)],Color("#B65355"))
+			draw_rect(Rect2(-20,28,40,46),Color("#FFF0C2"))
+			_line(Vector2(-19,51),Vector2(20,51),Color("#CC9A73"),4.0)
+		"forest":
+			_oval(0,80,115,31,Color("#9DDAA8"))
+			for x in [-65.0,0.0,65.0]:
+				draw_rect(Rect2(x-10,-13,20,92),Color("#946B4C"))
+				_oval(x,-40,43,56,Color("#4EAB77"))
+				_oval(x-20,-55,27,38,Color("#7FD197"))
+		"ocean":
+			draw_rect(Rect2(-105,-80,210,160),Color("#86DCEF"))
+			_oval(-44,8,48,25,Color("#76BCD9"))
+			_shape([Vector2(-2,9),Vector2(38,-29),Vector2(35,46)],Color("#76BCD9"))
+			_oval(-63,1,5,6,Color("#334B69"))
+			for y in [42.0,65.0]:
+				_line(Vector2(-104,y),Vector2(104,y),Color("#FFF9EF"),5.0)
+		"care":
+			_shape([Vector2(-85,-19),Vector2(0,-88),Vector2(85,-19)],Color("#E7848D"))
+			draw_rect(Rect2(-72,-20,144,100),Color("#FFE9C9"))
+			draw_rect(Rect2(-27,14,54,66),Color("#B78BC7"))
+			_oval(-32,-53,29,26,Color("#ED91A3"))
+			_oval(32,-53,29,26,Color("#ED91A3"))
+			_shape([Vector2(-60,-47),Vector2(60,-47),Vector2(0,17)],Color("#ED91A3"))
+		"album":
+			draw_rect(Rect2(-91,-65,90,133),Color("#9DC9ED"))
+			draw_rect(Rect2(1,-65,90,133),Color("#B6D8F3"))
+			_line(Vector2(0,-65),Vector2(0,70),Color("#6788AA"),6.0)
+			_oval(-44,-9,25,24,Color("#E69FAA"))
+			_oval(45,13,25,26,Color("#EED47E"))
+			_oval(-48,-50,6,7,Color("#FFFDF6"))
+			_oval(48,-38,6,7,Color("#FFFDF6"))
+		_:
+			_oval(0,0,61,61,Color("#D7EFD8"))
+	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
