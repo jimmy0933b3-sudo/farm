@@ -17,6 +17,7 @@ func _fresh() -> Dictionary:
 		"forest_explore_runs": 0,
 		"forest_explore_previous": [],
 		"private_farm": [],
+		"coloring_pages": {},
 		"care": {},
 		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
 		"last_screen": "home"
@@ -197,3 +198,38 @@ func toggle_setting(key: String) -> bool:
 	settings[key] = not bool(settings.get(key, true))
 	save()
 	return bool(settings[key])
+
+func get_coloring(animal_id: String) -> Dictionary:
+	if not data["collected"].has(animal_id):
+		return {}
+	var all_pages: Dictionary=data.get("coloring_pages",{})
+	var page=all_pages.get(animal_id,{})
+	return page.duplicate(true) if page is Dictionary else {}
+
+func color_animal_region(animal_id: String, region: String, hex: String) -> bool:
+	if not data["collected"].has(animal_id):
+		return false
+	if region.is_empty() or region.length()>40:
+		return false
+	if hex.length()!=7 or not hex.begins_with("#") or not Color.html_is_valid(hex):
+		return false
+	var pages: Dictionary=data["coloring_pages"]
+	if not pages.has(animal_id) or not pages[animal_id] is Dictionary:
+		pages[animal_id]={}
+	pages[animal_id][region]=hex
+	save()
+	return true
+
+func replace_coloring(animal_id: String, page: Dictionary) -> bool:
+	if not data["collected"].has(animal_id):
+		return false
+	var cleaned: Dictionary={}
+	for key in page.keys():
+		var region=str(key)
+		var hex=str(page[key])
+		if region.length()>40 or region.is_empty() or hex.length()!=7 or not Color.html_is_valid(hex):
+			continue
+		cleaned[region]=hex
+	data["coloring_pages"][animal_id]=cleaned
+	save()
+	return true

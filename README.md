@@ -128,3 +128,11 @@ Godot 4.5 使用一組憑證密碼，CI 將輸入 keystore 的不同 `KEY_PASSWO
 - Roaming animals are confined to the **ground plane** and now draw contact shadows at their feet.
 - All 8 resident selectors are displayed as a fixed **4×2 grid**, no horizontal scrolling necessary. Tap any slot, including #8, then **移回圖鑑** to remove it.
 - Adding the ninth already-collected animal returns a separate `full` reason and speaks the correct limit explanation. Locked animals instead get the exploration message.
+
+## 動物著色屋（新增獨立首頁 icon）
+
+- 只顯示 **已收集的動物**，不讓尚未解鎖的角色提前出現。支援全部 18 種動物的原創黑白輪廓，身體帶簡單黑色條紋／線條。
+- 小朋友先選 14 種大色塊之一，直接點耳朵、身體、肚子、尾巴或頭部的封閉區域即可填色，無須沿輪廓精準刷塗；支援 Android 觸控及滑動。
+- 顏色依動物、依部位存入原本離線 `user://animal_island_save.json`（`coloring_pages`），每次填色自動儲存、換動物或重啟後能接續。
+- 提供「上一步」與雙次確認的「全部重畫」，避免幼兒誤觸刪掉作品。支持中文 TTS 玩法提示。
+- 著色只影響著色屋作品，不會改變原本農場、森林、動物之家的造型及進度。

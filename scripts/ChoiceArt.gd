@@ -95,6 +95,21 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"coloring":
+			# Crayon + black outline rabbit for the separate homepage tile.
+			_oval(-16,39,63,65,Color.WHITE)
+			draw_arc(Vector2(-16,39),64,0,TAU,40,Color("#374553"),4.5,true)
+			_oval(-49,-51,14,52,Color.WHITE)
+			_oval(17,-51,14,52,Color.WHITE)
+			draw_arc(Vector2(-49,-51),53,PI*0.40,PI*1.65,20,Color("#374553"),3,true)
+			_oval(-35,21,5,6,Color("#374553"))
+			_oval(0,21,5,6,Color("#374553"))
+			_oval(-17,43,7,5,Color("#374553"))
+			_line(Vector2(35,73),Vector2(77,-62),Color("#ED9C54"),26)
+			_shape([Vector2(62,-68),Vector2(89,-94),Vector2(95,-47)],Color("#5B8EDE"))
+			_oval(44,65,17,16,Color("#ED9C54"))
+			_oval(-57,66,18,13,Color("#6CC6F0"))
+			_oval(-71,61,8,8,Color("#F16D91"))
 		"private_farm":
 			# Unique homepage tile with a fence, farmhouse and animal friends.
 			_oval(0,71,106,28,Color("#84CA88"))

@@ -7,6 +7,7 @@ const Store = preload("res://scripts/SaveData.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const PettingArea = preload("res://scripts/PettingArea.gd")
 const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
+const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
 const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
@@ -32,6 +33,7 @@ var care_action_buttons: Array = []
 var care_intro_count: int = 0
 var forest_game: Control
 var private_farm_game: Control
+var coloring_game: Control
 
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
@@ -53,6 +55,8 @@ func _ready() -> void:
 			show_album()
 		"private_farm":
 			show_private_farm()
+		"coloring":
+			show_coloring()
 		"forest_explore":
 			show_forest_search()
 		"forest_search":
@@ -80,7 +84,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","care","album","forest_search","private_farm"]:
+	if name in ["home","farm","forest","care","album","forest_search","private_farm","coloring"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -243,18 +247,24 @@ func show_home() -> void:
 	_header(layout,"動物探險島")
 	layout.add_child(_label("今天想去哪裡玩？",31))
 	# Three columns across two rows leave generous hit targets on 16:9 phones.
+	var scrolling = ScrollContainer.new()
+	scrolling.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scrolling.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scrolling.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layout.add_child(scrolling)
 	var cards = GridContainer.new()
-	cards.columns = 3 if get_viewport_rect().size.x >= 980.0 else 2
-	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var wide = get_viewport_rect().size.x >= 980.0
+	cards.columns = 4 if wide else 3
 	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	cards.add_theme_constant_override("h_separation",22)
-	cards.add_theme_constant_override("v_separation",12)
-	layout.add_child(cards)
+	cards.add_theme_constant_override("h_separation",15)
+	cards.add_theme_constant_override("v_separation",10)
+	scrolling.add_child(cards)
 	var places = [
 		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
 		{"title":"森林樂園","sub":"看看森林有哪些動物","zone":"forest"},
 		{"title":"大森林探索","sub":"左右滑動森林找動物","zone":"forest_explore"},
 		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
+		{"title":"動物著色屋","sub":"幫收集到的動物上顏色","zone":"coloring"},
 		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
 		{"title":"動物圖鑑","sub":"收集可愛的動物貼紙","zone":"album"}
 	]
@@ -263,7 +273,7 @@ func show_home() -> void:
 		var outer = VBoxContainer.new()
 		outer.add_theme_constant_override("separation",5)
 		cards.add_child(outer)
-		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(228,178)))
+		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(197,142) if wide else Vector2(171,125)))
 		# Picture + title already convey the action; avoid a second line that overflows small landscape screens.
 	var count = int(progress.data["collected"].size())
 	layout.add_child(_label("已認識 %d / %d 位動物朋友" % [count,animals.size()],24))
@@ -281,6 +291,8 @@ func _go(where: String) -> void:
 			show_forest_search()
 		"private_farm":
 			show_private_farm()
+		"coloring":
+			show_coloring()
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
@@ -310,6 +322,15 @@ func show_zone(zone: String) -> void:
 	layout.add_child(_label("小提示：所有動物都可以反覆點擊、聽聲音和玩遊戲。", 22))
 	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else "森林"))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
+
+func show_coloring() -> void:
+	var layout=_switch("coloring","home")
+	_header(layout,"動物著色屋",Callable(self,"show_home"))
+	coloring_game=ColoringRoom.new()
+	coloring_game.setup(animals,progress,sound)
+	coloring_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	coloring_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	layout.add_child(coloring_game)
 
 func show_private_farm() -> void:
 	var layout = _switch("private_farm","farm")
