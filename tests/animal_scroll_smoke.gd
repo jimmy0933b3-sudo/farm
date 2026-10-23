@@ -12,6 +12,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.progress.unlock("cow")
+	print("TRACE scroll: home")
 	game.show_home()
 	await process_frame
 	var icons={}
@@ -24,6 +25,7 @@ func _run() -> void:
 	if icons.has("ocean") or icons.has("forest_explore"):
 		_fail("Exploration icons must be nested inside their own parks")
 		return
+	print("TRACE scroll: ocean park")
 	game._go("ocean_park")
 	await process_frame
 	if game.screen!="ocean_park" or game.current_zone!="ocean":
@@ -49,6 +51,7 @@ func _run() -> void:
 	if not has_ocean_explore:
 		_fail("Ocean Park must include a visible ocean exploration action")
 		return
+	print("TRACE scroll: forest")
 	game.show_zone("forest")
 	await process_frame
 	var has_forest_explore=false
@@ -58,6 +61,7 @@ func _run() -> void:
 	if not has_forest_explore:
 		_fail("Forest Park must include a forest exploration action")
 		return
+	print("TRACE scroll: album")
 	game.show_album()
 	await process_frame
 	var scrollers=_find_scrolls(game)
@@ -105,6 +109,7 @@ func _run() -> void:
 	if game.screen!="animal":
 		_fail("An ordinary stationary tap should still open collected animal")
 		return
+	print("TRACE scroll: care")
 	game.show_care()
 	await process_frame
 	var horizontal=false
@@ -122,6 +127,7 @@ func _run() -> void:
 	# Test many collected species for the other two scrollable catalogs.
 	for info in game.animals:
 		game.progress.unlock(str(info["id"]))
+	print("TRACE scroll: coloring")
 	game.show_coloring()
 	await process_frame
 	if not is_instance_valid(game.coloring_game.gallery_scroll):
@@ -131,6 +137,7 @@ func _run() -> void:
 	if color_scroll.get_v_scroll_bar().max_value<=color_scroll.size.y+50:
 		_fail("Coloring animal gallery is not vertically scrollable")
 		return
+	print("TRACE scroll: farm")
 	game.show_private_farm()
 	await process_frame
 	if not is_instance_valid(game.private_farm_game.available_scroll):
