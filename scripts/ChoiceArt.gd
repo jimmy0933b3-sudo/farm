@@ -95,6 +95,25 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"private_farm":
+			# Unique homepage tile with a fence, farmhouse and animal friends.
+			_oval(0,71,106,28,Color("#84CA88"))
+			_shape([Vector2(-91,-6),Vector2(0,-79),Vector2(91,-6)],Color("#E49380"))
+			draw_rect(Rect2(-80,-6,160,76),Color("#FBE1B8"))
+			for x in [-67.0,-22.0,23.0,68.0]:
+				draw_rect(Rect2(x-5,31,10,48),Color("#AB8058"))
+			_line(Vector2(-80,47),Vector2(80,47),Color("#AB8058"),7.0)
+			_oval(-30,3,31,29,Color("#FFF7E9"))
+			_oval(34,3,27,29,Color("#E8B095"))
+			_oval(-39,-25,11,24,Color("#FFF7E9"))
+			_oval(-18,-25,11,24,Color("#FFF7E9"))
+			_oval(-37,0,4,4,Color("#3C5250"))
+			_oval(-21,0,4,4,Color("#3C5250"))
+			_oval(27,0,4,4,Color("#3C5250"))
+			_oval(41,0,4,4,Color("#3C5250"))
+			_oval(3,-72,9,10,Color("#ED8596"))
+			_oval(20,-72,9,10,Color("#ED8596"))
+			_shape([Vector2(-6,-71),Vector2(29,-71),Vector2(11,-51)],Color("#ED8596"))
 		"forest_explore":
 			# A standalone illustrated forest icon: magnifying glass, trees and rabbit ears.
 			_oval(-49,32,33,48,Color("#4FA774"))

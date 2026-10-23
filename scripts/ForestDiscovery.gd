@@ -5,7 +5,7 @@ signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const Map = preload("res://scripts/ForestPanMap.gd")
-const ORDER: Array = ["rabbit","squirrel","fox","deer","bear","owl","hedgehog","raccoon","boar","monkey"]
+const ORDER: Array = ["rabbit","squirrel","fox","deer","bear","owl","hedgehog","raccoon","boar","monkey","snake"]
 
 var animal_info: Array = []
 var save_data
@@ -79,16 +79,10 @@ func _ready() -> void:
 	for index in found:
 		if index>=0 and index<spots.size():
 			spots[index].reveal()
-	var arrows=HBoxContainer.new()
-	arrows.add_theme_constant_override("separation",24)
-	arrows.alignment=BoxContainer.ALIGNMENT_CENTER
-	add_child(arrows)
-	arrows.add_child(_rounded("◀ 往左",Callable(self,"_move_left"),Vector2(150,52)))
-	arrows.add_child(_text("左右滑動森林",21))
-	arrows.add_child(_rounded("往右 ▶",Callable(self,"_move_right"),Vector2(150,52)))
-	subtitle=_text("看看樹洞、草叢和小溪旁！",20)
-	subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	add_child(subtitle)
+	# The forest occupies all remaining height. Only finger swiping pans it.
+	# Keep action feedback above the map, not in a bottom overlay.
+	subtitle=_text("用手指滑動森林，再找動物！",18)
+	words.add_child(subtitle)
 	_show_target(true)
 
 func _move_left() -> void:

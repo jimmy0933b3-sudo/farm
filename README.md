@@ -108,3 +108,9 @@ Every source has its own CC0 license; see linked Freesound listing.
 Godot 4.5 使用一組憑證密碼，CI 將輸入 keystore 的不同 `KEY_PASSWORD` 正規化成臨時 PKCS12，不變更原私鑰或憑證。Android package ID 維持 `com.jimmy0933.animalisland`，CI 以 GitHub Actions run number 自動遞增 versionCode，APK 附上 `SIGNING-INFO.txt` 記錄公開憑證 SHA-256 指紋並確認與輸入金鑰完全相同。
 
 **第一次改用固定簽章要注意：**先前 CI 使用臨時 debug key。如果手機上安裝的是舊 debug APK，憑證不同時 Android 無法直接覆蓋安裝；請先備份舊版遊戲資料（若沒有備份功能則無法保證保留），之後才移除舊版並安裝新的固定簽章 APK。往後用**同一份 keystore、相同 package ID、較高 versionCode** 才能正常更新，不應換掉這四個 secrets 所代表的私鑰。請妥善在 GitHub 以外保留加密金鑰備份。
+
+## 2026-10-23 私人農場與兩種新動物
+
+- 首頁新增「私人農場」圖片入口。可以從已收集的動物挑選最多 8 隻住進自己的農場，點小圖切換動物、在身上滑動撫摸、按餵食／玩耍／聽聲音。動物選擇及照護結果會存檔。
+- 新增蛇（森林）和天竺鼠（農場），每隻都有獨特的原創圖案、語音介紹與食物／棲地遊戲題目。無實際錄音時不合成虛假的動物叫聲。
+- 大森林探索移除下方左右按鈕和提示區，直接以手指左右拖曳；提示移到上方狀態欄，釋放更多遊戲畫面。森林有 11 隻動物，總計 18 隻。

@@ -28,6 +28,10 @@ func _draw() -> void:
 	if scale_value <= 0.0:
 		return
 	draw_set_transform(Vector2(size.x * 0.5, size.y * 0.52), 0.0, Vector2(scale_value, scale_value))
+	if animal_id == "snake":
+		_draw_snake()
+		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+		return
 	var dark = tint.darkened(0.24)
 	var cheek = Color("#F5AAB2")
 	var ink = Color("#323746")
@@ -63,6 +67,13 @@ func _draw() -> void:
 			_oval(61, -62, 23, 26, dark)
 	# Head.
 	_oval(0, -31, 70, 70, tint)
+	if animal_id == "guinea_pig":
+		_oval(-60,-59,25,28,Color("#E7B99F"))
+		_oval(60,-59,25,28,Color("#E7B99F"))
+		_oval(-60,-59,15,17,Color("#EECBC9"))
+		_oval(60,-59,15,17,Color("#EECBC9"))
+		_oval(-48,4,27,35,Color("#FFF2D9"))
+		_oval(33,-43,28,24,Color("#C67D53"))
 	if animal_id == "hedgehog":
 		for i in range(11):
 			var x=-69.0+float(i)*14.0
@@ -142,3 +153,30 @@ func _draw() -> void:
 	if mood in ["happy","eating","clean","play"] and animal_id in ["cow","pig","horse","duck","chicken","owl"]:
 		draw_arc(Vector2(0,24),18.0,0.15,PI-0.15,16,ink,3.0)
 	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+
+func _draw_snake() -> void:
+	# Curled limbless body, tongue, and raised head distinguish the snake.
+	var dark=tint.darkened(0.24)
+	var ink=Color("#355448")
+	_oval(0,78,88,11,Color(0.24,0.40,0.29,0.16))
+	draw_arc(Vector2(-13,45),61.0,0.1,TAU*0.93,50,dark,49.0,true)
+	draw_arc(Vector2(-13,45),59.0,0.1,TAU*0.93,50,tint,39.0,true)
+	_oval(-25,45,28,28,Color("#E8DBA5"))
+	draw_line(Vector2(40,42),Vector2(43,-49),dark,48.0,true)
+	draw_line(Vector2(40,42),Vector2(43,-49),tint,37.0,true)
+	_oval(42,-67,61,42,tint)
+	_oval(42,-48,46,24,Color("#E7DAA2"))
+	if mood in ["happy","play","clean"]:
+		draw_arc(Vector2(15,-79),9,PI+0.1,TAU-0.1,12,ink,3.0,true)
+		draw_arc(Vector2(68,-79),9,PI+0.1,TAU-0.1,12,ink,3.0,true)
+	elif mood == "sleep":
+		draw_line(Vector2(9,-79),Vector2(23,-79),ink,3.0,true)
+		draw_line(Vector2(62,-79),Vector2(76,-79),ink,3.0,true)
+	else:
+		_oval(15,-79,7,9,ink)
+		_oval(68,-79,7,9,ink)
+	_oval(40,-53,4,4,ink)
+	if mood!="sleep":
+		draw_line(Vector2(42,-45),Vector2(42,-23),Color("#E78795"),3.0,true)
+		draw_line(Vector2(42,-23),Vector2(32,-17),Color("#E78795"),2.0,true)
+		draw_line(Vector2(42,-23),Vector2(52,-17),Color("#E78795"),2.0,true)
