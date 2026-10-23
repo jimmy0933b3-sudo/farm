@@ -16,7 +16,8 @@ var active_id: String = ""
 var resident_buttons: Array = []
 var available_buttons: Array = []
 var resident_list: HBoxContainer
-var available_list: HBoxContainer
+var available_list: GridContainer
+var remove_button: Button
 var habitat: Control
 var pet: Control
 var care: Control
@@ -66,8 +67,14 @@ func _ready() -> void:
 	right.size_flags_horizontal=Control.SIZE_FILL
 	right.add_theme_constant_override("separation",8)
 	add_child(right)
-	counter=_label("農場裡的動物",23)
-	right.add_child(counter)
+	var resident_header=HBoxContainer.new()
+	resident_header.alignment=BoxContainer.ALIGNMENT_CENTER
+	right.add_child(resident_header)
+	counter=_label("農場裡的動物",22)
+	counter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	resident_header.add_child(counter)
+	remove_button=_round("移回圖鑑",Callable(self,"remove_current"),Vector2(118,49))
+	resident_header.add_child(remove_button)
 	var chosen_scroller=ScrollContainer.new()
 	chosen_scroller.custom_minimum_size=Vector2(360,148)
 	chosen_scroller.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -84,8 +91,10 @@ func _ready() -> void:
 	collected_scroller.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
 	collected_scroller.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	right.add_child(collected_scroller)
-	available_list=HBoxContainer.new()
-	available_list.add_theme_constant_override("separation",9)
+	available_list=GridContainer.new()
+	available_list.columns=3
+	available_list.add_theme_constant_override("h_separation",6)
+	available_list.add_theme_constant_override("v_separation",8)
 	collected_scroller.add_child(available_list)
 	if not save_data.data["private_farm"].is_empty():
 		active_id=str(save_data.data["private_farm"][0])
@@ -165,6 +174,8 @@ func _rebuild_cards() -> void:
 	available_buttons.clear()
 	var saved: Array=save_data.data["private_farm"]
 	counter.text="農場裡：%d / %d" % [saved.size(),CAPACITY]
+	if is_instance_valid(remove_button):
+		remove_button.disabled=active_id.is_empty()
 	for id in saved:
 		var info=_animal(str(id))
 		if info.is_empty():
@@ -204,6 +215,8 @@ func _set_resident(id: String, announce: bool = true) -> void:
 	if busy:
 		return
 	active_id=id
+	if is_instance_valid(remove_button):
+		remove_button.disabled=id.is_empty()
 	for child in habitat.get_children():
 		if child.get_script() == PettingArea or child.get_script() == CareStage:
 			habitat.remove_child(child)
