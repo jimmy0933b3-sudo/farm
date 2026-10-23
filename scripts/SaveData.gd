@@ -225,11 +225,49 @@ func replace_coloring(animal_id: String, page: Dictionary) -> bool:
 		return false
 	var cleaned: Dictionary={}
 	for key in page.keys():
+		if str(key)=="strokes_v2":
+			continue
 		var region=str(key)
 		var hex=str(page[key])
 		if region.length()>40 or region.is_empty() or hex.length()!=7 or not Color.html_is_valid(hex):
 			continue
 		cleaned[region]=hex
+	# Stroke v2 is a collection of partial brush marks, not flat fill colors.
+	# Keep old pieces for backwards compatibility but validate coordinates
+	# and limit file size to avoid broken or unbounded save files.
+	var source=page.get("strokes_v2",[])
+	var valid_strokes: Array=[]
+	var dot_count=0
+	if source is Array:
+		for stroke in source:
+			if not stroke is Dictionary or valid_strokes.size()>=500:
+				continue
+			var region=str(stroke.get("region",""))
+			var pigment=str(stroke.get("color",""))
+			var dots=stroke.get("dots",[])
+			if not region.begins_with("piece_") and not region.begins_with("snake_"):
+				continue
+			if region.length()>40 or not _valid_pigment(pigment) or not dots is Array:
+				continue
+			var saved_dots: Array=[]
+			for dot in dots:
+				if dot_count>=1800 or not dot is Array or dot.size()!=2:
+					break
+				if typeof(dot[0]) not in [TYPE_INT,TYPE_FLOAT] or typeof(dot[1]) not in [TYPE_INT,TYPE_FLOAT]:
+					continue
+				var x=float(dot[0])
+				var y=float(dot[1])
+				if not is_finite(x) or not is_finite(y) or absf(x)>260.0 or absf(y)>260.0:
+					continue
+				saved_dots.append([snappedf(x,0.5),snappedf(y,0.5)])
+				dot_count+=1
+			if not saved_dots.is_empty():
+				valid_strokes.append({"region":region,"color":pigment,"dots":saved_dots})
+	if not valid_strokes.is_empty():
+		cleaned["strokes_v2"]=valid_strokes
 	data["coloring_pages"][animal_id]=cleaned
 	save()
 	return true
+
+func _valid_pigment(hex: String) -> bool:
+	return hex.length()==7 and hex.begins_with("#") and Color.html_is_valid(hex)

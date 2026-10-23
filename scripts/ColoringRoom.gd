@@ -1,6 +1,6 @@
 extends HBoxContainer
 ## Offline, picture-first coloring room for preschool children.
-## Only already-collected animals may be colored. Every fill auto-saves.
+## Only already-collected animals may be colored. Finger strokes autosave on release.
 const Canvas = preload("res://scripts/ColoringCanvas.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 
@@ -37,7 +37,7 @@ func _ready() -> void:
 	left.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	left.add_theme_constant_override("separation",5)
 	add_child(left)
-	guide=_label("先選動物，再選顏色，用手指點線稿！",22)
+	guide=_label("選好顏色，用手指在動物身上來回塗滿！",22)
 	left.add_child(guide)
 	var paper=PanelContainer.new()
 	paper.size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -54,7 +54,9 @@ func _ready() -> void:
 	canvas.custom_minimum_size=Vector2(370,245)
 	canvas.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	canvas.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	canvas.region_touched.connect(_on_color_region)
+	canvas.stroke_began.connect(_on_stroke_began)
+	canvas.stroke_finished.connect(_on_stroke_finished)
+	canvas.brush_color=selected_color
 	paper.add_child(canvas)
 	var tools=HBoxContainer.new()
 	tools.alignment=BoxContainer.ALIGNMENT_CENTER
@@ -118,7 +120,7 @@ func _ready() -> void:
 	else:
 		canvas.visible=false
 		guide.text="先去農場或森林收集動物，就能幫牠們上色！"
-	voice.speak("歡迎動物著色屋！先選已收集的動物，再選喜歡的顏色，點動物的耳朵、頭或身體，就會變成那個顏色。")
+	voice.speak("歡迎動物著色屋！選喜歡的顏色，用手指在動物身上慢慢來回塗，直到整個區塊都上好色！點一下不會整塊變色喔。")
 
 func _collected_ids() -> Array:
 	var result: Array=[]
@@ -201,21 +203,24 @@ func _rebuild_gallery() -> void:
 func select_animal(id: String, announce: bool=true) -> void:
 	if not store.data["collected"].has(id):
 		return
+	# Saving is safe on navigation even if a finger was lifted elsewhere.
+	canvas.finish_stroke()
 	selected_id=id
 	clear_armed=false
 	history.clear()
 	canvas.visible=true
 	canvas.setup(id,store.get_coloring(id))
-	guide.text="幫「%s」選顏色，點身體塗上去！" % str(_info(id).get("name","動物"))
+	guide.text="幫「%s」用手指來回塗，慢慢塗滿顏色！" % str(_info(id).get("name","動物"))
 	undo_button.disabled=true
 	_rebuild_gallery()
 	if announce:
-		voice.speak("現在來幫%s上色。選好顏色，再點動物身上的白色區塊。" % str(_info(id).get("name","動物")))
+		voice.speak("現在幫%s上色。選一種顏色，用手指在身體上慢慢來回塗，塗滿整個區塊。" % str(_info(id).get("name","動物")))
 
 func choose_color(hex: String) -> void:
 	if not PALETTE.has(hex):
 		return
 	selected_color=hex
+	canvas.brush_color=hex
 	clear_armed=false
 	for i in range(palette_buttons.size()):
 		var style: StyleBoxFlat=palette_buttons[i].get_theme_stylebox("normal")
@@ -224,24 +229,26 @@ func choose_color(hex: String) -> void:
 		style.set_border_width_all(5 if active else 2)
 		palette_buttons[i].queue_redraw()
 
-func _on_color_region(region: String) -> void:
-	if selected_id=="" or not store.data["collected"].has(selected_id):
+func _on_stroke_began() -> void:
+	if selected_id.is_empty() or not store.data["collected"].has(selected_id):
 		return
-	var previous=store.get_coloring(selected_id)
-	if str(previous.get(region,"#FFFFFF")).to_upper()==selected_color.to_upper():
-		return
-	history.append(previous.duplicate(true))
+	history.append(store.get_coloring(selected_id).duplicate(true))
 	if history.size()>40:
 		history.pop_front()
-	if store.color_animal_region(selected_id,region,selected_color):
+	undo_button.disabled=false
+	clear_armed=false
+
+func _on_stroke_finished(page: Dictionary) -> void:
+	if selected_id.is_empty() or not store.data["collected"].has(selected_id):
+		return
+	if store.replace_coloring(selected_id,page):
 		canvas.colors=store.get_coloring(selected_id)
 		canvas.refresh_colors()
-		guide.text="好漂亮！繼續選顏色，點動物其他地方！"
-		undo_button.disabled=false
-		clear_armed=false
+		guide.text="繼續來回塗，直到整個區塊都上色！"
 
 func undo() -> void:
 	if selected_id=="" or history.is_empty(): return
+	canvas.finish_stroke()
 	store.replace_coloring(selected_id,history.pop_back())
 	canvas.colors=store.get_coloring(selected_id)
 	canvas.refresh_colors()
@@ -250,6 +257,7 @@ func undo() -> void:
 
 func reset_coloring() -> void:
 	if selected_id=="": return
+	canvas.finish_stroke()
 	if not clear_armed:
 		clear_armed=true
 		guide.text="再按一次「全部重畫」，才會清掉這隻動物的顏色。"
@@ -261,7 +269,7 @@ func reset_coloring() -> void:
 	canvas.refresh_colors()
 	undo_button.disabled=false
 	clear_armed=false
-	guide.text="變回黑白線稿了！選顏色，再畫一次！"
+	guide.text="變回黑白線稿了！用手指來回塗滿顏色！"
 
 func repeat_guide() -> void:
-	voice.speak("選一種喜歡的顏色，點動物的頭、耳朵、身體或尾巴，就能上色。想重畫也可以喔。")
+	voice.speak("選喜歡的顏色，手指按住動物並來回移動，像畫畫一樣慢慢塗滿。點一下不會直接填滿。")

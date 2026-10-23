@@ -7,6 +7,10 @@ var mood: String = "idle"
 # The coloring room uses this very same original artist, in monochrome mode.
 var coloring_mode: bool = false
 var coloring_colors: Dictionary = {}
+# Finger-made brush points are painted INSIDE the original vector silhouette.
+# Each stroke keeps its region/color and a series of local-space dots.
+const BRUSH_RADIUS: float = 17.0
+var coloring_strokes: Dictionary = {}
 var color_shapes: Array = []
 const COLOR_INK = Color("#27323B")
 
@@ -21,6 +25,17 @@ func _colorable(points: PackedVector2Array, original: Color, fillable: bool) -> 
 	color_shapes.append({"id":id,"points":points.duplicate()})
 	var code=str(coloring_colors.get(id,"#FFFFFF"))
 	draw_colored_polygon(points,Color(code) if Color.html_is_valid(code) else Color.WHITE)
+	# Preserve partial strokes instead of automatically filling the region.
+	# Intersection clips brush circles to the *exact* original body polygon.
+	for stroke in coloring_strokes.get(id,[]):
+		var pigment=Color(str(stroke.get("color","#FFFFFF")))
+		for dot in stroke.get("dots",[]):
+			if not dot is Array or dot.size()!=2:
+				continue
+			var circle=_circle_polygon(float(dot[0]),float(dot[1]),BRUSH_RADIUS,BRUSH_RADIUS)
+			for inside in Geometry2D.intersect_polygons(points,circle):
+				if inside.size()>=3:
+					draw_colored_polygon(inside,pigment)
 	var border=points.duplicate()
 	border.append(points[0])
 	draw_polyline(border,COLOR_INK,3.0,true)
@@ -38,9 +53,27 @@ func color_region_at(local_pos: Vector2) -> String:
 			return str(color_shapes[i]["id"])
 	return ""
 
+func coloring_world_point(local_pos: Vector2) -> Vector2:
+	var scale_value=minf(size.x/220.0,size.y/220.0)
+	if scale_value<=0.0:
+		return Vector2(100000.0,100000.0)
+	return (local_pos-Vector2(size.x*0.5,size.y*0.52))/scale_value
+
 func set_coloring(enabled: bool, page: Dictionary={}) -> void:
 	coloring_mode=enabled
 	coloring_colors=page.duplicate(true)
+	coloring_strokes.clear()
+	var saved=page.get("strokes_v2",[])
+	if saved is Array:
+		for stroke in saved:
+			if not stroke is Dictionary:
+				continue
+			var region=str(stroke.get("region",""))
+			if region.is_empty():
+				continue
+			if not coloring_strokes.has(region):
+				coloring_strokes[region]=[]
+			coloring_strokes[region].append(stroke)
 	queue_redraw()
 
 
