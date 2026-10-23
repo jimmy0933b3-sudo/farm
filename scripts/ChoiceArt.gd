@@ -56,6 +56,22 @@ func _draw() -> void:
 				_oval(x+3,-14,10,24,Color("#80C468"))
 				_oval(x+23,-31,12,26,Color("#4BAE6C"))
 			_oval(0,66,92,15,Color("#B78E58"))
+		"肉":
+			_oval(0,30,91,56,Color("#D87370"))
+			_oval(-10,20,69,40,Color("#F09491"))
+			_oval(22,15,23,23,Color("#FFF0DD"))
+			_oval(22,15,13,13,Color("#CEB09F"))
+		"青草":
+			_oval(0,73,105,15,Color("#A3C77B"))
+			for i in range(8):
+				var x=-76.0+float(i)*23.0
+				_shape([Vector2(x-9,69),Vector2(x+9,69),Vector2(x+8,-20-float(i%3)*12)],Color("#5CAD6E"))
+				_shape([Vector2(x-8,64),Vector2(x+4,72),Vector2(x-16,-36)],Color("#79C889"))
+		"魚":
+			_oval(0,12,83,51,Color("#78BCE0"))
+			_shape([Vector2(-69,11),Vector2(-111,-26),Vector2(-111,53)],Color("#5BA0CC"))
+			_oval(54,-5,7,9,Color("#344E5D"))
+			_oval(-13,12,7,43,Color("#EAF9FB"))
 		"飼料":
 			_oval(0,32,83,31,Color("#678EBC"))
 			_shape([Vector2(-79,17),Vector2(79,17),Vector2(59,75),Vector2(-59,75)],Color("#85B3DE"))
@@ -95,6 +111,22 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"zoo":
+			# Zoo entrance with lion, elephant and a friendly archway.
+			_oval(0,73,110,26,Color("#92C88E"))
+			_shape([Vector2(-101,49),Vector2(-101,-58),Vector2(101,-58),Vector2(101,49)],Color("#E8B78D"))
+			_shape([Vector2(-83,45),Vector2(-83,-40),Vector2(83,-40),Vector2(83,45)],Color("#F6E3B9"))
+			_oval(-39,2,47,53,Color("#C78C52"))
+			_oval(-39,2,36,42,Color("#F2C982"))
+			_oval(-53,-12,5,7,Color("#4D5C55"))
+			_oval(-25,-12,5,7,Color("#4D5C55"))
+			_oval(-39,14,8,6,Color("#72514B"))
+			_oval(37,5,33,42,Color("#A6B5C0"))
+			_oval(17,-23,19,30,Color("#91A7B7"))
+			_oval(56,-23,19,30,Color("#91A7B7"))
+			_line(Vector2(53,19),Vector2(56,60),Color("#9BABB9"),16)
+			_oval(23,-6,4,6,Color("#384C52"))
+			_oval(52,-6,4,6,Color("#384C52"))
 		"ocean_park":
 			# A different home icon from ocean searching: smiling sea friends.
 			_oval(0,60,105,44,Color("#7DD6E1"))

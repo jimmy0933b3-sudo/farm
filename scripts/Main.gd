@@ -377,13 +377,18 @@ func show_ocean_complete() -> void:
 	var panel=_panel()
 	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	layout.add_child(panel)
+	var scroll=TouchAnimalScroll.new()
+	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
 	var grid=GridContainer.new()
-	grid.columns=7
+	grid.columns=4
 	grid.add_theme_constant_override("h_separation",8)
-	panel.add_child(grid)
+	grid.add_theme_constant_override("v_separation",8)
+	scroll.add_child(grid)
 	for info in animals:
 		if str(info.get("zone",""))=="ocean":
-			var tile=_animal_button(info,Callable(self,"show_animal").bind(str(info["id"])))
+			var tile=_animal_button(info,Callable(self,"show_animal").bind(str(info["id"])),false,scroll)
 			tile.custom_minimum_size=Vector2(140,150)
 			grid.add_child(tile)
 	var actions=HBoxContainer.new()

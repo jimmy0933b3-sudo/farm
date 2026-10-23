@@ -16,6 +16,14 @@ func _draw() -> void:
 		draw_circle(Vector2(x-w*0.05,y+h*0.01),h*0.042,Color.WHITE)
 	_oval(w*0.28,h*0.91,w*0.69,h*0.40,Color("#8DD6A2"))
 	_oval(w*0.82,h*0.92,w*0.59,h*0.34,Color("#62C88D"))
+		if scene_type == "zoo":
+		draw_rect(Rect2(w*.04,h*.72,w*.92,h*.025),Color("#CAAE82"))
+		for idx in range(9):
+			var bx=w*(0.05+float(idx)*.112)
+			draw_rect(Rect2(bx,h*.54,w*.015,h*.26),Color("#B99878"))
+			draw_circle(Vector2(bx+w*.008,h*.54),h*.017,Color("#F5DEAF"))
+		draw_rect(Rect2(w*.24,h*.43,w*.52,h*.04),Color("#D8B791"))
+		_poly([Vector2(w*.22,h*.43),Vector2(w*.50,h*.30),Vector2(w*.78,h*.43)],Color("#E5AA7A"))
 	if scene_type == "forest":
 		for i in range(9):
 			var x = w*(0.04+float(i)*0.12)
