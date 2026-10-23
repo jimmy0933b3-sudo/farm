@@ -68,6 +68,8 @@ jobs:
         run: |
           godot --headless --path . --check-only --script scripts/ColoringCanvas.gd
           godot --headless --path . --check-only --script scripts/ColoringRoom.gd
+      - name: Test all animal body parts can be painted
+        run: godot --headless --path . --script tests/coloring_regions_smoke.gd
       - name: Test black-white coloring game, touch fill and autosave
         run: godot --headless --path . --script tests/coloring_smoke.gd
       - name: Launch game smoke test

@@ -240,18 +240,18 @@ func replace_coloring(animal_id: String, page: Dictionary) -> bool:
 	var dot_count=0
 	if source is Array:
 		for stroke in source:
-			if not stroke is Dictionary or valid_strokes.size()>=500:
+			if not stroke is Dictionary or valid_strokes.size()>=900:
 				continue
 			var region=str(stroke.get("region",""))
 			var pigment=str(stroke.get("color",""))
 			var dots=stroke.get("dots",[])
-			if not region.begins_with("piece_") and not region.begins_with("snake_"):
+			if not region.begins_with("piece_") and not region.begins_with("snake_") and not region.begins_with("line_"):
 				continue
 			if region.length()>40 or not _valid_pigment(pigment) or not dots is Array:
 				continue
 			var saved_dots: Array=[]
 			for dot in dots:
-				if dot_count>=1800 or not dot is Array or dot.size()!=2:
+				if dot_count>=4800 or not dot is Array or dot.size()!=2:
 					break
 				if typeof(dot[0]) not in [TYPE_INT,TYPE_FLOAT] or typeof(dot[1]) not in [TYPE_INT,TYPE_FLOAT]:
 					continue

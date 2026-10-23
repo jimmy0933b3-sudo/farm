@@ -7,7 +7,7 @@ signal stroke_finished(page: Dictionary)
 
 const OriginalArt = preload("res://scripts/AnimalArt.gd")
 const SPACING: float = 7.0
-const MAX_DOTS_PER_ANIMAL: int = 1800
+const MAX_DOTS_PER_ANIMAL: int = 4800
 
 var animal_id: String="cow"
 var colors: Dictionary={}
