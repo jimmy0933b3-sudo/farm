@@ -20,11 +20,13 @@ var last_pos: Vector2=Vector2.ZERO
 var active_region: String=""
 var active_stroke_index: int=-1
 var dirty: bool=false
+var sample_total: int=0
 
 func setup(id: String, saved: Dictionary={}) -> void:
 	finish_stroke()
 	animal_id=id
 	colors=saved.duplicate(true)
+	sample_total=_dots_count()
 	if is_instance_valid(avatar):
 		avatar.setup({"id":animal_id,"color":"#FFFFFF"})
 		avatar.set_coloring(true,colors)
@@ -47,6 +49,8 @@ func region_at(point: Vector2) -> String:
 	return avatar.color_region_at(point)
 
 func refresh_colors() -> void:
+	if not tracking:
+		sample_total=_dots_count()
 	if is_instance_valid(avatar):
 		avatar.set_coloring(true,colors)
 
@@ -67,7 +71,7 @@ func begin_stroke(point: Vector2) -> void:
 	# Important: DOWN alone never paints or fills a whole shape.
 
 func _paint_dot(point: Vector2) -> void:
-	if _dots_count()>=MAX_DOTS_PER_ANIMAL:
+	if sample_total>=MAX_DOTS_PER_ANIMAL:
 		return
 	var region=region_at(point)
 	if region.is_empty():
@@ -90,6 +94,7 @@ func _paint_dot(point: Vector2) -> void:
 	# Round coordinates to reduce save size without visible stepping.
 	var point_pair=[snappedf(world.x,0.5),snappedf(world.y,0.5)]
 	colors["strokes_v2"][active_stroke_index]["dots"].append(point_pair)
+	sample_total+=1
 
 func move_stroke(point: Vector2) -> void:
 	if not tracking:
