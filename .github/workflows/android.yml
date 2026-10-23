@@ -54,6 +54,9 @@ jobs:
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$HOME/.android/debug.keystore" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android" >> "$GITHUB_ENV"
+      - name: Exercise all picture-choice levels
+        run: |
+          godot --headless --path . --script tests/ui_smoke.gd
       - name: Launch game smoke test
         run: |
           godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1
