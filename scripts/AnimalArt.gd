@@ -18,27 +18,60 @@ func _colorable(points: PackedVector2Array, original: Color, fillable: bool) -> 
 	if not coloring_mode:
 		draw_colored_polygon(points,original)
 		return
+	if original.a < 0.45:
+		# Transparent ground shadows are not an animal paint region.
+		return
 	if not fillable:
-		draw_colored_polygon(points,COLOR_INK if original.get_luminance()<0.42 and original.a>0.8 else Color.WHITE)
+		# Highlights and pupils stay ink/white instead of creating dead masks.
+		draw_colored_polygon(points,COLOR_INK if original.get_luminance()<0.42 else Color.WHITE)
 		return
 	var id="piece_%d" % color_shapes.size()
-	color_shapes.append({"id":id,"points":points.duplicate()})
+	_register_region(id,points)
 	var code=str(coloring_colors.get(id,"#FFFFFF"))
 	draw_colored_polygon(points,Color(code) if Color.html_is_valid(code) else Color.WHITE)
-	# Preserve partial strokes instead of automatically filling the region.
-	# Intersection clips brush circles to the *exact* original body polygon.
+	_paint_saved_strokes(id,points)
+	_stroke_outline(points)
+
+func _register_region(id: String, polygon: PackedVector2Array) -> void:
+	color_shapes.append({"id":id,"points":polygon.duplicate()})
+
+func _stroke_outline(polygon: PackedVector2Array) -> void:
+	var border=polygon.duplicate()
+	border.append(polygon[0])
+	draw_polyline(border,COLOR_INK,2.6,true)
+
+func _paint_saved_strokes(id: String, polygon: PackedVector2Array) -> void:
 	for stroke in coloring_strokes.get(id,[]):
-		var pigment=Color(str(stroke.get("color","#FFFFFF")))
+		var code=str(stroke.get("color","#FFFFFF"))
+		if not Color.html_is_valid(code):
+			continue
+		var pigment=Color(code)
 		for dot in stroke.get("dots",[]):
 			if not dot is Array or dot.size()!=2:
 				continue
 			var circle=_circle_polygon(float(dot[0]),float(dot[1]),BRUSH_RADIUS,BRUSH_RADIUS)
-			for inside in Geometry2D.intersect_polygons(points,circle):
+			for inside in Geometry2D.intersect_polygons(polygon,circle):
 				if inside.size()>=3:
 					draw_colored_polygon(inside,pigment)
-	var border=points.duplicate()
-	border.append(points[0])
-	draw_polyline(border,COLOR_INK,3.0,true)
+
+func _accent_oval(x: float,y: float,rx: float,ry: float,color: Color) -> void:
+	# Face details are intentionally ink, not an invisible overlaid paint target.
+	var polygon=_circle_polygon(x,y,rx,ry)
+	draw_colored_polygon(polygon,COLOR_INK if coloring_mode and color.get_luminance()<0.5 else color)
+
+func _colorable_line(a: Vector2,b: Vector2,width: float,color: Color) -> void:
+	if not coloring_mode:
+		draw_line(a,b,color,width,true)
+		return
+	# Antlers and similar thin parts need a toddler-sized selectable target.
+	var tangent=(b-a).normalized()
+	var normal=Vector2(-tangent.y,tangent.x)*maxf(7.0,width*0.6)
+	var polygon=PackedVector2Array([a+normal,b+normal,b-normal,a-normal])
+	var id="line_%d" % color_shapes.size()
+	_register_region(id,polygon)
+	draw_colored_polygon(polygon,Color.WHITE)
+	_paint_saved_strokes(id,polygon)
+	_stroke_outline(polygon)
 
 func get_coloring_regions() -> Array:
 	return color_shapes.duplicate(true)
@@ -87,7 +120,7 @@ func _oval(x: float, y: float, rx: float, ry: float, color: Color) -> void:
 	for n in range(32):
 		var angle = float(n) * TAU / 32.0
 		polygon.append(Vector2(x + cos(angle) * rx, y + sin(angle) * ry))
-	_colorable(polygon,color,rx>=13.0 and ry>=12.0 and color.a>0.6)
+	_colorable(polygon,color,rx>=7.0 and ry>=7.0 and color.a>=0.45)
 
 func _poly(points: Array, color: Color) -> void:
 	var packed = PackedVector2Array()
@@ -177,10 +210,10 @@ func _draw() -> void:
 		for cx in [-22.0, 0.0, 22.0]:
 			_oval(cx, -97, 16, 22, Color("#E65658"))
 	if animal_id == "deer":
-		draw_line(Vector2(-32,-78),Vector2(-47,-125),dark,6.0)
-		draw_line(Vector2(32,-78),Vector2(47,-125),dark,6.0)
-		draw_line(Vector2(-40,-105),Vector2(-66,-116),dark,5.0)
-		draw_line(Vector2(40,-105),Vector2(66,-116),dark,5.0)
+		_colorable_line(Vector2(-32,-78),Vector2(-47,-125),6.0,dark)
+		_colorable_line(Vector2(32,-78),Vector2(47,-125),6.0,dark)
+		_colorable_line(Vector2(-40,-105),Vector2(-66,-116),5.0,dark)
+		_colorable_line(Vector2(40,-105),Vector2(66,-116),5.0,dark)
 	if animal_id == "cow":
 		_oval(-44,-58,21,17,Color("#797B82"))
 		_oval(47,-9,19,21,Color("#797B82"))
@@ -195,10 +228,10 @@ func _draw() -> void:
 		draw_arc(Vector2(-25,-36),12.0,PI+0.13,TAU-0.13,14,ink,4.0)
 		draw_arc(Vector2(25,-36),12.0,PI+0.13,TAU-0.13,14,ink,4.0)
 	else:
-		_oval(-25,-38,8,11,ink)
-		_oval(25,-38,8,11,ink)
-		_oval(-27,-42,3,4,Color.WHITE)
-		_oval(23,-42,3,4,Color.WHITE)
+		_accent_oval(-25,-38,8,11,ink)
+		_accent_oval(25,-38,8,11,ink)
+		_accent_oval(-27,-42,3,4,Color.WHITE)
+		_accent_oval(23,-42,3,4,Color.WHITE)
 	var blush_size = 19.0 if mood in ["happy","clean","play"] else 13.0
 	_oval(-43,-9,blush_size,9,cheek)
 	_oval(43,-9,blush_size,9,cheek)
@@ -243,12 +276,26 @@ func _draw_snake() -> void:
 	draw_arc(Vector2(-13,45),61.0,0.1,TAU*0.93,50,dark,49.0,true)
 	draw_arc(Vector2(-13,45),59.0,0.1,TAU*0.93,50,Color(str(coloring_colors.get("snake_coils","#FFFFFF"))) if coloring_mode else tint,39.0,true)
 	if coloring_mode:
-		color_shapes.append({"id":"snake_coils","points":_circle_polygon(-13,45,84,84)})
+		# The old 84px solid-circle hitbox included EMPTY space within the coil.
+		# Register and paint the actual annular band in small arc segments.
+		for i in range(32):
+			var a0=0.1+(TAU*0.93-0.1)*float(i)/32.0
+			var a1=0.1+(TAU*0.93-0.1)*float(i+1)/32.0
+			var section=PackedVector2Array([
+				Vector2(-13+cos(a0)*77,45+sin(a0)*77),
+				Vector2(-13+cos(a1)*77,45+sin(a1)*77),
+				Vector2(-13+cos(a1)*40,45+sin(a1)*40),
+				Vector2(-13+cos(a0)*40,45+sin(a0)*40)
+			])
+			_register_region("snake_coils",section)
+			_paint_saved_strokes("snake_coils",section)
 	_oval(-25,45,28,28,Color("#E8DBA5"))
 	draw_line(Vector2(40,42),Vector2(43,-49),dark,48.0,true)
 	draw_line(Vector2(40,42),Vector2(43,-49),Color(str(coloring_colors.get("snake_neck","#FFFFFF"))) if coloring_mode else tint,37.0,true)
 	if coloring_mode:
-		color_shapes.append({"id":"snake_neck","points":PackedVector2Array([Vector2(19,43),Vector2(64,43),Vector2(64,-48),Vector2(19,-48)])})
+		var neck=PackedVector2Array([Vector2(23,44),Vector2(60,44),Vector2(60,-49),Vector2(23,-49)])
+		_register_region("snake_neck",neck)
+		_paint_saved_strokes("snake_neck",neck)
 	_oval(42,-67,61,42,tint)
 	_oval(42,-48,46,24,Color("#E7DAA2"))
 	if mood in ["happy","play","clean"]:
