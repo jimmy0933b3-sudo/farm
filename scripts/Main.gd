@@ -362,7 +362,7 @@ func show_complete(level: Dictionary) -> void:
 	layout.add_child(_label("恭喜認識「%s」！" % _answer_name(str(level["animal"])), 42))
 	layout.add_child(_label("獲得一張可愛的動物貼紙", 30))
 	var art = _large_art(_animal(str(level["animal"])),Vector2(245,245))
-	art.mood = "happy"
+	art.set("mood", "happy")
 	art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	layout.add_child(art)
 	var row = HBoxContainer.new()
