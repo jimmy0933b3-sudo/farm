@@ -75,6 +75,18 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"forest_explore":
+			# A standalone illustrated forest icon: magnifying glass, trees and rabbit ears.
+			_oval(-49,32,33,48,Color("#4FA774"))
+			_oval(12,-25,55,64,Color("#4AAE7A"))
+			_oval(62,16,34,44,Color("#62BD86"))
+			_line(Vector2(-55,85),Vector2(-13,32),Color("#C79462"),17.0)
+			draw_arc(Vector2(24,-10),57.0,0,TAU,40,Color("#FAE5AE"),11.0,true)
+			_oval(22,-17,26,29,Color("#FFF4DB"))
+			_oval(3,-49,11,30,Color("#FFF4DB"))
+			_oval(40,-49,11,30,Color("#FFF4DB"))
+			_oval(11,-19,4,6,Color("#40594D"))
+			_oval(33,-19,4,6,Color("#40594D"))
 		"forest_seek":
 			# Magnifying glass and a leafy tree for non-readers.
 			draw_line(Vector2(-55,59),Vector2(-6,10),Color("#9B8067"),18.0,true)

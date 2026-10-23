@@ -49,6 +49,8 @@ func _ready() -> void:
 			show_care()
 		"album":
 			show_album()
+		"forest_explore":
+			show_forest_search()
 		"forest_search":
 			show_forest_search()
 		_:
@@ -232,29 +234,34 @@ func _large_art(info: Dictionary, minimum: Vector2 = Vector2(320,320)) -> Contro
 
 func show_home() -> void:
 	var layout = _switch("home")
-	_header(layout, "動物探險島")
-	layout.add_child(_label("今天想去哪裡玩？", 32))
-	var row = HBoxContainer.new()
-	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 22)
-	layout.add_child(row)
+	_header(layout,"動物探險島")
+	layout.add_child(_label("今天想去哪裡玩？",31))
+	# Three columns across two rows leave generous hit targets on 16:9 phones.
+	var cards = GridContainer.new()
+	cards.columns = 3
+	cards.alignment = BoxContainer.ALIGNMENT_CENTER
+	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cards.add_theme_constant_override("h_separation",22)
+	cards.add_theme_constant_override("v_separation",12)
+	layout.add_child(cards)
 	var places = [
-		{"title":"農場樂園","sub":"認識乳牛、小豬、綿羊","zone":"farm","color":Color("#FFE7BD")},
-		{"title":"森林樂園","sub":"發現兔子、狐狸、貓頭鷹","zone":"forest","color":Color("#C8EFCF")},
-		{"title":"動物之家","sub":"幫小動物吃飯、洗澡","zone":"care","color":Color("#FCD9DB")},
-		{"title":"動物圖鑑","sub":"收集可愛的動物貼紙","zone":"album","color":Color("#DBD9FC")}
+		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
+		{"title":"森林樂園","sub":"看看森林有哪些動物","zone":"forest"},
+		{"title":"大森林探索","sub":"左右滑動森林找動物","zone":"forest_explore"},
+		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
+		{"title":"動物圖鑑","sub":"收集可愛的動物貼紙","zone":"album"}
 	]
 	for place in places:
 		var destination = str(place["zone"])
 		var outer = VBoxContainer.new()
-		outer.add_theme_constant_override("separation", 12)
-		row.add_child(outer)
-		outer.add_child(_picture_button(destination,str(place["title"]), Callable(self, "_go").bind(destination),Vector2(271,195)))
-		outer.add_child(_label(str(place["sub"]), 18))
+		outer.add_theme_constant_override("separation",5)
+		cards.add_child(outer)
+		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(240,169)))
+		outer.add_child(_label(str(place["sub"]),18))
 	var count = int(progress.data["collected"].size())
-	layout.add_child(_label("已認識 %d / 12 位動物朋友    每天都可以自由探索！" % count, 25))
-	_narrate("歡迎來到動物探險島！看看圖片，點農場、森林或動物之家，就可以開始玩！")
+	layout.add_child(_label("已認識 %d / 12 位動物朋友" % count,24))
+	_narrate("歡迎來到動物探險島！點大森林探索的圖片，就能左右滑動森林，找小動物喔！")
 
 func _go(where: String) -> void:
 	match where:
@@ -271,7 +278,7 @@ func show_zone(zone: String) -> void:
 	_header(layout, "農場樂園" if zone == "farm" else "森林樂園", Callable(self,"show_home"))
 	layout.add_child(_label("點一下動物，認識新朋友吧！", 28))
 	if zone == "forest":
-		var seek_button = _picture_button("forest_seek","森林尋寶：找動物",Callable(self,"show_forest_search"),Vector2(320,112))
+		var seek_button = _picture_button("forest_explore","大森林探索",Callable(self,"show_forest_search"),Vector2(320,112))
 		seek_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		layout.add_child(seek_button)
 	var panel = _panel()
@@ -292,7 +299,7 @@ func show_zone(zone: String) -> void:
 func show_forest_search() -> void:
 	current_zone = "forest"
 	var layout = _switch("forest_search","forest")
-	_header(layout,"森林尋寶：找動物",Callable(self,"show_zone").bind("forest"))
+	_header(layout,"大森林探索",Callable(self,"show_home"))
 	var forest_animals: Array = []
 	for a in animals:
 		if str(a.get("zone",""))=="forest":
@@ -326,8 +333,9 @@ func show_forest_complete() -> void:
 	row.add_theme_constant_override("separation",28)
 	layout.add_child(row)
 	row.add_child(_button("再找一次",Callable(self,"show_forest_search"),Color("#FCE1AB"),Vector2(250,85)))
-	row.add_child(_button("回到森林",Callable(self,"show_zone").bind("forest"),Color("#D8EED4"),Vector2(250,85)))
-	_narrate("太棒了！六位森林動物都找到了！想再玩一次嗎？每次動物藏的位置都不一樣喔。")
+	row.add_child(_button("回首頁",Callable(self,"show_home"),Color("#D8EED4"),Vector2(210,85)))
+	row.add_child(_button("回森林樂園",Callable(self,"show_zone").bind("forest"),Color("#E0E7FA"),Vector2(210,85)))
+	_narrate("太棒了！完成大森林探索！六隻森林動物都找到了！要再玩一次，還是回首頁呢？")
 
 func show_animal(id: String) -> void:
 	var info = _animal(id)
