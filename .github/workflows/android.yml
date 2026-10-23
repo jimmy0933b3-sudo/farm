@@ -56,6 +56,10 @@ jobs:
           godot --headless --path . --script tests/ui_smoke.gd
       - name: Check touch petting and persistent care animations
         run: godot --headless --path . --script tests/interaction_smoke.gd
+      - name: Test parental settings vertical scrolling and retained position
+        run: godot --headless --path . --script tests/parent_scroll_smoke.gd
+      - name: Test multiple animal expressions and playful care animation
+        run: godot --headless --path . --script tests/animal_reactions_smoke.gd
       - name: Test forest animal discovery mini-game
         run: godot --headless --path . --script tests/forest_discovery_smoke.gd
       - name: Test independent large forest adventure
