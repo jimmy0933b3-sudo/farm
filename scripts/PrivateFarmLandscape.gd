@@ -57,13 +57,25 @@ func _draw() -> void:
 	_poly([Vector2(0,h*.53),Vector2(w*.15,h*.47),Vector2(w*.26,h*.58),Vector2(w*.18,h*.68),Vector2(0,h*.77)],Color("#F0CA88"))
 	for i in range(3):
 		_oval(Vector2(w*.036+float(i)*22*u,h*.48),Vector2(18*u,13*u),Color("#F4CB69"))
-	# A blue farm pond at right with stone border and lily pads.
-	_oval(Vector2(w*.82,h*.65),Vector2(w*.16,h*.103),Color("#77C5D9"))
-	_oval(Vector2(w*.82,h*.64),Vector2(w*.132,h*.073),Color("#AEE5ED"))
-	for i in range(7):
-		_oval(Vector2(w*(.68+float(i)*.043),h*.71),Vector2(14*u,8*u),Color("#92A6A0"))
-	for i in range(3):
-		_oval(Vector2(w*(.77+float(i)*.055),h*.64),Vector2(13*u,5*u),Color("#74BC78"))
+	# Enlarged, deep pond. It occupies nearly the entire right half and is
+	# the *actual* home of collected sea animals, not decorative scenery.
+	_oval(Vector2(w*.765,h*.67),Vector2(w*.245,h*.273),Color("#7BAAAE"))
+	_oval(Vector2(w*.765,h*.65),Vector2(w*.235,h*.258),Color("#3D9FCD"))
+	_oval(Vector2(w*.765,h*.645),Vector2(w*.216,h*.235),Color("#67C9DF"))
+	_oval(Vector2(w*.765,h*.65),Vector2(w*.195,h*.212),Color("#86D7E4",0.63))
+	for i in range(12):
+		var angle=TAU*float(i)/12.0
+		var sx=w*(.765+cos(angle)*.239)
+		var sy=h*(.667+sin(angle)*.255)
+		_oval(Vector2(sx,sy),Vector2(11*u,7*u),Color("#D6D2B3"))
+	for i in range(9):
+		var sx=w*(.59+float(i%5)*.079)
+		var sy=h*(.56+float(i/5)*.23)
+		_oval(Vector2(sx,sy),Vector2(7*u,10*u),Color("#D3F7FA",0.37))
+	for i in range(4):
+		var sx=w*(.63+float(i)*.093)
+		_oval(Vector2(sx,h*.79),Vector2(19*u,8*u),Color("#4EBA96"))
+		_oval(Vector2(sx+11*u,h*.79-4*u),Vector2(8*u,5*u),Color("#8DDFB6"))
 	# Flowers and leaves across the foreground, behind the moving animals.
 	for i in range(47):
 		var x=fmod(float(i)*123*u+39*u,w)

@@ -3,6 +3,7 @@ extends HBoxContainer
 ## Touch the actual moving animal, stroke to pet, tap to select for care actions.
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const RoamingAnimal = preload("res://scripts/RoamingAnimal.gd")
+const SwimmingAnimal = preload("res://scripts/SwimmingAnimal.gd")
 const TouchHand = preload("res://scripts/TouchHand.gd")
 const PrivateFarmLandscape = preload("res://scripts/PrivateFarmLandscape.gd")
 
@@ -121,7 +122,7 @@ func _ready() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	voice.speak("這是你的私人農場。小動物會到處散步。直接用手指點牠、摸摸牠，牠會跟你玩！")
+	voice.speak("歡迎來到私人農場！草地動物會散步，海洋朋友會在右邊大水池游泳。用手指直接摸摸牠們！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -219,9 +220,9 @@ func _sync_residents() -> void:
 		var info = _animal(name)
 		if info.is_empty():
 			continue
-		var creature = RoamingAnimal.new()
+		var creature = SwimmingAnimal.new() if str(info.get("zone",""))=="ocean" else RoamingAnimal.new()
 		creature.setup(info,reduce_motion)
-		creature.size = Vector2(82,88)
+		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else Vector2(82,88)
 		creature.petted.connect(_on_animal_petted)
 		creature.reaction_finished.connect(_on_reaction_finished)
 		habitat.add_child(creature)
@@ -239,22 +240,41 @@ func _sync_residents() -> void:
 func _layout_residents() -> void:
 	if not is_instance_valid(habitat) or habitat.size.x < 300.0 or habitat.size.y < 180.0:
 		return
-	# Real ground plane: nobody can stroll through the sky, hills or barn roof.
-	var bounds = Rect2(
-		Vector2(18,habitat.size.y*0.57),
-		Vector2(habitat.size.x-36,habitat.size.y*0.39)
+	# Separate two true habitats. Grass residents stay left; swimmers stay in
+	# the large pond on the right. Do not let either group cross habitats.
+	var grass=Rect2(
+		Vector2(13,habitat.size.y*0.58),
+		Vector2(habitat.size.x*0.52,habitat.size.y*0.38)
 	)
-	var ids: Array = save_data.data["private_farm"]
-	for i in range(ids.size()):
-		var id = str(ids[i])
-		if not actors.has(id):
+	var pond=Rect2(
+		Vector2(habitat.size.x*0.625,habitat.size.y*0.51),
+		Vector2(habitat.size.x*0.28,habitat.size.y*0.31)
+	)
+	var land_slot=0
+	var sea_slot=0
+	for id in save_data.data["private_farm"]:
+		var name=str(id)
+		if not actors.has(name):
 			continue
-		var col = i%4
-		var row = int(i/4)
-		var center_x = bounds.position.x+bounds.size.x*(float(col)+0.5)/4.0
-		var center_y = habitat.size.y*(0.73 if row==0 else 0.86)
-		var creature = actors[id]
-		creature.set_bounds(bounds,Vector2(center_x-creature.size.x*0.5,center_y-creature.size.y*0.5))
+		var creature=actors[name]
+		if str(_animal(name).get("zone",""))=="ocean":
+			var col=sea_slot%3
+			var row=int(sea_slot/3)
+			var pos=Vector2(
+				pond.position.x+pond.size.x*(float(col)+0.5)/3.0-creature.size.x*0.5,
+				pond.position.y+pond.size.y*(0.28 if row==0 else 0.66)-creature.size.y*0.5
+			)
+			creature.set_bounds(pond,pos)
+			sea_slot+=1
+		else:
+			var col=land_slot%3
+			var row=int(land_slot/3)
+			var pos=Vector2(
+				grass.position.x+grass.size.x*(float(col)+0.5)/3.0-creature.size.x*0.5,
+				habitat.size.y*(0.73 if row==0 else 0.86)-creature.size.y*0.5
+			)
+			creature.set_bounds(grass,pos)
+			land_slot+=1
 
 func place_animal(id: String) -> void:
 	var result: String = save_data.private_farm_add_status(id,CAPACITY)
@@ -277,8 +297,8 @@ func place_animal(id: String) -> void:
 	active_id = id
 	_sync_residents()
 	_rebuild_cards()
-	info_label.text = "%s也來農場散步啦！" % str(_animal(id).get("name","動物"))
-	voice.speak("%s來農場玩囉！" % str(_animal(id).get("name","動物")))
+	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else "%s來農場散步啦！" % str(_animal(id).get("name","動物"))
+	voice.speak("%s來玩囉！" % str(_animal(id).get("name","動物")))
 	_update_command_buttons()
 
 func remove_current() -> void:
@@ -303,7 +323,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 	_rebuild_cards()
 	_update_command_buttons()
 	if not id.is_empty():
-		info_label.text = "摸摸正在散步的%s！" % str(_animal(id).get("name","動物"))
+		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物"))
 	if announce and not id.is_empty():
 		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))
 
