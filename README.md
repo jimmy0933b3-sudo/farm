@@ -114,3 +114,10 @@ Godot 4.5 使用一組憑證密碼，CI 將輸入 keystore 的不同 `KEY_PASSWO
 - 首頁新增「私人農場」圖片入口。可以從已收集的動物挑選最多 8 隻住進自己的農場，點小圖切換動物、在身上滑動撫摸、按餵食／玩耍／聽聲音。動物選擇及照護結果會存檔。
 - 新增蛇（森林）和天竺鼠（農場），每隻都有獨特的原創圖案、語音介紹與食物／棲地遊戲題目。無實際錄音時不合成虛假的動物叫聲。
 - 大森林探索移除下方左右按鈕和提示區，直接以手指左右拖曳；提示移到上方狀態欄，釋放更多遊戲畫面。森林有 11 隻動物，總計 18 隻。
+
+## Private farm free-roaming play
+
+- All placed animals now appear **simultaneously**, at a smaller scale, and wander independently through the farm pen. Their motion includes pauses, turns, little steps, eye blinks and friendly reactions. Snake uses a distinctive slithering character, not a duplicated animal.
+- Children can directly **tap any wandering resident** to select and greet it, then slide a finger over the animal. The illustrated hand follows the gesture. A genuine stroke triggers a smile and floating hearts; other residents keep roaming.
+- The selected creature can be fed, washed, played with, put to rest or have its authentic animal call replayed, without replacing the farm scene or repeating the welcome introduction.
+- Up to 8 unlocked residents can coexist; the animal list is persisted across restarts. Characters pause while being petted or cared for, then return to wandering. Reduced motion softens their walking animation.

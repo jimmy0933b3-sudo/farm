@@ -248,7 +248,7 @@ func _layout_residents() -> void:
 		var row = int(i/4)
 		var center_x = bounds.position.x+bounds.size.x*(float(col)+0.5)/4.0
 		var center_y = bounds.position.y+bounds.size.y*(0.34 if row==0 else 0.77)
-		var creature: Control = actors[id]
+		var creature = actors[id]
 		creature.set_bounds(bounds,Vector2(center_x-creature.size.x*0.5,center_y-creature.size.y*0.5))
 
 func place_animal(id: String) -> void:
@@ -278,7 +278,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 		return
 	active_id = id
 	for key in actors.keys():
-		var creature: Control = actors[key]
+		var creature = actors[key]
 		creature.selected = (key==id)
 		creature.queue_redraw()
 	_rebuild_cards()
@@ -296,7 +296,7 @@ func _actor_at(point: Vector2) -> String:
 	var winner = ""
 	var best = 1.0e10
 	for key in actors.keys():
-		var creature: Control = actors[key]
+		var creature = actors[key]
 		if creature.contains_touch(point):
 			var distance = creature.distance_to_touch(point)
 			if distance < best:
@@ -311,7 +311,7 @@ func _start_touch(point: Vector2) -> bool:
 	_set_resident(id,false)
 	touching_id = id
 	last_touch = point
-	var creature: Control = actors[id]
+	var creature = actors[id]
 	creature.begin_pet()
 	hand.show_hand = true
 	hand.hand_position = point
@@ -325,7 +325,7 @@ func _move_touch(point: Vector2) -> void:
 	last_touch = point
 	hand.hand_position = point
 	hand.queue_redraw()
-	var creature: Control = actors[touching_id]
+	var creature = actors[touching_id]
 	if creature.contains_touch(point):
 		creature.move_pet(step)
 
@@ -376,7 +376,7 @@ func interact(action: String) -> void:
 	if action == "sound":
 		voice.play_animal(active_id)
 		return
-	var creature: Control = actors[active_id]
+	var creature = actors[active_id]
 	if not creature.perform(action):
 		return
 	save_data.care_for(active_id,action)
@@ -390,6 +390,13 @@ func interact(action: String) -> void:
 	}
 	info_label.text = str(msg.get(action,"動物很開心！"))
 	voice.speak(info_label.text)
+
+func _process(delta: float) -> void:
+	if is_instance_valid(hand) and hand.celebrating:
+		hand.effect_time += delta
+		if hand.effect_time >= 1.1:
+			hand.celebrating = false
+		hand.queue_redraw()
 
 func _on_reaction_finished(_id: String) -> void:
 	busy = false

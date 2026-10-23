@@ -84,7 +84,7 @@ func _process(delta: float) -> void:
 			if diff.length() <= 2.0:
 				idle_timer = rng.randf_range(0.65, 2.4)
 				walking = false
-				avatar.mood = "blink"
+				avatar.set("mood","blink")
 			else:
 				walking = true
 				position = _clamp_to_field(position.move_toward(destination, walk_speed*delta))
@@ -102,10 +102,10 @@ func _process(delta: float) -> void:
 		if reaction_time <= 0.0:
 			reaction_action = ""
 			effects.set("action","")
-			avatar.mood = "idle"
+			avatar.set("mood","idle")
 			reaction_finished.emit(animal_id)
 	elif not is_touched:
-		avatar.mood = "idle" if walking else ("blink" if fmod(step_time,4.8)<0.14 else "idle")
+		avatar.set("mood","idle") if walking else ("blink" if fmod(step_time,4.8)<0.14 else "idle")
 	if heart_time > 0.0:
 		heart_time = maxf(0.0,heart_time-delta)
 	if not reduce_motion and not is_touched and reaction_time <= 0.0:
@@ -136,7 +136,7 @@ func move_pet(distance: float) -> void:
 		stroke_distance = 0.0
 		heart_time = 1.15
 		strokes += 1
-		avatar.mood = "happy"
+		avatar.set("mood","happy")
 		petted.emit(animal_id)
 
 func end_pet() -> void:
@@ -148,7 +148,7 @@ func tap_reaction() -> void:
 	idle_timer = 1.3
 	walking = false
 	heart_time = 0.7
-	avatar.mood = "happy"
+	avatar.set("mood","happy")
 	avatar.queue_redraw()
 
 func perform(action: String) -> bool:
@@ -158,7 +158,7 @@ func perform(action: String) -> bool:
 	reaction_action = action
 	idle_timer = 0.8
 	walking = false
-	avatar.mood = {"feed":"eating","wash":"clean","play":"play","sleep":"sleep"}[action]
+	avatar.set("mood",{"feed":"eating","wash":"clean","play":"play","sleep":"sleep"}[action])
 	effects.set("action",action)
 	effects.set("phase",0.0)
 	effects.queue_redraw()
