@@ -134,6 +134,10 @@ func _draw() -> void:
 	if scale_value <= 0.0:
 		return
 	draw_set_transform(Vector2(size.x * 0.5, size.y * 0.52), 0.0, Vector2(scale_value, scale_value))
+	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish"]:
+		_draw_ocean_animal()
+		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+		return
 	if animal_id == "snake":
 		_draw_snake()
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
@@ -319,3 +323,76 @@ func _circle_polygon(x: float,y: float,rx: float,ry: float) -> PackedVector2Arra
 		var a=TAU*float(i)/44.0
 		pts.append(Vector2(x+cos(a)*rx,y+sin(a)*ry))
 	return pts
+
+
+func _draw_ocean_animal() -> void:
+	# Original vector sea creatures share their geometry with the coloring room.
+	# Every large piece uses _oval / _poly so touch-paint works on the very same shape.
+	var dark=COLOR_INK if coloring_mode else tint.darkened(0.22)
+	var belly=Color.WHITE if coloring_mode else tint.lightened(0.36)
+	match animal_id:
+		"clownfish":
+			_poly([Vector2(-60,5),Vector2(-113,-47),Vector2(-111,56)],dark)
+			_oval(0,10,91,53,tint)
+			_poly([Vector2(-27,-28),Vector2(-8,-69),Vector2(19,-37)],dark)
+			_oval(-34,10,12,51,belly)
+			_oval(20,10,13,50,belly)
+			_oval(68,-6,7,9,COLOR_INK)
+			draw_arc(Vector2(69,27),14,0.15,PI-0.15,16,COLOR_INK,3,true)
+		"pufferfish":
+			for i in range(12):
+				var a=TAU*float(i)/12.0
+				var base=Vector2(cos(a)*74,sin(a)*69)
+				_poly([base+Vector2(-10,-8),base+Vector2(cos(a)*28,sin(a)*28),base+Vector2(10,8)],dark)
+			_oval(0,10,80,78,tint)
+			_oval(0,48,54,36,belly)
+			_oval(-29,-21,9,11,COLOR_INK)
+			_oval(29,-21,9,11,COLOR_INK)
+			_oval(0,5,10,9,belly)
+			draw_arc(Vector2(0,11),14,0.1,PI-0.1,14,COLOR_INK,3,true)
+		"sea_turtle":
+			_oval(-65,55,30,42,tint)
+			_oval(68,55,30,42,tint)
+			_oval(-59,-44,32,26,tint)
+			_oval(67,-45,32,26,tint)
+			_poly([Vector2(-89,12),Vector2(-115,-21),Vector2(-106,42)],tint)
+			_oval(0,12,83,77,dark)
+			_oval(0,6,72,66,Color("#A7C984") if not coloring_mode else Color.WHITE)
+			for i in range(6):
+				var a=TAU*float(i)/6.0
+				_oval(cos(a)*43,6+sin(a)*37,18,18,dark)
+			_oval(92,-14,36,37,tint)
+			_oval(102,-24,6,7,COLOR_INK)
+			draw_arc(Vector2(99,-4),12,0.1,PI-0.15,12,COLOR_INK,2.6,true)
+		"dolphin":
+			_poly([Vector2(-90,23),Vector2(-136,-17),Vector2(-118,60)],dark)
+			_poly([Vector2(-6,-25),Vector2(-24,-86),Vector2(40,-44)],dark)
+			_poly([Vector2(1,46),Vector2(-35,91),Vector2(58,42)],dark)
+			_oval(0,0,102,47,tint)
+			_oval(18,23,69,23,belly)
+			_poly([Vector2(70,-14),Vector2(131,-4),Vector2(92,21)],tint)
+			_oval(64,-25,10,9,COLOR_INK)
+			draw_arc(Vector2(82,14),14,0,PI,12,COLOR_INK,2.8,true)
+		"octopus":
+			for i in range(8):
+				var x=-91+float(i)*26.0
+				_oval(x,73+float(i%3)*7,20,38,tint)
+				_oval(x,90,10,11,dark)
+			_oval(0,-9,76,84,tint)
+			_oval(-27,-28,12,16,Color.WHITE)
+			_oval(29,-28,12,16,Color.WHITE)
+			_oval(-27,-29,6,9,COLOR_INK)
+			_oval(29,-29,6,9,COLOR_INK)
+			draw_arc(Vector2(0,13),20,0.12,PI-0.12,17,COLOR_INK,3.2,true)
+		"seahorse":
+			_poly([Vector2(14,48),Vector2(-56,77),Vector2(-41,26)],dark)
+			_oval(-8,32,38,73,tint)
+			_oval(0,-38,45,54,tint)
+			_poly([Vector2(31,-46),Vector2(88,-26),Vector2(31,-16)],tint)
+			for i in range(5):
+				var yy=-73+float(i)*29
+				_poly([Vector2(-40,yy),Vector2(-70,yy+13),Vector2(-38,yy+23)],dark)
+			_oval(6,-51,7,10,COLOR_INK)
+			_oval(-3,104,33,23,tint)
+			_oval(11,103,16,10,belly)
+	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
