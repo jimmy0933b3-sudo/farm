@@ -10,8 +10,8 @@ const Synth = preload("res://scripts/Synth.gd")
 
 var animals: Array = []
 var levels: Array = []
-var progress: RefCounted
-var sound: Node
+var progress
+var sound
 var screen: String = "home"
 var current_zone: String = "farm"
 var selected_animal: String = "cow"
@@ -387,7 +387,7 @@ func show_album() -> void:
 	scroll.add_child(grid)
 	for info in animals:
 		var is_collected = progress.data["collected"].has(str(info["id"]))
-		var callback = Callable(self,"show_animal").bind(str(info["id"])) if is_collected else Callable(self,"_locked")
+		var callback: Callable = Callable(self,"show_animal").bind(str(info["id"])) if is_collected else Callable(self,"_locked")
 		grid.add_child(_animal_button(info,callback,not is_collected))
 	layout.add_child(_label("探索時點擊動物，就能找到更多朋友！",21))
 
