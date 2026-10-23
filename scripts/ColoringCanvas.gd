@@ -18,6 +18,8 @@ var touch_id: int=-1
 var mouse_tracking: bool=false
 var last_pos: Vector2=Vector2.ZERO
 var active_region: String=""
+var locked_region: String=""
+var locked_color: String=""
 var active_stroke_index: int=-1
 var dirty: bool=false
 var sample_total: int=0
@@ -65,6 +67,10 @@ func begin_stroke(point: Vector2) -> void:
 		finish_stroke()
 	tracking=true
 	last_pos=point
+	# A gesture belongs to exactly ONE original animal part from touch-down.
+	# If the finger leaves this part or crosses into another, do not paint it.
+	locked_region=region_at(point)
+	locked_color=brush_color
 	active_region=""
 	active_stroke_index=-1
 	dirty=false
@@ -74,9 +80,9 @@ func _paint_dot(point: Vector2) -> void:
 	if sample_total>=MAX_DOTS_PER_ANIMAL:
 		return
 	var region=region_at(point)
-	if region.is_empty():
-		active_region=""
-		active_stroke_index=-1
+	if locked_region.is_empty() or region!=locked_region:
+		# Keep the original region lock across boundaries. Never fall through
+		# to a neighbor even when a long swipe crosses several animal parts.
 		return
 	var world: Vector2=avatar.coloring_world_point(point)
 	if absf(world.x)>260.0 or absf(world.y)>260.0:
@@ -88,7 +94,7 @@ func _paint_dot(point: Vector2) -> void:
 		colors["strokes_v2"]=[]
 	if active_region!=region or active_stroke_index<0:
 		active_region=region
-		var stroke={"region":region,"color":brush_color,"dots":[]}
+		var stroke={"region":locked_region,"color":locked_color,"dots":[]}
 		colors["strokes_v2"].append(stroke)
 		active_stroke_index=colors["strokes_v2"].size()-1
 	# Round coordinates to reduce save size without visible stepping.
@@ -120,6 +126,8 @@ func finish_stroke() -> void:
 	dirty=false
 	active_region=""
 	active_stroke_index=-1
+	locked_region=""
+	locked_color=""
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
