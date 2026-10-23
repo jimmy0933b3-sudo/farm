@@ -96,6 +96,7 @@ func _run() -> void:
 	if strokes[0]["dots"].size()<2:
 		_fail("Fast finger movement must paint a connected path")
 		return
+	var first_page=page.duplicate(true)
 	# A second gesture from inside the body into empty outside cannot
 	# create a whole-page paint region.
 	var count_before=strokes.size()
@@ -126,8 +127,8 @@ func _run() -> void:
 		_fail("Saved partial painting was lost after reloading the save file")
 		return
 	room.undo()
-	if room.canvas.colors.get("strokes_v2",[]).size()>0 and room.history.size()!=0:
-		_fail("Undo did not restore the previous saved picture")
+	if game.progress.get_coloring("rabbit")!=first_page:
+		_fail("Undo must remove only the most recent gesture, preserving earlier marks")
 		return
 	room.reset_coloring()
 	if game.progress.get_coloring("rabbit").is_empty():
