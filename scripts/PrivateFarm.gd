@@ -4,7 +4,7 @@ extends HBoxContainer
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const RoamingAnimal = preload("res://scripts/RoamingAnimal.gd")
 const TouchHand = preload("res://scripts/TouchHand.gd")
-const Backdrop = preload("res://scripts/Backdrop.gd")
+const PrivateFarmLandscape = preload("res://scripts/PrivateFarmLandscape.gd")
 
 const CAPACITY: int = 8
 
@@ -13,7 +13,7 @@ var save_data
 var voice
 var active_id: String = ""
 var actors: Dictionary = {}
-var resident_list: HBoxContainer
+var resident_list: GridContainer
 var available_list: GridContainer
 var remove_button: Button
 var habitat: Control
@@ -56,8 +56,7 @@ func _ready() -> void:
 	habitat.mouse_filter = Control.MOUSE_FILTER_STOP
 	left.add_child(habitat)
 
-	var bg = Backdrop.new()
-	bg.scene_type = "farm"
+	var bg = PrivateFarmLandscape.new()
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	habitat.add_child(bg)
@@ -95,15 +94,14 @@ func _ready() -> void:
 	remove_button = _round("移回圖鑑",Callable(self,"remove_current"),Vector2(102,46))
 	resident_header.add_child(remove_button)
 
-	var resident_scroll = ScrollContainer.new()
-	resident_scroll.custom_minimum_size = Vector2(305,114)
-	resident_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	resident_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	resident_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	right.add_child(resident_scroll)
-	resident_list = HBoxContainer.new()
-	resident_list.add_theme_constant_override("separation",5)
-	resident_scroll.add_child(resident_list)
+	# All eight residents stay visible. No sideways scrollbar or tiny drag handle.
+	resident_list = GridContainer.new()
+	resident_list.columns = 4
+	resident_list.custom_minimum_size = Vector2(305,166)
+	resident_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	resident_list.add_theme_constant_override("h_separation",3)
+	resident_list.add_theme_constant_override("v_separation",4)
+	right.add_child(resident_list)
 
 	right.add_child(_label("點圖片，帶動物進農場",19))
 	var available_scroll = ScrollContainer.new()
@@ -158,7 +156,7 @@ func _animal(id: String) -> Dictionary:
 	return {}
 
 func _card(info: Dictionary, action: Callable, selected: bool, is_member: bool) -> Button:
-	var b = _round("",action,Vector2(94,105))
+	var b = _round("",action,Vector2(73,80) if is_member else Vector2(94,105))
 	var box = StyleBoxFlat.new()
 	box.bg_color = Color("#D7F6C7") if selected else (Color("#FFF4D2") if is_member else Color("#F7FEF5"))
 	box.set_corner_radius_all(14)
@@ -177,10 +175,10 @@ func _card(info: Dictionary, action: Callable, selected: bool, is_member: bool) 
 	var art = AnimalArt.new()
 	art.setup(info)
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	art.custom_minimum_size = Vector2(78,74)
+	art.custom_minimum_size = Vector2(62,54) if is_member else Vector2(78,74)
 	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(art)
-	col.add_child(_label(str(info.get("name","動物")),17))
+	col.add_child(_label(str(info.get("name","動物")),14 if is_member else 17))
 	return b
 
 func _rebuild_cards() -> void:
@@ -223,7 +221,7 @@ func _sync_residents() -> void:
 			continue
 		var creature = RoamingAnimal.new()
 		creature.setup(info,reduce_motion)
-		creature.size = Vector2(98,104)
+		creature.size = Vector2(82,88)
 		creature.petted.connect(_on_animal_petted)
 		creature.reaction_finished.connect(_on_reaction_finished)
 		habitat.add_child(creature)
@@ -238,7 +236,11 @@ func _sync_residents() -> void:
 func _layout_residents() -> void:
 	if not is_instance_valid(habitat) or habitat.size.x < 300.0 or habitat.size.y < 180.0:
 		return
-	var bounds = Rect2(Vector2(22,51),Vector2(habitat.size.x-44,habitat.size.y-71))
+	# Real ground plane: nobody can stroll through the sky, hills or barn roof.
+	var bounds = Rect2(
+		Vector2(18,habitat.size.y*0.57),
+		Vector2(habitat.size.x-36,habitat.size.y*0.39)
+	)
 	var ids: Array = save_data.data["private_farm"]
 	for i in range(ids.size()):
 		var id = str(ids[i])
@@ -247,14 +249,28 @@ func _layout_residents() -> void:
 		var col = i%4
 		var row = int(i/4)
 		var center_x = bounds.position.x+bounds.size.x*(float(col)+0.5)/4.0
-		var center_y = bounds.position.y+bounds.size.y*(0.34 if row==0 else 0.77)
+		var center_y = habitat.size.y*(0.73 if row==0 else 0.86)
 		var creature = actors[id]
 		creature.set_bounds(bounds,Vector2(center_x-creature.size.x*0.5,center_y-creature.size.y*0.5))
 
 func place_animal(id: String) -> void:
-	if not save_data.private_farm_add(id,CAPACITY):
-		voice.speak("只有已認識的動物才能進來，農場最多住八隻。")
-		return
+	var result: String = save_data.private_farm_add_status(id,CAPACITY)
+	match result:
+		"locked":
+			info_label.text = "還沒認識這隻動物，先去探索吧！"
+			voice.speak("還沒收集到這隻動物，先去森林或農場找找看！")
+			return
+		"full":
+			info_label.text = "農場已住滿 8 隻！先選一隻移回圖鑑。"
+			voice.speak("農場已經住滿八隻動物了！先選一隻，按移回圖鑑，就能換新朋友進來。")
+			return
+		"already":
+			_set_resident(id,false)
+			return
+		"added":
+			pass
+		_:
+			return
 	active_id = id
 	_sync_residents()
 	_rebuild_cards()

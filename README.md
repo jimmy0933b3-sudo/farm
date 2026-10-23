@@ -121,3 +121,10 @@ Godot 4.5 使用一組憑證密碼，CI 將輸入 keystore 的不同 `KEY_PASSWO
 - Children can directly **tap any wandering resident** to select and greet it, then slide a finger over the animal. The illustrated hand follows the gesture. A genuine stroke triggers a smile and floating hearts; other residents keep roaming.
 - The selected creature can be fed, washed, played with, put to rest or have its authentic animal call replayed, without replacing the farm scene or repeating the welcome introduction.
 - Up to 8 unlocked residents can coexist; the animal list is persisted across restarts. Characters pause while being petted or cared for, then return to wandering. Reduced motion softens their walking animation.
+
+## Private farm ground fix and resident selector
+
+- Uses a dedicated, scalable farm map with barn, pasture, fence, winding path, tree canopy and pond inspired by the approved reference; unlike a baked screenshot, roaming residents are still separate touchable sprites.
+- Roaming animals are confined to the **ground plane** and now draw contact shadows at their feet.
+- All 8 resident selectors are displayed as a fixed **4×2 grid**, no horizontal scrolling necessary. Tap any slot, including #8, then **移回圖鑑** to remove it.
+- Adding the ninth already-collected animal returns a separate `full` reason and speaks the correct limit explanation. Locked animals instead get the exploration message.

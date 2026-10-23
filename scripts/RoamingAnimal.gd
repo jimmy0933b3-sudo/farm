@@ -42,7 +42,7 @@ func setup(info: Dictionary, gentle_motion: bool = false) -> void:
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	custom_minimum_size = Vector2.ZERO
-	size = Vector2(98, 104)
+	size = Vector2(82, 88)
 	avatar = AnimalArt.new()
 	avatar.setup(animal_info)
 	avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -169,6 +169,12 @@ func perform(action: String) -> bool:
 
 func _draw() -> void:
 	var center = size*0.5
+	# Contact shadow directly below the feet, so characters never look airborne.
+	var shadow = PackedVector2Array()
+	for i in range(24):
+		var a=TAU*float(i)/24.0
+		shadow.append(Vector2(center.x+cos(a)*size.x*0.31,size.y*0.92+sin(a)*size.y*0.052))
+	draw_colored_polygon(shadow,Color("#427A4B",0.27))
 	if selected:
 		draw_arc(center+Vector2(0,33),42,0,TAU,24,Color("#FFF6B6",0.9),3,true)
 	if heart_time > 0.0:
