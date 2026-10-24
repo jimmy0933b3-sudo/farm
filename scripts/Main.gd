@@ -273,40 +273,54 @@ func _large_art(info: Dictionary, minimum: Vector2 = Vector2(320,320)) -> Contro
 func show_home() -> void:
 	var layout = _switch("home")
 	_header(layout,"動物探險島")
-	layout.add_child(_label("今天一起探索哪個世界？ ✨",29,HORIZONTAL_ALIGNMENT_CENTER,Color("#3F7165")))
-	# Three columns across two rows leave generous hit targets on 16:9 phones.
-	var scrolling = TouchAnimalScroll.new()
-	scrolling.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scrolling.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scrolling.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layout.add_child(_label("今天一起探索哪個世界？ ✨",28,HORIZONTAL_ALIGNMENT_CENTER,Color("#3F7165")))
+	# One vertical, touch-friendly scroll view, but two SEPARATE rows/groups:
+	# child-oriented parks first, supporting activities clearly separated.
+	var scrolling=TouchAnimalScroll.new()
+	scrolling.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	scrolling.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	scrolling.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	layout.add_child(scrolling)
-	var cards = GridContainer.new()
-	var wide = get_viewport_rect().size.x >= 980.0
-	cards.columns = 4 if wide else 3
-	cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	cards.add_theme_constant_override("h_separation",15)
-	cards.add_theme_constant_override("v_separation",10)
-	scrolling.add_child(cards)
-	var places = [
-		{"title":"農場樂園","sub":"認識農場的動物朋友","zone":"farm"},
-		{"title":"森林樂園","sub":"認識動物＋探索大森林","zone":"forest"},
-		{"title":"動物園樂園","sub":"獅子、老虎、大象和動物朋友","zone":"zoo"},
-		{"title":"海底樂園","sub":"認識海洋朋友＋海底尋寶","zone":"ocean_park"},
-		{"title":"私人農場","sub":"把認識的動物放進農場","zone":"private_farm"},
-		{"title":"動物著色屋","sub":"幫收集到的動物上顏色","zone":"coloring"},
-		{"title":"動物之家","sub":"餵食、洗澡、玩耍","zone":"care"},
-		{"title":"動物圖鑑","sub":"收集可愛的動物貼紙","zone":"album"}
-	]
+	var content=VBoxContainer.new()
+	content.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation",0)
+	scrolling.add_child(content)
+	var wide=get_viewport_rect().size.x>=880.0
+	_home_section(content,scrolling,"🌿 探索樂園",[
+		{"title":"農場樂園","zone":"farm"},
+		{"title":"森林樂園","zone":"forest"},
+		{"title":"動物園樂園","zone":"zoo"},
+		{"title":"海底樂園","zone":"ocean_park"}
+	],wide)
+	var separation=Control.new()
+	separation.custom_minimum_size=Vector2(0,42 if wide else 34)
+	separation.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	content.add_child(separation)
+	_home_section(content,scrolling,"🎨 我的動物天地",[
+		{"title":"私人農場","zone":"private_farm"},
+		{"title":"動物著色屋","zone":"coloring"},
+		{"title":"動物之家","zone":"care"},
+		{"title":"動物圖鑑","zone":"album"}
+	],wide)
+	layout.add_child(_label("★ 已認識 %d / %d 位動物朋友！" % [int(progress.data["collected"].size()),animals.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
+	_narrate("歡迎來到動物探險島！上面是四個樂園，往下還有私人農場、動物著色屋、動物之家和圖鑑。")
+
+func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
+	var section=VBoxContainer.new()
+	section.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	section.add_theme_constant_override("separation",13)
+	parent.add_child(section)
+	section.add_child(_label(heading,24,HORIZONTAL_ALIGNMENT_CENTER,Color("#335F58")))
+	var grid=GridContainer.new()
+	grid.columns=4 if wide else 2
+	grid.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
+	grid.add_theme_constant_override("h_separation",16)
+	grid.add_theme_constant_override("v_separation",15)
+	section.add_child(grid)
 	for place in places:
-		var destination = str(place["zone"])
-		var outer = VBoxContainer.new()
-		outer.add_theme_constant_override("separation",5)
-		cards.add_child(outer)
-		outer.add_child(_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(190,132) if wide else Vector2(158,116),scrolling))
-		# Picture + title already convey the action; avoid a second line that overflows small landscape screens.
-	var count = int(progress.data["collected"].size())
-	layout.add_child(_label("★ 已認識 %d / %d 位動物朋友！" % [count,animals.size()],23,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
-	_narrate("歡迎來到動物探險島！先選森林樂園或海底樂園，可以看動物，也可以在裡面找動物朋友！")
+		var destination=str(place["zone"])
+		var tile=_picture_button(destination,str(place["title"]),Callable(self,"_go").bind(destination),Vector2(188,134) if wide else Vector2(178,133),scroll)
+		grid.add_child(tile)
 
 func _go(where: String) -> void:
 	match where:
