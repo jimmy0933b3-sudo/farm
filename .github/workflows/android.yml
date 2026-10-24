@@ -91,6 +91,12 @@ jobs:
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd
+      - name: Check guided drawing mini-game GDScript parsing
+        run: |
+          godot --headless --path . --check-only --script scripts/DrawingLessonCanvas.gd
+          godot --headless --path . --check-only --script scripts/DrawingStudio.gd
+      - name: Test drawing academy steps, real traces, decorations and saved artwork
+        run: godot --headless --path . --script tests/drawing_academy_smoke.gd
       - name: Check coloring canvas and room syntax
         run: |
           godot --headless --path . --check-only --script scripts/ColoringCanvas.gd
