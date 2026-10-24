@@ -111,6 +111,20 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"zoo_search":
+			# Zoo hide-and-seek: a magnifying glass, tall giraffe-like tree
+			# silhouette and a lion face. Separate from the park entrance.
+			_oval(0,65,104,24,Color("#A4CB84"))
+			_oval(-22,12,58,55,Color("#E6B877"))
+			_oval(-22,12,42,41,Color("#F8D399"))
+			_oval(-37,0,6,7,Color("#45565D"))
+			_oval(-7,0,6,7,Color("#45565D"))
+			_oval(-22,22,8,6,Color("#7F5949"))
+			_oval(61,-40,43,42,Color("#A7D5E0"))
+			_oval(61,-40,30,29,Color("#E9F6E8"))
+			_line(Vector2(87,-12),Vector2(119,32),Color("#C58C63"),12)
+			_oval(55,-43,7,8,Color("#6E927B"))
+			_oval(72,-40,7,8,Color("#6E927B"))
 		"zoo":
 			# Zoo entrance with lion, elephant and a friendly archway.
 			_oval(0,73,110,26,Color("#92C88E"))
