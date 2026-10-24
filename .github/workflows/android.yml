@@ -80,7 +80,7 @@ jobs:
         run: godot --headless --path . --script tests/species_art_smoke.gd
       - name: Test larger private farm sideways panning and direct petting
         run: godot --headless --path . --script tests/private_farm_pan_smoke.gd
-      - name: Test grounded farm map and 8-slot resident capacity
+      - name: Test expanded farm capacity and 16-slot resident selector
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd

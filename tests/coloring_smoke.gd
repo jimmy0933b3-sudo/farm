@@ -33,6 +33,18 @@ func _run() -> void:
 	game._go("coloring")
 	await process_frame
 	var room=game.coloring_game
+	if room.PALETTE.size()!=30 or room.palette_buttons.size()!=30:
+		_fail("Coloring room must offer exactly thirty color buttons")
+		return
+	var unique_colors={}
+	for hex in room.PALETTE:
+		if unique_colors.has(hex) or not Color.html_is_valid(str(hex)):
+			_fail("Palette contains duplicate or invalid color")
+			return
+		unique_colors[hex]=true
+	if room.palette_buttons[0].get_parent().columns!=10:
+		_fail("Thirty crayons should fit into a three-row ten-column grid")
+		return
 	room.select_animal("rabbit",false)
 	await process_frame
 	var canvas=room.canvas
@@ -62,7 +74,10 @@ func _run() -> void:
 	if region.is_empty():
 		_fail("Cannot find colorable body region")
 		return
-	room.choose_color("#7189ED")
+	room.choose_color("#793EA4")
+	if room.selected_color!="#793EA4" or canvas.brush_color!="#793EA4":
+		_fail("One of the newly added sixteen crayons cannot be selected")
+		return
 	# One tap, no MOVE, must remain blank.
 	canvas.begin_stroke(center)
 	canvas.finish_stroke()
@@ -84,6 +99,9 @@ func _run() -> void:
 	canvas.finish_stroke()
 	var page=game.progress.get_coloring("rabbit")
 	var strokes=page.get("strokes_v2",[])
+	if strokes.is_empty() or str(strokes[0].get("color",""))!="#793EA4":
+		_fail("Painting with the new purple crayon did not persist")
+		return
 	if strokes.size()<1:
 		_fail("Finger stroke was not saved")
 		return
