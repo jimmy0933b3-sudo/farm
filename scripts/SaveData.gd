@@ -26,6 +26,7 @@ func _fresh() -> Dictionary:
 		"zoo_found": [],
 		"private_farm": [],
 		"coloring_pages": {},
+		"drawing_lessons": {},
 		"care": {},
 		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
 		"last_screen": "home"
@@ -376,3 +377,61 @@ func finish_zoo_explore(order: Array) -> void:
 	data["zoo_explore_previous"]=session["placement"].duplicate()
 	data["zoo_explore_session"]={}
 	save()
+
+
+func get_drawing_lesson(animal_id: String) -> Dictionary:
+	if not data["collected"].has(animal_id):
+		return {}
+	var page=data.get("drawing_lessons",{}).get(animal_id,{})
+	return page.duplicate(true) if page is Dictionary else {}
+
+func replace_drawing_lesson(animal_id: String, page: Dictionary) -> bool:
+	# Never unlock uncollected species; limit local artwork size and reject
+	# malformed JSON to protect existing saves. Do not touch coloring_pages.
+	if not data["collected"].has(animal_id):
+		return false
+	var cleaned={
+		"stage":clampi(int(page.get("stage",0)),0,3),
+		"strokes":[],
+		"stamps":[],
+		"completed":bool(page.get("completed",false)),
+		"stars":clampi(int(page.get("stars",0)),0,3)}
+	var total=0
+	var source=page.get("strokes",[])
+	if source is Array:
+		for stroke in source:
+			if not stroke is Dictionary or cleaned["strokes"].size()>=400: continue
+			var phase=clampi(int(stroke.get("stage",0)),0,3)
+			var ink=str(stroke.get("color","#F36F78"))
+			if not _valid_pigment(ink): continue
+			var points=stroke.get("points",[])
+			if not points is Array: continue
+			var result=[]
+			for pair in points:
+				if total>=3000: break
+				if not pair is Array or pair.size()!=2: continue
+				if typeof(pair[0]) not in [TYPE_INT,TYPE_FLOAT] or typeof(pair[1]) not in [TYPE_INT,TYPE_FLOAT]: continue
+				var x=float(pair[0])
+				var y=float(pair[1])
+				if not is_finite(x) or not is_finite(y) or absf(x)>145.0 or absf(y)>156.0: continue
+				result.append([snappedf(x,.5),snappedf(y,.5)])
+				total+=1
+			if not result.is_empty():
+				cleaned["strokes"].append({"stage":phase,"color":ink,"points":result})
+	var stickers=page.get("stamps",[])
+	if stickers is Array:
+		for stamp in stickers:
+			if not stamp is Dictionary or cleaned["stamps"].size()>=70: continue
+			var kind=str(stamp.get("kind",""))
+			var ink=str(stamp.get("color","#F2D25A"))
+			var at=stamp.get("pos",[])
+			if kind not in ["star","heart","paw"] or not _valid_pigment(ink): continue
+			if not at is Array or at.size()!=2: continue
+			if typeof(at[0]) not in [TYPE_INT,TYPE_FLOAT] or typeof(at[1]) not in [TYPE_INT,TYPE_FLOAT]: continue
+			var x=float(at[0])
+			var y=float(at[1])
+			if not is_finite(x) or not is_finite(y) or absf(x)>145 or absf(y)>156: continue
+			cleaned["stamps"].append({"kind":kind,"color":ink,"pos":[snappedf(x,.5),snappedf(y,.5)]})
+	data["drawing_lessons"][animal_id]=cleaned
+	save()
+	return true

@@ -8,6 +8,7 @@ const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const PettingArea = preload("res://scripts/PettingArea.gd")
 const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
+const DrawingStudio = preload("res://scripts/DrawingStudio.gd")
 const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
 const OceanDiscovery = preload("res://scripts/OceanDiscovery.gd")
 const ZooDiscovery = preload("res://scripts/ZooDiscovery.gd")
@@ -39,6 +40,7 @@ var ocean_game: Control
 var zoo_game: Control
 var private_farm_game: Control
 var coloring_game: Control
+var drawing_game: Control
 var settings_scroll: ScrollContainer
 var parent_scroll_y: int=0
 
@@ -64,6 +66,8 @@ func _ready() -> void:
 			show_private_farm()
 		"coloring":
 			show_coloring()
+		"drawing":
+			show_drawing()
 		"forest_explore":
 			show_forest_search()
 		"forest_search":
@@ -99,7 +103,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","zoo","care","album","forest_search","private_farm","coloring","ocean_search","ocean_park","zoo_search"]:
+	if name in ["home","farm","forest","zoo","care","album","forest_search","private_farm","coloring","drawing","ocean_search","ocean_park","zoo_search"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -233,7 +237,7 @@ func _picture_button(item_id: String, caption: String, action: Callable, minimum
 	var color_choices={
 		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),"zoo":Color("#FFE8C3"),
 		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),
-		"coloring":Color("#F6E5F7"),"care":Color("#FDECD5"),
+		"coloring":Color("#F6E5F7"),"drawing":Color("#E7ECFF"),"care":Color("#FDECD5"),
 		"album":Color("#F1E3CE"),"forest_explore":Color("#E4F1D9"),
 		"ocean":Color("#DDF6FC")
 	}
@@ -305,11 +309,12 @@ func show_home() -> void:
 	_home_section(content,scrolling,"🎨 我的動物天地",[
 		{"title":"私人農場","zone":"private_farm"},
 		{"title":"動物著色屋","zone":"coloring"},
+		{"title":"動物畫畫學堂","zone":"drawing"},
 		{"title":"動物之家","zone":"care"},
 		{"title":"動物圖鑑","zone":"album"}
 	],wide)
 	layout.add_child(_label("★ 已認識 %d / %d 位動物朋友！" % [int(progress.data["collected"].size()),animals.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
-	_narrate("歡迎來到動物探險島！上面是四個樂園，往下還有私人農場、動物著色屋、動物之家和圖鑑。")
+	_narrate("歡迎來到動物探險島！四個樂園裡面可以找動物。下面有私人農場、動物著色屋、新的動物畫畫學堂，還有動物之家和圖鑑。")
 
 func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
 	var section=VBoxContainer.new()
@@ -342,6 +347,8 @@ func _go(where: String) -> void:
 			show_private_farm()
 		"coloring":
 			show_coloring()
+		"drawing":
+			show_drawing()
 		"ocean":
 			show_ocean_search()
 		"ocean_park":
@@ -462,6 +469,15 @@ func show_ocean_complete() -> void:
 	actions.add_child(_button("再找一次",Callable(self,"show_ocean_search"),Color("#E5EFFF"),Vector2(220,72)))
 	actions.add_child(_button("海底樂園",Callable(self,"show_zone").bind("ocean"),Color("#DEEFDA"),Vector2(220,72)))
 	_narrate("七種海洋朋友都找到囉！可以再玩一次，也可以把牠們帶去私人農場的大水池！")
+
+func show_drawing() -> void:
+	var layout=_switch("drawing","home")
+	_header(layout,"動物畫畫學堂",Callable(self,"show_home"))
+	drawing_game=DrawingStudio.new()
+	drawing_game.setup(animals,progress,sound)
+	drawing_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	drawing_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	layout.add_child(drawing_game)
 
 func show_coloring() -> void:
 	var layout=_switch("coloring","home")

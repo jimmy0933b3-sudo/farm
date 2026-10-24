@@ -170,6 +170,21 @@ func _draw() -> void:
 				var xx=-87+float(i)*35
 				_line(Vector2(xx,93),Vector2(xx+float(i%2)*13,58),Color("#2FA982"),8)
 				_oval(xx+8,72,11,19,Color("#69CBA3"))
+		"drawing":
+			# Pencil, tracing dots, portrait and decorative stars.
+			_oval(0,67,102,28,Color("#BED7E9"))
+			_oval(-25,-8,70,68,Color("#FFFCF0"))
+			_oval(-58,-70,19,31,Color("#B9C6E5"))
+			_oval(18,-70,19,31,Color("#B9C6E5"))
+			_oval(-20,-8,52,54,Color("#DEE8FA"))
+			_oval(-39,-20,6,7,Color("#36516B"))
+			_oval(1,-20,6,7,Color("#36516B"))
+			_oval(-20,-1,8,6,Color("#E4A6AB"))
+			_line(Vector2(40,71),Vector2(89,-62),Color("#EAA665"),18)
+			_shape([Vector2(80,-62),Vector2(93,-95),Vector2(103,-54)],Color("#486C9E"))
+			for i in range(5):
+				_oval(-72+float(i)*24,72-float(i%2)*7,4,4,Color("#4AACC2"))
+			_shape([Vector2(-79,-45),Vector2(-72,-59),Vector2(-65,-45),Vector2(-51,-42),Vector2(-65,-37),Vector2(-72,-23)],Color("#F2C86D"))
 		"coloring":
 			# Crayon + black outline rabbit for the separate homepage tile.
 			_oval(-16,39,63,65,Color.WHITE)
