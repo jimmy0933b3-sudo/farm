@@ -142,6 +142,14 @@ func _draw() -> void:
 		_draw_zoo_animal()
 		draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 		return
+	if animal_id == "squirrel":
+		_draw_squirrel()
+		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+		return
+	if animal_id == "fox":
+		_draw_fox()
+		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+		return
 	if animal_id == "snake":
 		_draw_snake()
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
@@ -540,3 +548,95 @@ func _draw_zoo_animal() -> void:
 		_poly([Vector2(81,-120),Vector2(115,-120),Vector2(98,-98)],Color("#F48DAC"))
 	elif mood=="eating":
 		_oval(10,45,8,7,Color("#E8C77D"))
+
+
+func _draw_squirrel() -> void:
+	# A SMALL round-cheeked squirrel with the unmistakable enormous CURLING
+	# tail. Not the same triangular-eared portrait previously shared with fox.
+	var fur=tint if not coloring_mode else Color.WHITE
+	var deep=COLOR_INK if coloring_mode else tint.darkened(0.33)
+	var cream=Color.WHITE if coloring_mode else Color("#FFF0C8")
+	var ink=COLOR_INK
+	# Distinctive S-shaped raised tail, with a visible central curl.
+	_oval(74,-32,42,66,deep)
+	_oval(87,-45,35,50,fur)
+	_oval(91,-52,19,32,cream)
+	_oval(93,-80,20,18,deep)
+	_oval(73,-14,21,27,fur)
+	# Smaller upright body and separate back paws.
+	_oval(-23,72,20,24,deep)
+	_oval(26,73,20,23,deep)
+	_oval(0,29,51,62,fur)
+	_oval(0,27,30,49,cream)
+	# Little ROUND ears. Fox has long pointed ears instead.
+	_oval(-48,-88,20,23,deep)
+	_oval(48,-88,20,23,deep)
+	_oval(-48,-87,11,13,Color.WHITE if coloring_mode else Color("#F1BCB2"))
+	_oval(48,-87,11,13,Color.WHITE if coloring_mode else Color("#F1BCB2"))
+	_oval(0,-42,55,54,fur)
+	_oval(-29,-13,24,21,cream)
+	_oval(29,-13,24,21,cream)
+	_oval(0,-6,13,10,cream)
+	for x in [-20.0,20.0]:
+		if mood in ["blink","sleep"]:
+			draw_arc(Vector2(x,-48),9,0.2,PI-0.2,13,ink,3.2,true)
+		elif mood in ["happy","play","surprised","clean"]:
+			draw_arc(Vector2(x,-48),11,PI+0.13,TAU-0.13,13,ink,3.2,true)
+		else:
+			_oval(x,-48,7,10,ink)
+			_oval(x-2,-51,2.4,3.2,Color.WHITE)
+	_oval(0,-17,8,6,ink)
+	draw_arc(Vector2(0,-10),12,0.13,PI-0.13,13,ink,2.5,true)
+	# Acorn held at chest is distinctive even in the album thumbnail.
+	_oval(-13,27,13,21,Color.WHITE if coloring_mode else Color("#B97846"))
+	_oval(-13,12,15,8,deep)
+	_oval(-36,30,16,13,fur)
+	_oval(19,35,15,13,fur)
+	if mood in ["happy","play","surprised","clean"]:
+		_oval(-38,-18,10,7,Color("#F4B7AA"))
+		_oval(38,-18,10,7,Color("#F4B7AA"))
+		_oval(68,-106,9,10,Color("#F28DA0"))
+
+func _draw_fox() -> void:
+	# Sharp triangular ears, angular white face, elongated snout, and a
+	# horizontal white-tipped brush tail. Entirely different silhouette.
+	var coat=tint if not coloring_mode else Color.WHITE
+	var dark=COLOR_INK if coloring_mode else tint.darkened(0.34)
+	var cream=Color.WHITE if coloring_mode else Color("#FFF8DD")
+	var ink=COLOR_INK
+	# Long bushy tail extends sideways, NOT coiled above the fox.
+	_poly([Vector2(34,41),Vector2(111,12),Vector2(139,58),Vector2(111,86),Vector2(54,74)],coat)
+	_poly([Vector2(101,17),Vector2(139,58),Vector2(109,82),Vector2(91,60)],cream)
+	_oval(-38,68,22,27,dark)
+	_oval(36,68,22,27,dark)
+	_oval(0,29,72,68,coat)
+	_poly([Vector2(-36,30),Vector2(0,93),Vector2(36,30)],cream)
+	# Fox's two DISTINCT upward triangles remain colorable.
+	_poly([Vector2(-65,-45),Vector2(-70,-129),Vector2(-9,-82)],dark)
+	_poly([Vector2(65,-45),Vector2(70,-129),Vector2(9,-82)],dark)
+	_poly([Vector2(-59,-69),Vector2(-65,-115),Vector2(-31,-79)],Color.WHITE if coloring_mode else Color("#E9B1A4"))
+	_poly([Vector2(59,-69),Vector2(65,-115),Vector2(31,-79)],Color.WHITE if coloring_mode else Color("#E9B1A4"))
+	# Broad orange forehead, narrow white cheek points and pointed muzzle.
+	_poly([Vector2(-68,-64),Vector2(0,-103),Vector2(68,-64),Vector2(63,-15),Vector2(0,18),Vector2(-63,-15)],coat)
+	_poly([Vector2(-66,-24),Vector2(-13,-11),Vector2(0,22),Vector2(-62,1)],cream)
+	_poly([Vector2(66,-24),Vector2(13,-11),Vector2(0,22),Vector2(62,1)],cream)
+	_oval(0,14,27,18,cream)
+	if mood in ["blink","sleep"]:
+		draw_arc(Vector2(-27,-44),12,0.2,PI-0.2,12,ink,3.3,true)
+		draw_arc(Vector2(27,-44),12,0.2,PI-0.2,12,ink,3.3,true)
+	elif mood in ["happy","play","surprised","clean"]:
+		draw_arc(Vector2(-27,-44),12,PI+0.2,TAU-0.2,12,ink,3.5,true)
+		draw_arc(Vector2(27,-44),12,PI+0.2,TAU-0.2,12,ink,3.5,true)
+	else:
+		_oval(-27,-44,7,10,ink)
+		_oval(27,-44,7,10,ink)
+	_poly([Vector2(-9,4),Vector2(9,4),Vector2(0,14)],ink)
+	draw_arc(Vector2(0,18),11,0.12,PI-0.12,13,ink,2.6,true)
+	# Whiskers and white tail tip are observable at sticker size.
+	for side in [-1.0,1.0]:
+		draw_line(Vector2(side*18,7),Vector2(side*51,4),ink,2,true)
+		draw_line(Vector2(side*18,11),Vector2(side*49,22),ink,2,true)
+	if mood in ["happy","play","surprised","clean"]:
+		_oval(-45,-8,11,6,Color("#F6AD9B"))
+		_oval(45,-8,11,6,Color("#F6AD9B"))
+		_oval(88,-100,10,11,Color("#F58BA3"))
