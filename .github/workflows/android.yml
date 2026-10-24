@@ -70,6 +70,13 @@ jobs:
         run: godot --headless --path . --script tests/forest_discovery_smoke.gd
       - name: Test independent large forest adventure
         run: godot --headless --path . --script tests/large_forest_smoke.gd
+      - name: Check Zoo discovery, panorama and hiding spot scripts
+        run: |
+          godot --headless --path . --check-only --script scripts/ZooDiscovery.gd
+          godot --headless --path . --check-only --script scripts/ZooMap.gd
+          godot --headless --path . --check-only --script scripts/ZooHideSpot.gd
+      - name: Test zoo find-six gameplay, save, resume and replay
+        run: godot --headless --path . --script tests/zoo_search_smoke.gd
       - name: Test Zoo Park six animals, shared monkey and seal lifecycle
         run: godot --headless --path . --script tests/zoo_seal_smoke.gd
       - name: Test ocean discovery and pond swimmers
