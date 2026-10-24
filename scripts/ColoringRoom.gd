@@ -5,9 +5,13 @@ const Canvas = preload("res://scripts/ColoringCanvas.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 
+# Thirty crayons, including every color from earlier versions.
 const PALETTE = [
 	"#F26A72","#F49E50","#FFD95B","#81CA78","#3FBBAD","#67C8F3","#7189ED",
-	"#AD7BE3","#EF98C9","#F1C7A3","#99684D","#747A83","#333F4B","#FFFFFF"
+	"#AD7BE3","#EF98C9","#F1C7A3","#99684D","#747A83","#333F4B","#FFFFFF",
+	"#C63F53","#FFB2A6","#E57C2D","#FFE8A2","#C4EA5F","#47984B","#A4E4C1",
+	"#157E87","#3164B2","#253C8B","#BCE7FF","#D8BEFA","#793EA4","#D9589D",
+	"#BE935E","#182432"
 ]
 
 var animals: Array=[]
@@ -68,15 +72,18 @@ func _ready() -> void:
 	tools.add_child(undo_button)
 	tools.add_child(_button("全部重畫",Callable(self,"reset_coloring"),Vector2(154,47)))
 	tools.add_child(_button("聽玩法",Callable(self,"repeat_guide"),Vector2(132,47)))
+	left.add_child(_label("彩色筆 · 30 種顏色",17))
 	var colors=GridContainer.new()
-	colors.columns=7
+	# 10x3 grid keeps the drawing paper large on landscape tablets.
+	colors.columns=10
 	colors.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
-	colors.add_theme_constant_override("h_separation",8)
+	colors.add_theme_constant_override("h_separation",5)
 	colors.add_theme_constant_override("v_separation",5)
 	left.add_child(colors)
 	for hex in PALETTE:
 		var button=Button.new()
-		button.custom_minimum_size=Vector2(61,41)
+		button.custom_minimum_size=Vector2(43,36)
+		button.tooltip_text="彩色筆 %d" % [palette_buttons.size()+1]
 		var style=StyleBoxFlat.new()
 		style.bg_color=Color(hex)
 		style.border_color=Color("#EBCB78") if hex==selected_color else Color("#ACB6C0")
@@ -123,7 +130,7 @@ func _ready() -> void:
 	else:
 		canvas.visible=false
 		guide.text="先去農場或森林收集動物，就能幫牠們上色！"
-	voice.speak("歡迎動物著色屋！選喜歡的顏色，用手指在動物身上慢慢來回塗，直到整個區塊都上好色！點一下不會整塊變色喔。")
+	voice.speak("歡迎動物著色屋！現在有三十種顏色喔！選喜歡的顏色，用手指在動物身上慢慢來回塗，點一下不會整塊變色，也不會塗到其他格。")
 
 func _collected_ids() -> Array:
 	var result: Array=[]

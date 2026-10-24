@@ -135,7 +135,7 @@ func get_forest_explore_session(order: Array) -> Dictionary:
 		save()
 	return session
 
-func private_farm_add_status(animal_id: String, capacity: int = 8) -> String:
+func private_farm_add_status(animal_id: String, capacity: int = 16) -> String:
 	if not data["collected"].has(animal_id):
 		return "locked"
 	var residents: Array = data["private_farm"]
@@ -147,7 +147,7 @@ func private_farm_add_status(animal_id: String, capacity: int = 8) -> String:
 	save()
 	return "added"
 
-func private_farm_add(animal_id: String, capacity: int = 8) -> bool:
+func private_farm_add(animal_id: String, capacity: int = 16) -> bool:
 	# Keep old callers compatible without conflating 'locked' and 'full'.
 	return private_farm_add_status(animal_id,capacity) in ["added","already"]
 

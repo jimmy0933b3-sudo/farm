@@ -60,7 +60,7 @@ func _ready() -> void:
 	left.add_child(info_label)
 	# Wider-than-the-screen scenery under a fixed, clipped viewport.
 	farm_view=Control.new()
-	farm_view.custom_minimum_size=Vector2(555,260)
+	farm_view.custom_minimum_size=Vector2(555,310)
 	farm_view.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	farm_view.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	farm_view.clip_contents=true
@@ -252,7 +252,7 @@ func _sync_residents() -> void:
 			continue
 		var creature = SwimmingAnimal.new() if str(info.get("zone",""))=="ocean" else RoamingAnimal.new()
 		creature.setup(info,reduce_motion)
-		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else Vector2(82,88)
+		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else Vector2(74,78)
 		creature.petted.connect(_on_animal_petted)
 		creature.reaction_finished.connect(_on_reaction_finished)
 		habitat.add_child(creature)
@@ -297,8 +297,8 @@ func _layout_residents() -> void:
 	# Separate two true habitats. Grass residents stay left; swimmers stay in
 	# the large pond on the right. Do not let either group cross habitats.
 	var grass=Rect2(
-		Vector2(14,habitat.size.y*0.60),
-		Vector2(habitat.size.x*0.515,habitat.size.y*0.34)
+		Vector2(14,habitat.size.y*0.535),
+		Vector2(habitat.size.x*0.515,habitat.size.y*0.43)
 	)
 	var pond=Rect2(
 		Vector2(habitat.size.x*0.632,habitat.size.y*0.535),
@@ -329,7 +329,7 @@ func _layout_residents() -> void:
 			var lane=float(col)+(0.28 if row==0 else 0.72)
 			var pos=Vector2(
 				grass.position.x+grass.size.x*lane/8.0-creature.size.x*0.5,
-				habitat.size.y*(0.70 if row==0 else 0.88)-creature.size.y*0.5
+				grass.position.y+grass.size.y*(0.25 if row==0 else 0.75)-creature.size.y*0.5
 			)
 			creature.set_bounds(grass,pos)
 			land_slot+=1
