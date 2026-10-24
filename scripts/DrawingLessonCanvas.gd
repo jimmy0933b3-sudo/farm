@@ -22,6 +22,8 @@ var mouse_held: bool=false
 var current_stroke: int=-1
 var last_touch=Vector2.ZERO
 var score_cache: Array=[]
+var point_total: int=0
+var guide_revision: int=0
 
 func link_artist(original: Control) -> void:
 	artist=original
@@ -37,14 +39,20 @@ func setup(info: Dictionary, saved: Dictionary={}) -> void:
 	stage=int(page["stage"])
 	guides.clear()
 	score_cache.clear()
+	point_total=_point_count()
+	guide_revision+=1
 	if is_instance_valid(artist):
 		artist.setup(info)
 		artist.set_coloring(true,{})
-	call_deferred("_build_guides")
+	_rebuild_after_render.call_deferred(guide_revision)
 	queue_redraw()
 
-func _process(_delta: float) -> void:
-	if guides.is_empty() and is_instance_valid(artist) and artist.get_coloring_regions().size()>4:
+func _rebuild_after_render(expected_revision: int) -> void:
+	# Give the ORIGINAL AnimalArt two render frames to replace old shapes.
+	# Otherwise a fast gallery switch can inherit the previous animal's guides.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if expected_revision==guide_revision and is_instance_valid(artist):
 		_build_guides()
 
 func _world(point: Vector2) -> Vector2:
@@ -164,9 +172,10 @@ func start_stroke(screen_point: Vector2) -> void:
 			queue_redraw()
 			changed.emit()
 		return
-	if _point_count()>=MAX_POINTS: return
+	if point_total>=MAX_POINTS: return
 	current_stroke=page["strokes"].size()
 	page["strokes"].append({"stage":stage,"color":brush,"points":[[point.x,point.y]]})
+	point_total+=1
 	painting=true
 	last_touch=screen_point
 	queue_redraw()
@@ -177,10 +186,11 @@ func drag_stroke(screen_point: Vector2) -> void:
 	if movement.length()<2.0: return
 	var steps=clampi(int(ceil(movement.length()/9.0)),1,45)
 	for i in range(1,steps+1):
-		if _point_count()>=MAX_POINTS: break
+		if point_total>=MAX_POINTS: break
 		var point=_world(last_touch.lerp(screen_point,float(i)/steps))
 		if absf(point.x)>143.0 or absf(point.y)>155.0: continue
 		page["strokes"][current_stroke]["points"].append([snappedf(point.x,.5),snappedf(point.y,.5)])
+		point_total+=1
 	last_touch=screen_point
 	queue_redraw()
 
@@ -199,6 +209,7 @@ func undo() -> void:
 		stamps.pop_back()
 	elif not strokes.is_empty():
 		strokes.pop_back()
+	point_total=_point_count()
 	changed.emit()
 	queue_redraw()
 
@@ -206,6 +217,7 @@ func reset_picture() -> void:
 	end_stroke()
 	page={"stage":0,"strokes":[],"stamps":[],"completed":false,"stars":0}
 	stage=0
+	point_total=0
 	changed.emit()
 	queue_redraw()
 
