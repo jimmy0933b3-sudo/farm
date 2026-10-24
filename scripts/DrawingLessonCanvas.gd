@@ -55,6 +55,14 @@ func _rebuild_after_render(expected_revision: int) -> void:
 	if expected_revision==guide_revision and is_instance_valid(artist):
 		_build_guides()
 
+func _process(_delta: float) -> void:
+	# Godot renders Control artwork lazily. Read its vector polygons only
+	# after the real animal has drawn and its size becomes nonzero. The
+	# deferred refresh alone may be too early on a loaded scene.
+	if guides.size()<3 and is_instance_valid(artist) and artist.animal_id==animal_id:
+		if artist.get_coloring_regions().size()>=5:
+			_build_guides()
+
 func _world(point: Vector2) -> Vector2:
 	var factor=minf(size.x/220.0,size.y/220.0)
 	if factor<=0.0: return Vector2(10000,10000)
