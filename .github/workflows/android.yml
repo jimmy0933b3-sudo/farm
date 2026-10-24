@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   android:
@@ -163,4 +164,40 @@ jobs:
             build/AnimalAdventureIsland-signed.apk
             build/SIGNING-INFO.txt
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
+
+      # Keep exactly one successful signed APK archive (latest workflow run).
+      # Cleanup runs ONLY after all tests, export, verification and artifact
+      # upload succeeded; previous working APK remains if any step fails.
+      - name: Remove older signed APK artifacts
+        if: github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const name = 'AnimalAdventureIsland-signed-APK';
+            const all = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            const apks = all.filter(item => item.name === name && !item.expired);
+            if (apks.length < 2) {
+              core.info('Only one signed APK artifact exists, nothing to delete.');
+              return;
+            }
+            // Use workflow RUN IDs instead of upload timestamps: an older
+            // queued run may finish uploading after a newer commit's run.
+            apks.sort((a,b) =>
+              (Number(b.workflow_run?.id || 0) - Number(a.workflow_run?.id || 0)) ||
+              (Number(b.id) - Number(a.id))
+            );
+            const latest = apks[0];
+            core.info('Keeping APK artifact '+latest.id+' from run '+latest.workflow_run?.id);
+            for (const old of apks.slice(1)) {
+              await github.rest.actions.deleteArtifact({ owner, repo, artifact_id: old.id });
+              core.info('Deleted older signed APK artifact '+old.id);
+            }
+            core.info('Retained 1 latest signed APK; removed '+(apks.length-1)+' older archives.');
+
