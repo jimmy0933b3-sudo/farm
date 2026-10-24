@@ -20,6 +20,12 @@ var available_list: GridContainer
 var available_scroll: ScrollContainer
 var remove_button: Button
 var habitat: Control
+var farm_view: Control
+var camera_x: float = 0.0
+var world_width: float = 1680.0
+var pointer_last: Vector2 = Vector2.ZERO
+var pan_start: Vector2 = Vector2.ZERO
+var pan_distance: float = 0.0
 var hand: Control
 var info_label: Label
 var counter: Label
@@ -49,15 +55,24 @@ func _ready() -> void:
 	left.add_theme_constant_override("separation",6)
 	add_child(left)
 
-	info_label = _label("動物們正在散步，摸摸牠們吧！",23)
+	info_label = _label("左右滑動逛大農場，摸摸動物吧！",21)
 	left.add_child(info_label)
-	habitat = Control.new()
-	habitat.custom_minimum_size = Vector2(490,260)
-	habitat.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	habitat.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	habitat.clip_contents = true
-	habitat.mouse_filter = Control.MOUSE_FILTER_STOP
-	left.add_child(habitat)
+	# Wider-than-the-screen scenery under a fixed, clipped viewport.
+	farm_view=Control.new()
+	farm_view.custom_minimum_size=Vector2(555,260)
+	farm_view.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	farm_view.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	farm_view.clip_contents=true
+	farm_view.mouse_filter=Control.MOUSE_FILTER_STOP
+	left.add_child(farm_view)
+	habitat=Control.new()
+	habitat.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	habitat.clip_contents=true
+	habitat.size=Vector2(world_width,330)
+	farm_view.add_child(habitat)
+	farm_view.resized.connect(_resize_world)
+	farm_view.gui_input.connect(_on_habitat_input)
+	call_deferred("_resize_world")
 
 	var bg = PrivateFarmLandscape.new()
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -69,7 +84,6 @@ func _ready() -> void:
 	hand.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hand.show_hand = false
 	habitat.add_child(hand)
-	habitat.gui_input.connect(_on_habitat_input)
 	habitat.resized.connect(_layout_residents)
 
 	commands = HBoxContainer.new()
@@ -82,7 +96,7 @@ func _ready() -> void:
 		commands.add_child(btn)
 
 	var right = VBoxContainer.new()
-	right.custom_minimum_size = Vector2(314,0)
+	right.custom_minimum_size = Vector2(275,0)
 	right.size_flags_horizontal = Control.SIZE_FILL
 	right.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right.add_theme_constant_override("separation",5)
@@ -100,7 +114,7 @@ func _ready() -> void:
 	# All eight residents stay visible. No sideways scrollbar or tiny drag handle.
 	resident_list = GridContainer.new()
 	resident_list.columns = 4
-	resident_list.custom_minimum_size = Vector2(305,166)
+	resident_list.custom_minimum_size = Vector2(268,166)
 	resident_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	resident_list.add_theme_constant_override("h_separation",3)
 	resident_list.add_theme_constant_override("v_separation",4)
@@ -124,7 +138,7 @@ func _ready() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	voice.speak("歡迎來到私人農場！草地動物會散步，海洋朋友會在右邊大水池游泳。用手指直接摸摸牠們！")
+	voice.speak("歡迎來到大大的私人農場！手指左右滑動可以逛完整張地圖，摸摸動物會有開心反應，往右可以找到大水池喔！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -160,7 +174,7 @@ func _animal(id: String) -> Dictionary:
 	return {}
 
 func _card(info: Dictionary, action: Callable, selected: bool, is_member: bool) -> Button:
-	var b = _round("",action if is_member else Callable(),Vector2(73,80) if is_member else Vector2(94,105))
+	var b = _round("",action if is_member else Callable(),Vector2(63,79) if is_member else Vector2(87,101))
 	if not is_member:
 		available_scroll.wire_button(b,action)
 	var box = StyleBoxFlat.new()
@@ -181,7 +195,7 @@ func _card(info: Dictionary, action: Callable, selected: bool, is_member: bool) 
 	var art = AnimalArt.new()
 	art.setup(info)
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	art.custom_minimum_size = Vector2(62,54) if is_member else Vector2(78,74)
+	art.custom_minimum_size = Vector2(55,52) if is_member else Vector2(70,70)
 	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(art)
 	col.add_child(_label(str(info.get("name","動物")),14 if is_member else 17))
@@ -242,18 +256,42 @@ func _sync_residents() -> void:
 	_layout_residents()
 	call_deferred("_layout_residents")
 
+func _resize_world() -> void:
+	if not is_instance_valid(farm_view) or not is_instance_valid(habitat):
+		return
+	if farm_view.size.x<100.0 or farm_view.size.y<100.0:
+		return
+	world_width=maxf(1680.0,farm_view.size.x*2.3)
+	habitat.size=Vector2(world_width,farm_view.size.y)
+	_set_camera(camera_x)
+	_layout_residents()
+
+func _set_camera(value: float) -> void:
+	if not is_instance_valid(habitat) or not is_instance_valid(farm_view):
+		return
+	camera_x=clampf(value,0.0,maxf(0.0,world_width-farm_view.size.x))
+	habitat.position=Vector2(-camera_x,0)
+
+func pan_by(distance: float) -> void:
+	_set_camera(camera_x+distance)
+
+func focus_resident(id: String) -> void:
+	if actors.has(id) and is_instance_valid(farm_view):
+		var actor=actors[id]
+		_set_camera(actor.position.x+actor.size.x*.5-farm_view.size.x*.5)
+
 func _layout_residents() -> void:
 	if not is_instance_valid(habitat) or habitat.size.x < 300.0 or habitat.size.y < 180.0:
 		return
 	# Separate two true habitats. Grass residents stay left; swimmers stay in
 	# the large pond on the right. Do not let either group cross habitats.
 	var grass=Rect2(
-		Vector2(13,habitat.size.y*0.58),
-		Vector2(habitat.size.x*0.52,habitat.size.y*0.38)
+		Vector2(14,habitat.size.y*0.60),
+		Vector2(habitat.size.x*0.515,habitat.size.y*0.34)
 	)
 	var pond=Rect2(
-		Vector2(habitat.size.x*0.625,habitat.size.y*0.51),
-		Vector2(habitat.size.x*0.28,habitat.size.y*0.31)
+		Vector2(habitat.size.x*0.632,habitat.size.y*0.535),
+		Vector2(habitat.size.x*0.285,habitat.size.y*0.29)
 	)
 	var land_slot=0
 	var sea_slot=0
@@ -272,10 +310,10 @@ func _layout_residents() -> void:
 			creature.set_bounds(pond,pos)
 			sea_slot+=1
 		else:
-			var col=land_slot%3
-			var row=int(land_slot/3)
+			var col=land_slot%4
+			var row=int(land_slot/4)
 			var pos=Vector2(
-				grass.position.x+grass.size.x*(float(col)+0.5)/3.0-creature.size.x*0.5,
+				grass.position.x+grass.size.x*(float(col)+0.5)/4.0-creature.size.x*0.5,
 				habitat.size.y*(0.73 if row==0 else 0.86)-creature.size.y*0.5
 			)
 			creature.set_bounds(grass,pos)
@@ -302,6 +340,7 @@ func place_animal(id: String) -> void:
 	active_id = id
 	_sync_residents()
 	_rebuild_cards()
+	focus_resident(id)
 	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else "%s來農場散步啦！" % str(_animal(id).get("name","動物"))
 	voice.speak("%s來玩囉！" % str(_animal(id).get("name","動物")))
 	_update_command_buttons()
@@ -330,6 +369,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 	if not id.is_empty():
 		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物"))
 	if announce and not id.is_empty():
+		focus_resident(id)
 		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))
 
 func _update_command_buttons() -> void:
@@ -383,27 +423,45 @@ func _finish_touch() -> void:
 		hand.show_hand = false
 		hand.queue_redraw()
 
+func _begin_world_gesture(point: Vector2) -> void:
+	pointer_last=point
+	pan_start=point
+	pan_distance=0.0
+	_start_touch(point+Vector2(camera_x,0))
+
+func _drag_world_gesture(point: Vector2) -> void:
+	if not touching_id.is_empty():
+		_move_touch(point+Vector2(camera_x,0))
+	else:
+		var movement=point-pointer_last
+		pan_distance=maxf(pan_distance,point.distance_to(pan_start))
+		if pan_distance>12.0:
+			pan_by(-movement.x)
+	pointer_last=point
+
 func _on_habitat_input(event: InputEvent) -> void:
+	# Touch an animal to pet; drag EMPTY ground to scroll. Same for mouse.
 	if event is InputEventScreenTouch:
-		if event.pressed and pointer_index == -1:
-			if _start_touch(event.position):
-				pointer_index = event.index
-				habitat.accept_event()
-		elif not event.pressed and pointer_index == event.index:
+		if event.pressed and pointer_index==-1 and not mouse_down:
+			pointer_index=event.index
+			_begin_world_gesture(event.position)
+			farm_view.accept_event()
+		elif not event.pressed and pointer_index==event.index:
 			_finish_touch()
-			habitat.accept_event()
-	elif event is InputEventScreenDrag and event.index == pointer_index and not touching_id.is_empty():
-		_move_touch(event.position)
-		habitat.accept_event()
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and pointer_index == -1:
+			farm_view.accept_event()
+	elif event is InputEventScreenDrag and event.index==pointer_index:
+		_drag_world_gesture(event.position)
+		farm_view.accept_event()
+	elif event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and pointer_index==-1:
 		if event.pressed:
-			mouse_down = _start_touch(event.position)
+			mouse_down=true
+			_begin_world_gesture(event.position)
 		elif mouse_down:
 			_finish_touch()
-		habitat.accept_event()
-	elif event is InputEventMouseMotion and mouse_down and pointer_index == -1:
-		_move_touch(event.position)
-		habitat.accept_event()
+		farm_view.accept_event()
+	elif event is InputEventMouseMotion and mouse_down and pointer_index==-1:
+		_drag_world_gesture(event.position)
+		farm_view.accept_event()
 
 func _on_animal_petted(id: String) -> void:
 	pet_feedback_count += 1
