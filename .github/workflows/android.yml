@@ -76,6 +76,10 @@ jobs:
         run: godot --headless --path . --script tests/ocean_smoke.gd
       - name: Test landscape UI boundaries and no white hideout buttons
         run: godot --headless --path . --script tests/layout_smoke.gd
+      - name: Test separated park header and distinct squirrel/fox original silhouettes
+        run: godot --headless --path . --script tests/species_art_smoke.gd
+      - name: Test larger private farm sideways panning and direct petting
+        run: godot --headless --path . --script tests/private_farm_pan_smoke.gd
       - name: Test grounded farm map and 8-slot resident capacity
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents

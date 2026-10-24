@@ -23,6 +23,19 @@ func _run() -> void:
 		if cards.size()!=8:
 			_fail("Home must show exactly 8 fully illustrated actions, got "+str(cards.size()))
 			return
+		# Parks must form a visually distinct FIRST ROW. Tool icons start below a
+		# generous 40px+ gap, not pressed against park cards.
+		if cards.size()==8:
+			var park_y=cards[0].get_global_rect().position.y
+			var park_bottom=cards[0].get_global_rect().end.y
+			var tool_y=cards[4].get_global_rect().position.y
+			for index in range(4):
+				if absf(cards[index].get_global_rect().position.y-park_y)>3:
+					_fail("Park icons no longer share their own first row")
+					return
+			if tool_y-park_bottom<50:
+				_fail("Park row and activity icons need at least 50px of visual separation")
+				return
 		for i in range(cards.size()):
 			var a: Rect2=cards[i].get_global_rect()
 			if a.position.x < 0.0 or a.end.x > game.size.x+1.0:
