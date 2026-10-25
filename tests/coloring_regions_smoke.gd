@@ -16,8 +16,8 @@ func _screen(art: Control, world: Vector2) -> Vector2:
 func _run() -> void:
 	var contents=FileAccess.get_file_as_string("res://data/animals.json")
 	var animals=JSON.parse_string(contents)
-	if not animals is Array or animals.size()!=31:
-		_fail("31 expected animals missing")
+	if not animals is Array or animals.size()!=37:
+		_fail("37 expected animals missing")
 		return
 	var art=Art.new()
 	root.add_child(art)
@@ -51,7 +51,7 @@ func _run() -> void:
 		# least one small appendage. Scan exposed outlines using hit testing.
 		var unique={}
 		for yy in range(-171,121,11):
-			for xx in range(-130,131,11):
+			for xx in range(-130,137,11):
 				var name=art.color_region_at(_screen(art,Vector2(xx,yy)))
 				if not name.is_empty():
 					unique[name]=true
@@ -113,7 +113,7 @@ func _run() -> void:
 	if progress.get_coloring("deer").get("strokes_v2",[]).size()!=1:
 		_fail("Antler color stroke was filtered out of save data")
 		return
-	print("PASS: 31 animal region maps; ears, coat patches, snout, feet, crest, antlers, snake coils/neck, save")
+	print("PASS: 37 animal region maps; ears, coat patches, snout, feet, crest, antlers, snake coils/neck, save")
 	canvas.queue_free()
 	art.queue_free()
 	await process_frame

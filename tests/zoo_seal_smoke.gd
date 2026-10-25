@@ -30,8 +30,8 @@ func _run() -> void:
 			_fail("Animal ID duplicated: "+id)
 			return
 		animals_by_id[id]=a
-	if animals_by_id.size()!=31:
-		_fail("31 distinct species expected")
+	if animals_by_id.size()!=37:
+		_fail("37 distinct species expected")
 		return
 	var zoo_ids=["camel","lion","tiger","elephant","monkey","hippo"]
 	var zoo_new=0

@@ -123,7 +123,7 @@ func _run() -> void:
 	if canvas.stage!=0 or not canvas.page.get("strokes",[]).is_empty():
 		_fail("Second reset should clear only that animal's drawing")
 		return
-	# 31 species: every character must have enough real vector geometry for 3 guides.
+	# 37 species: every character must have enough real vector geometry for 3 guides.
 	for info in game.animals:
 		canvas.setup(info,{})
 		await process_frame
@@ -134,7 +134,7 @@ func _run() -> void:
 	game.progress.data["collected"]=old_collected
 	game.progress.data["drawing_lessons"]=old_lessons
 	game.progress.save()
-	print("PASS: drawing icon, 31 animal outlines, 3 scored tracing steps, three stamps, stars, reset and per-animal persisted progress")
+	print("PASS: drawing icon, 37 animal outlines, 3 scored tracing steps, three stamps, stars, reset and per-animal persisted progress")
 	game.queue_free()
 	await process_frame
 	quit(0)
