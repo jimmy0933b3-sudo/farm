@@ -416,7 +416,7 @@ func show_zone(zone: String) -> void:
 	if zone=="insect":
 		_narrate("這裡是昆蟲樂園！有七隻昆蟲朋友。用手指點一隻昆蟲，聽牠的介紹，也可以玩昆蟲大探險！")
 	else:
-		_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone=="farm" else ("森林" if zone=="forest" else ("動物園" if zone=="zoo" else "海底樂園")))))
+		_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % str({"farm":"農場","forest":"森林","zoo":"動物園","ocean":"海底樂園"}.get(zone,"探索樂園")))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
 
 func show_zoo_search() -> void:
