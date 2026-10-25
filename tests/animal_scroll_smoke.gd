@@ -1,6 +1,6 @@
 extends SceneTree
 ## Regression for real finger and mouse swipes over ANIMAL buttons.
-## Includes ocean park cards, 37-sticker album, coloring gallery and care tabs.
+## Includes ocean park cards, 38-sticker album, coloring gallery and care tabs.
 const DragScroll=preload("res://scripts/TouchAnimalScroll.gd")
 const ChoiceArt=preload("res://scripts/ChoiceArt.gd")
 func _initialize() -> void:
@@ -70,8 +70,8 @@ func _run() -> void:
 		return
 	var scroll=scrollers[0]
 	var grid=scroll.get_child(0)
-	if grid.get_child_count()!=37:
-		_fail("Album did not show all 37 animal cards")
+	if grid.get_child_count()!=38:
+		_fail("Album did not show all 38 animal cards")
 		return
 	if scroll.get_v_scroll_bar().max_value-scroll.size.y<100.0:
 		_fail("Album cannot move vertically across rows of animal cards")

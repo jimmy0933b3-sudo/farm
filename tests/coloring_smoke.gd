@@ -164,7 +164,7 @@ func _run() -> void:
 	game.progress.data["collected"]=original_collected
 	game.progress.data["coloring_pages"]=old_pages
 	game.progress.save()
-	print("PASS: 37 original animals, no tap-to-fill, real clipped finger stroke, partial save, undo, reset and reload")
+	print("PASS: 38 original animals, no tap-to-fill, real clipped finger stroke, partial save, undo, reset and reload")
 	game.queue_free()
 	await process_frame
 	quit(0)
