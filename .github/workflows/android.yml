@@ -86,6 +86,8 @@ jobs:
           godot --headless --path . --check-only --script scripts/InsectHideSpot.gd
       - name: Test zoo find-six gameplay, save, resume and replay
         run: godot --headless --path . --script tests/zoo_search_smoke.gd
+      - name: Verify insect-specific Mandarin narration in all activity screens
+        run: godot --headless --path . --script tests/insect_narration_smoke.gd
       - name: Test insect park icons and original colorable portraits
         run: godot --headless --path . --script tests/insect_park_smoke.gd
       - name: Test seven-insect seek-and-find lifecycle, save migration and persistence
