@@ -100,7 +100,7 @@ func _run() -> void:
 		if artist.get_coloring_regions().size()<7:
 			_fail("Beetle paintable pieces missing: "+id)
 			return
-		var top=artist.color_region_at(_screen(artist,Vector2(0,-128)))!=""
+		var top=artist.color_region_at(_screen(artist,Vector2(0,-111)))!=""
 		var left=artist.color_region_at(_screen(artist,Vector2(-83,-112)))!=""
 		var right=artist.color_region_at(_screen(artist,Vector2(83,-112)))!=""
 		silhouettes.append([top,left,right])
