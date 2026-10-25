@@ -119,12 +119,12 @@ func _run() -> void:
 	if not _said(sound,"點一隻動物","點一隻昆蟲"):
 		_fail("Farm park speech incorrectly changed to insect terminology")
 		return
-	game.show_game("cow")
+	game.show_game("pig")
 	if not _said(sound,"適合動物的食物"):
 		_fail("Animal quiz lost original animal wording")
 		return
-	var cow_level=game.levels.filter(func(x): return str(x.get("animal",""))=="cow")[0]
-	game._answer(str(cow_level["answer"]),cow_level)
+	var pig_level=game.levels.filter(func(x): return str(x.get("animal",""))=="pig")[0]
+	game._answer(str(pig_level["answer"]),pig_level)
 	if not _said(sound,"動物貼紙","昆蟲貼紙"):
 		_fail("Animal reward incorrectly says insect sticker")
 		return

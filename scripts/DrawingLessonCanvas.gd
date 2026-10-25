@@ -50,8 +50,15 @@ func setup(info: Dictionary, saved: Dictionary={}) -> void:
 func _rebuild_after_render(expected_revision: int) -> void:
 	# Give the ORIGINAL AnimalArt two render frames to replace old shapes.
 	# Otherwise a fast gallery switch can inherit the previous animal's guides.
-	await get_tree().process_frame
-	await get_tree().process_frame
+	var scene_tree: SceneTree=get_tree()
+	if scene_tree==null:
+		return
+	await scene_tree.process_frame
+	if not is_inside_tree():
+		return
+	await scene_tree.process_frame
+	if not is_inside_tree():
+		return
 	if expected_revision==guide_revision and is_instance_valid(artist):
 		_build_guides()
 
