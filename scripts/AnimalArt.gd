@@ -2,6 +2,7 @@ extends Control
 ## Original runtime-drawn animals, no unlicensed artwork or remote assets.
 
 var animal_id: String = "cow"
+var dung_ball_angle: float = 0.0
 var tint: Color = Color("#F1F0E8")
 var mood: String = "idle"
 # The coloring room uses this very same original artist, in monochrome mode.
@@ -134,7 +135,7 @@ func _draw() -> void:
 	if scale_value <= 0.0:
 		return
 	draw_set_transform(Vector2(size.x * 0.5, size.y * 0.52), 0.0, Vector2(scale_value, scale_value))
-	if animal_id in ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis"]:
+	if animal_id in ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]:
 		_draw_insect()
 		return
 	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]:
@@ -743,6 +744,31 @@ func _draw_insect() -> void:
 				_oval(side*17,-53,7,9,Color.WHITE)
 				_oval(side*17,-53,3,5,ink)
 				_colorable_line(Vector2(side*16,-79),Vector2(side*36,-102),6,dark)
+		"dung_beetle":
+			# Scarab pushes a large brown dung ball. All regions remain paintable.
+			var dung_ink=COLOR_INK if coloring_mode else Color("#503527")
+			var dung_base=Color.WHITE if coloring_mode else Color("#855938")
+			_oval(77,48,42,42,dung_base)
+			_oval(67,36,15,13,Color.WHITE if coloring_mode else Color("#AD7950"))
+			for n in range(4):
+				var angle=dung_ball_angle+TAU*float(n)/4.0
+				var point=Vector2(77,48)+Vector2(cos(angle),sin(angle))*26.0
+				_oval(point.x,point.y,6,5,dung_ink)
+			draw_arc(Vector2(77,48),41,0,TAU,36,dung_ink,3.5,true)
+			for side in [-1.0,1.0]:
+				for n in range(3):
+					var ly=-12.0+float(n)*36.0
+					_colorable_line(Vector2(-47+side*30,ly),Vector2(-49+side*45,ly+35),10,dark)
+			_oval(-47,26,46,62,tint.darkened(.20))
+			_oval(-64,25,25,51,tint.lightened(.15))
+			_oval(-31,25,25,51,tint.darkened(.13))
+			_oval(-47,-43,38,35,tint)
+			_oval(-62,-49,7,8,Color.WHITE)
+			_oval(-33,-49,7,8,Color.WHITE)
+			_oval(-62,-49,3.5,4.5,ink)
+			_oval(-33,-49,3.5,4.5,ink)
+			_colorable_line(Vector2(-14,-2),Vector2(36,23),9,dark)
+			_colorable_line(Vector2(-9,28),Vector2(38,55),9,dark)
 		"mantis":
 			for side in [-1.0,1.0]:
 				for n in range(2):

@@ -29,6 +29,15 @@ func _draw() -> void:
 				var x=-87.0+float(i)*19.0
 				draw_line(Vector2(x,78),Vector2(x+(-1 if i%2==0 else 1)*27,-31-float(i%3)*18),Color("#5AAE70"),10,true)
 				_ell(x,57,13,23,Color("#7CCD8D"))
+		"soil":
+			_ell(0,62,98,33,Color("#B88959"))
+			_ell(-51,48,44,34,Color("#AD7D4F"))
+			_ell(43,41,41,36,Color("#C1956B"))
+			for i in range(6):
+				var x=-75.0+float(i)*31.0
+				draw_line(Vector2(x,79),Vector2(x+8,-20),Color("#69B274"),7,true)
+			_ell(4,28,36,30,Color("#825737"))
+			_ell(-8,19,10,7,Color("#AA784F"))
 		"hive":
 			draw_line(Vector2(0,-89),Vector2(0,-45),Color("#8A795C"),13,true)
 			_ell(0,15,69,70,Color("#E5B660"))

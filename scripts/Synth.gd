@@ -14,7 +14,7 @@ const LABELS = {
 	"seal":"海豹","camel":"駱駝","lion":"獅子","tiger":"老虎",
 	"elephant":"大象","hippo":"河馬",
 	"rhinoceros_beetle":"獨角仙","stag_beetle":"鍬形蟲","butterfly":"蝴蝶",
-	"ladybug":"瓢蟲","bee":"蜜蜂","mantis":"螳螂"
+	"ladybug":"瓢蟲","bee":"蜜蜂","mantis":"螳螂","dung_beetle":"糞金龜"
 }
 
 var player: AudioStreamPlayer

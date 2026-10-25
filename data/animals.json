@@ -370,9 +370,21 @@
     "zone": "insect",
     "color": "#78C78A",
     "food": "昆蟲",
-    "sound": "細小振翅聲",
-    "desc": "螳螂有一雙像鐮刀一樣的捕捉足，擅長在葉子間躲藏。",
+    "sound": "草葉摩擦聲",
+    "desc": "螳螂用六隻腳在葉子和草地上慢慢爬行，前腳像兩把小鐮刀。",
     "care": false,
-    "flies": true
+    "flies": false
+  },
+  {
+    "id": "dung_beetle",
+    "name": "糞金龜",
+    "zone": "insect",
+    "color": "#397B83",
+    "food": "動物糞便",
+    "sound": "腳步與滾動聲",
+    "desc": "糞金龜會用腳把動物糞便滾成圓球，慢慢推著走。糞球可以當食物，也能幫助牠養育寶寶。",
+    "care": false,
+    "flies": false,
+    "pushes_dung": true
   }
 ]

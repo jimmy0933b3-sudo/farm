@@ -11,6 +11,9 @@ var animal_info: Dictionary = {}
 var animal_id: String = ""
 var reduce_motion: bool = false
 var is_flying: bool = false
+var pushes_dung: bool = false
+var facing_direction: int = 1
+var rolling_distance: float = 0.0
 var avatar: Control
 var effects: Control
 var rng := RandomNumberGenerator.new()
@@ -35,10 +38,15 @@ func setup(info: Dictionary, gentle_motion: bool = false) -> void:
 	animal_id = str(info.get("id", ""))
 	reduce_motion = gentle_motion
 	is_flying = bool(info.get("flies",false))
+	pushes_dung = bool(info.get("pushes_dung",false))
 	rng.seed = abs(animal_id.hash()) + 93
 	walk_speed = 62.0 if is_flying else (33.0 if animal_id in ["rabbit", "squirrel", "guinea_pig"] else 23.0)
 	if animal_id == "snake":
 		walk_speed = 17.0
+	elif animal_id == "mantis":
+		walk_speed = 16.0
+	elif pushes_dung:
+		walk_speed = 21.0
 	if reduce_motion:
 		walk_speed *= 0.35
 
@@ -92,8 +100,16 @@ func _process(delta: float) -> void:
 				avatar.set("mood","blink")
 			else:
 				walking = true
+				var previous_position=position
 				position = _clamp_to_field(position.move_toward(destination, walk_speed*delta))
-				if absf(diff.x) > 3.0:
+				if pushes_dung:
+					if absf(diff.x)>3.0:
+						facing_direction=1 if diff.x>=0.0 else -1
+					var distance_moved=previous_position.distance_to(position)
+					if distance_moved>0.0:
+						rolling_distance+=distance_moved
+						avatar.dung_ball_angle=rolling_distance/17.0
+				elif absf(diff.x) > 3.0:
 					avatar.pivot_offset = avatar.size*0.5
 					avatar.scale.x = 1.0 if diff.x >= 0.0 else -1.0
 		if idle_timer <= 0.0 and not walking:
@@ -122,6 +138,10 @@ func _process(delta: float) -> void:
 		avatar.position.y = 0.0
 		avatar.rotation=0.0
 		avatar.scale=Vector2.ONE
+	# Keep the dung ball in front of the walking beetle, even on a turn.
+	if pushes_dung:
+		avatar.pivot_offset=avatar.size*0.5
+		avatar.scale.x=absf(avatar.scale.x)*float(facing_direction)
 	avatar.queue_redraw()
 	queue_redraw()
 

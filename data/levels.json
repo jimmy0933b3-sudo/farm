@@ -442,5 +442,17 @@
       "巧克力"
     ],
     "answer": "昆蟲"
+  },
+  {
+    "id": 38,
+    "animal": "dung_beetle",
+    "type": "food",
+    "prompt": "糞金龜會把什麼滾成圓球？",
+    "options": [
+      "動物糞便",
+      "糖果",
+      "花蜜"
+    ],
+    "answer": "動物糞便"
   }
 ]

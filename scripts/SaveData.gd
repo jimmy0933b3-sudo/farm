@@ -385,6 +385,25 @@ func finish_zoo_explore(order: Array) -> void:
 
 func get_insect_explore_session(order: Array) -> Dictionary:
 	var session=data.get("insect_explore_session",{})
+	# Extend a valid six-target session without discarding already found rounds.
+	if session is Dictionary and session.get("placement",null) is Array and session.get("found",null) is Array:
+		var old_positions: Array=session["placement"]
+		var old_found: Array=session["found"]
+		if old_positions.size()>0 and old_positions.size()<order.size():
+			var old_order: Array=order.slice(0,old_positions.size())
+			var compatible=true
+			for id in old_order:
+				if old_positions.count(id)!=1:
+					compatible=false
+			for i in range(old_found.size()):
+				if i>=old_order.size() or old_found[i]!=old_order[i]:
+					compatible=false
+			if compatible:
+				var extended: Array=old_positions.duplicate()
+				extended.append_array(order.slice(old_positions.size(),order.size()))
+				session={"placement":extended,"found":old_found.duplicate()}
+				data["insect_explore_session"]=session
+				save()
 	var valid=session is Dictionary
 	if valid:
 		valid=session.get("placement",null) is Array and session.get("found",null) is Array

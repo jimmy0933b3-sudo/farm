@@ -457,7 +457,7 @@ func show_insect_search() -> void:
 func show_insect_complete() -> void:
 	var layout=_switch("insect_done","insect")
 	_header(layout,"昆蟲大探險完成！",Callable(self,"show_zone").bind("insect"))
-	layout.add_child(_label("太棒了！六位昆蟲朋友都找到了！",29))
+	layout.add_child(_label("太棒了！七位昆蟲朋友都找到了！",29))
 	var panel=_panel()
 	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	layout.add_child(panel)

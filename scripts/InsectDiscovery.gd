@@ -5,7 +5,7 @@ signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const Map = preload("res://scripts/InsectMap.gd")
-const ORDER: Array = ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis"]
+const ORDER: Array = ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]
 
 var animal_info: Array = []
 var save_data

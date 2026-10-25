@@ -256,7 +256,7 @@ func _sync_residents() -> void:
 		creature.reaction_finished.connect(_on_reaction_finished)
 		habitat.add_child(creature)
 		# Assign the final touchable dimensions after _ready(), which sets a default size.
-		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else (Vector2(68,64) if bool(info.get("flies",false)) else Vector2(74,78))
+		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else (Vector2(68,64) if bool(info.get("flies",false)) else (Vector2(108,78) if bool(info.get("pushes_dung",false)) else Vector2(74,78)))
 		actors[name] = creature
 	if is_instance_valid(hand):
 		habitat.move_child(hand,habitat.get_child_count()-1)
@@ -330,7 +330,7 @@ func _layout_residents() -> void:
 			creature.set_bounds(pond,pos)
 			sea_slot+=1
 		elif bool(_animal(name).get("flies",false)):
-			# Six insect guests get six wide horizontal lanes with independent
+			# Flying insects get wide horizontal lanes with independent
 			# fluttering motion; the water/grass actors are unaffected.
 			var column=air_slot%6
 			var pos=Vector2(
@@ -374,7 +374,7 @@ func place_animal(id: String) -> void:
 	_sync_residents()
 	_rebuild_cards()
 	focus_resident(id)
-	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("%s飛到天空囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else "%s來農場散步啦！" % str(_animal(id).get("name","動物")))
+	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("%s飛到天空囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else ("%s在草地推糞球囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("pushes_dung",false)) else ("%s在草地爬行囉！" % str(_animal(id).get("name","昆蟲")) if id=="mantis" else "%s來農場散步啦！" % str(_animal(id).get("name","動物")))))
 	voice.speak("%s來玩囉！" % str(_animal(id).get("name","動物")))
 	_update_command_buttons()
 
@@ -400,7 +400,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 	_rebuild_cards()
 	_update_command_buttons()
 	if not id.is_empty():
-		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("摸摸在天空飛行的%s！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物")))
+		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("摸摸在天空飛行的%s！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else ("看看%s推著糞球走！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("pushes_dung",false)) else ("摸摸爬行中的%s！" % str(_animal(id).get("name","昆蟲")) if id=="mantis" else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物")))))
 	if announce and not id.is_empty():
 		focus_resident(id)
 		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))

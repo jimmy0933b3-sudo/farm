@@ -4,10 +4,10 @@ extends Control
 signal hideout_tapped(index: int)
 
 const Hideout = preload("res://scripts/InsectHideSpot.gd")
-const WORLD_WIDTH: float = 3200.0
-const X_POSITIONS: Array = [270.0, 790.0, 1310.0, 1830.0, 2350.0, 2860.0]
-const Y_FRACTIONS: Array = [0.66, 0.48, 0.65, 0.48, 0.68, 0.47]
-const COVER_TYPES: Array = ["flower","leaf","log","mushroom","grass","hive"]
+const WORLD_WIDTH: float = 3740.0
+const X_POSITIONS: Array = [270.0, 790.0, 1310.0, 1830.0, 2350.0, 2860.0, 3390.0]
+const Y_FRACTIONS: Array = [0.66, 0.48, 0.65, 0.48, 0.68, 0.47, 0.66]
+const COVER_TYPES: Array = ["flower","leaf","log","mushroom","grass","hive","soil"]
 
 var animals: Array = []
 var placements: Array = []
