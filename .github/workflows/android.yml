@@ -88,7 +88,7 @@ jobs:
         run: godot --headless --path . --script tests/zoo_search_smoke.gd
       - name: Test insect park icons and original colorable portraits
         run: godot --headless --path . --script tests/insect_park_smoke.gd
-      - name: Test six-insect seek-and-find lifecycle and persistence
+      - name: Test seven-insect seek-and-find lifecycle, save migration and persistence
         run: godot --headless --path . --script tests/insect_search_smoke.gd
       - name: Test Zoo Park six animals, shared monkey and seal lifecycle
         run: godot --headless --path . --script tests/zoo_seal_smoke.gd
@@ -98,7 +98,7 @@ jobs:
         run: godot --headless --path . --script tests/layout_smoke.gd
       - name: Test separated park header and distinct squirrel/fox original silhouettes
         run: godot --headless --path . --script tests/species_art_smoke.gd
-      - name: Test insect flight in farm sky, interaction and distinct beetle silhouettes
+      - name: Test flying insects, crawling mantis, rolling dung beetle and distinct beetles
         run: godot --headless --path . --script tests/flying_insects_smoke.gd
       - name: Test larger private farm sideways panning and direct petting
         run: godot --headless --path . --script tests/private_farm_pan_smoke.gd
