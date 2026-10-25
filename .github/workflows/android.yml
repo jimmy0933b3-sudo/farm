@@ -81,8 +81,15 @@ jobs:
           godot --headless --path . --check-only --script scripts/ZooDiscovery.gd
           godot --headless --path . --check-only --script scripts/ZooMap.gd
           godot --headless --path . --check-only --script scripts/ZooHideSpot.gd
+          godot --headless --path . --check-only --script scripts/InsectDiscovery.gd
+          godot --headless --path . --check-only --script scripts/InsectMap.gd
+          godot --headless --path . --check-only --script scripts/InsectHideSpot.gd
       - name: Test zoo find-six gameplay, save, resume and replay
         run: godot --headless --path . --script tests/zoo_search_smoke.gd
+      - name: Test insect park icons and original colorable portraits
+        run: godot --headless --path . --script tests/insect_park_smoke.gd
+      - name: Test six-insect seek-and-find lifecycle and persistence
+        run: godot --headless --path . --script tests/insect_search_smoke.gd
       - name: Test Zoo Park six animals, shared monkey and seal lifecycle
         run: godot --headless --path . --script tests/zoo_seal_smoke.gd
       - name: Test ocean discovery and pond swimmers
@@ -194,7 +201,7 @@ jobs:
             "build/SIGNING-INFO.txt" \
             --target "$GITHUB_SHA" \
             --title "動物探險島 ${tag}｜最新版 APK" \
-            --notes "含動物園找動物、16 隻私人農場與 30 色手指著色。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
+            --notes "含昆蟲樂園、昆蟲大探險、動物園找動物、16 隻私人農場與 30 色手指著色。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
             --latest
           # Cleanup only AFTER release creation succeeds.
           while IFS= read -r old; do
