@@ -59,9 +59,8 @@ func _run() -> void:
 		art.queue_free()
 	var store=Store.new()
 	store.data=store._fresh()
-	store.unlock("cow")
+	store.data["collected"]=["cow","butterfly"]
 	store.data["private_farm"]=["cow"]
-	store.unlock("butterfly")
 	if not store.private_farm_add("butterfly",16) or store.data["private_farm"]!=["cow","butterfly"]:
 		_fail("Insect must use the existing land resident system without losing previous guests")
 		return

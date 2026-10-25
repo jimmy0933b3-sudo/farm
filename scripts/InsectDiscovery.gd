@@ -1,6 +1,6 @@
 extends VBoxContainer
-## Insect find-six adventure using original artwork and swipeable savanna map.
-## Reuses discovery gameplay and preserves already-collected monkey progress.
+## Insect find-six adventure using original art and a swipeable flower garden.
+## Uses its own saved session, but unlocks shared animal album/coloring/farm species.
 signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
@@ -134,7 +134,7 @@ func repeat_hint() -> void:
 	if moving_on or round_index>=ORDER.size():
 		return
 	var label=str(_get_animal(current_target()).get("name","動物"))
-	sound.speak("找找看，%s 藏在昆蟲花園哪裡？左右滑動昆蟲花園地圖，摸摸樹叢、木箱和石頭。" % label)
+	sound.speak("找找看，%s 藏在昆蟲花園哪裡？左右滑動昆蟲花園，點點花朵、樹葉、木頭和蘑菇。" % label)
 
 func hint_target() -> void:
 	if moving_on:
@@ -185,10 +185,10 @@ func _show_target(first_round: bool) -> void:
 	target_art.setup(animal)
 	target_label.text="找一找：%s" % str(animal.get("name","動物"))
 	status_label.text="★ %d / %d" % [found.size(),ORDER.size()]
-	subtitle.text="左右滑動昆蟲花園地圖，再點樹叢找找看！"
+	subtitle.text="左右滑動花園，再點花朵、樹葉和蘑菇找找看！"
 	for spot in spots:
 		spot.set_hint(false)
 	if first_round:
-		sound.speak("歡迎來到昆蟲大探險！看上面要找的動物圖片。用手指左右滑動昆蟲花園地圖，再點木箱、樹叢和石頭，找昆蟲朋友！")
+		sound.speak("歡迎來到昆蟲大探險！看上面要找的昆蟲圖片。用手指左右滑動昆蟲花園地圖，再點花朵、葉子、木頭、蘑菇、草叢或蜂巢，找昆蟲朋友！")
 	else:
 		repeat_hint()

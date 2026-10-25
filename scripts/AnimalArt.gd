@@ -660,11 +660,11 @@ func _draw_insect() -> void:
 			_oval(26,27,30,64,dark)
 			_oval(0,-53,47,37,tint.darkened(.11))
 			if animal_id=="rhinoceros_beetle":
-				_poly([Vector2(-13,-69),Vector2(-14,-124),Vector2(-28,-140),Vector2(-8,-130),Vector2(0,-147),Vector2(8,-130),Vector2(28,-140),Vector2(14,-124),Vector2(13,-69)],tint.darkened(.29))
+				_poly([Vector2(-13,-69),Vector2(-14,-100),Vector2(-28,-109),Vector2(-8,-103),Vector2(0,-117),Vector2(8,-103),Vector2(28,-109),Vector2(14,-100),Vector2(13,-69)],tint.darkened(.29))
 			else:
 				for side in [-1.0,1.0]:
-					_poly([Vector2(side*16,-65),Vector2(side*26,-132),Vector2(side*58,-144),Vector2(side*49,-116),Vector2(side*38,-99),Vector2(side*35,-66)],tint.darkened(.28))
-					_poly([Vector2(side*37,-117),Vector2(side*12,-113),Vector2(side*31,-93)],shine)
+					_poly([Vector2(side*16,-65),Vector2(side*26,-100),Vector2(side*58,-114),Vector2(side*49,-96),Vector2(side*38,-87),Vector2(side*35,-66)],tint.darkened(.28))
+					_poly([Vector2(side*37,-103),Vector2(side*12,-98),Vector2(side*31,-83)],shine)
 			_oval(-20,-54,7,8,Color.WHITE)
 			_oval(20,-54,7,8,Color.WHITE)
 			_oval(-20,-54,3,4,ink)
@@ -715,7 +715,7 @@ func _draw_insect() -> void:
 					_colorable_line(Vector2(side*18,37+float(n)*21),Vector2(side*83,70+float(n)*17),8,dark)
 				_colorable_line(Vector2(side*20,-26),Vector2(side*74,-69),11,tint)
 				_colorable_line(Vector2(side*74,-69),Vector2(side*42,-108),12,dark)
-				_colorable_line(Vector2(side*22,-96),Vector2(side*43,-136),5,dark)
+				_colorable_line(Vector2(side*22,-96),Vector2(side*43,-110),5,dark)
 			_oval(0,50,29,70,tint.darkened(.09))
 			_oval(0,-30,20,59,tint)
 			_poly([Vector2(-60,-89),Vector2(0,-119),Vector2(60,-89),Vector2(0,-60)],tint)
