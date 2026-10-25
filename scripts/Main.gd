@@ -239,6 +239,25 @@ func _animal_button(info: Dictionary, action: Callable, locked: bool = false, sc
 func _animal(id: String) -> Dictionary:
 	return Data.get_animal(animals, id)
 
+func _is_insect(id: String) -> bool:
+	return str(_animal(id).get("zone",""))=="insect"
+
+func _friend_word(id: String) -> String:
+	return "昆蟲" if _is_insect(id) else "動物"
+
+func _game_prompt(level: Dictionary) -> String:
+	var id=str(level.get("animal",""))
+	var kind=str(level.get("type",""))
+	match kind:
+		"sound":
+			return "聽一聽，找出是哪隻%s！" % _friend_word(id)
+		"habitat":
+			return "看看圖片，幫%s找家！" % _friend_word(id)
+		"food":
+			return str(level.get("prompt","看看圖片，選適合昆蟲的食物！")) if _is_insect(id) else "看看圖片，選適合動物的食物！"
+		_:
+			return str(level.get("prompt",""))
+
 func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
 	var color_choices={
 		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),"zoo":Color("#FFE8C3"),"insect":Color("#E4F6D9"),"insect_search":Color("#E9F8C9"),
@@ -320,7 +339,7 @@ func show_home() -> void:
 		{"title":"動物之家","zone":"care"},
 		{"title":"動物圖鑑","zone":"album"}
 	],wide)
-	layout.add_child(_label("★ 已認識 %d / %d 位動物朋友！" % [int(progress.data["collected"].size()),animals.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
+	layout.add_child(_label("★ 已認識 %d / %d 位動物與昆蟲朋友！" % [int(progress.data["collected"].size()),animals.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
 	_narrate("歡迎來到動物探險島！五個樂園裡面可以找動物和昆蟲。下面有私人農場、動物著色屋、新的動物畫畫學堂，還有動物之家和圖鑑。")
 
 func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
@@ -365,7 +384,7 @@ func show_zone(zone: String) -> void:
 	current_zone = zone
 	var layout = _switch("ocean_park" if zone=="ocean" else zone, zone)
 	_header(layout, str({"farm":"農場樂園","forest":"森林樂園","zoo":"動物園樂園","ocean":"海底樂園","insect":"昆蟲樂園"}.get(zone,"探索樂園")), Callable(self,"show_home"))
-	layout.add_child(_label("挑一位動物朋友，一起玩吧！", 25,HORIZONTAL_ALIGNMENT_CENTER,Color("#39766D")))
+	layout.add_child(_label("挑一位昆蟲朋友，一起玩吧！" if zone=="insect" else "挑一位動物朋友，一起玩吧！", 25,HORIZONTAL_ALIGNMENT_CENTER,Color("#39766D")))
 	if zone in ["forest","ocean","zoo","insect"]:
 		var entries={
 			"forest":["forest_explore","🌲 去大森林找動物"],
@@ -393,8 +412,11 @@ func show_zone(zone: String) -> void:
 	for info in animals:
 		if str(info.get("zone","")) == zone or (zone=="zoo" and str(info.get("id",""))=="monkey"):
 			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"]),zone),false,scroll))
-	layout.add_child(_label("點動物圖片聽介紹、摸摸牠、玩小遊戲！", 19,HORIZONTAL_ALIGNMENT_CENTER,Color("#527975")))
-	_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone == "farm" else ("森林" if zone=="forest" else ("動物園" if zone=="zoo" else ("昆蟲樂園" if zone=="insect" else "海底樂園")))))
+	layout.add_child(_label("點昆蟲圖片聽介紹、摸摸牠、玩小遊戲！" if zone=="insect" else "點動物圖片聽介紹、摸摸牠、玩小遊戲！", 19,HORIZONTAL_ALIGNMENT_CENTER,Color("#527975")))
+	if zone=="insect":
+		_narrate("這裡是昆蟲樂園！有七隻昆蟲朋友。用手指點一隻昆蟲，聽牠的介紹，也可以玩昆蟲大探險！")
+	else:
+		_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % ("農場" if zone=="farm" else ("森林" if zone=="forest" else ("動物園" if zone=="zoo" else "海底樂園")))))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
 
 func show_zoo_search() -> void:
@@ -479,7 +501,7 @@ func show_insect_complete() -> void:
 	layout.add_child(actions)
 	actions.add_child(_button("再找一次",Callable(self,"show_insect_search"),Color("#F8E5C6"),Vector2(200,70)))
 	actions.add_child(_button("昆蟲樂園",Callable(self,"show_zone").bind("insect"),Color("#DFF0DE"),Vector2(200,70)))
-	_narrate("太棒啦！找到駱駝、獅子、老虎、大象、猴子和河馬！可以再玩一次！")
+	_narrate("太棒啦！找到獨角仙、鍬形蟲、蝴蝶、瓢蟲、蜜蜂、螳螂和推糞球的糞金龜！七位昆蟲朋友都找到了！可以再玩一次！")
 
 func show_ocean_search() -> void:
 	current_zone="ocean"
@@ -621,12 +643,12 @@ func show_animal(id: String, source_zone: String = "") -> void:
 	side.add_theme_constant_override("separation", 18)
 	main.add_child(side)
 	side.add_child(_label(str(info.get("desc","")), 28))
-	side.add_child(_button("聽動物叫聲" if sound.has_natural_sound(id) else "聽聽動物介紹", Callable(self,"_play_animal").bind(id), Color("#F9E3B9")))
+	side.add_child(_button(("聽昆蟲聲音" if _is_insect(id) else "聽動物叫聲") if sound.has_natural_sound(id) else ("聽聽昆蟲介紹" if _is_insect(id) else "聽聽動物介紹"), Callable(self,"_play_animal").bind(id), Color("#F9E3B9")))
 	side.add_child(_button("摸摸牠", Callable(self,"_pet").bind(id), Color("#F9DCE1")))
 	side.add_child(_button("一起玩小遊戲", Callable(self,"show_game").bind(id), Color("#D5EEDD")))
 	if bool(info.get("care",false)):
 		side.add_child(_button("去動物之家照顧牠", Callable(self,"show_care").bind(id), Color("#DFE9FF")))
-	side.add_child(_label("用手指在動物身上滑動，牠會開心喔！", 20))
+	side.add_child(_label("用手指在%s身上滑動，牠會開心喔！" % _friend_word(id), 20))
 	_narrate("你好！我是%s。%s 用手指在我身上輕輕滑動，就能摸摸我喔！" % [str(info["name"]),str(info["desc"])])
 
 func _play_animal(id: String) -> void:
@@ -637,7 +659,7 @@ func _pet(_id: String) -> void:
 	# The button is an instruction, not an artificial 'pet success' shortcut.
 	if is_instance_valid(petting_area):
 		petting_area.guide()
-	_narrate("把手指放在動物身上，輕輕來回滑動，讓牠開心！")
+	_narrate("把手指放在%s身上，輕輕來回滑動，讓牠開心！" % _friend_word(selected_animal))
 
 func _on_pet_stroke() -> void:
 	# Reward only the first successful stroke with audio; the animation
@@ -656,21 +678,15 @@ func show_game(animal_id: String) -> void:
 
 func _render_game(level: Dictionary) -> void:
 	var layout = _switch("game",current_zone)
-	_header(layout, "動物小遊戲", Callable(self,"show_animal").bind(selected_animal))
+	_header(layout, "昆蟲小遊戲" if _is_insect(selected_animal) else "動物小遊戲", Callable(self,"show_animal").bind(selected_animal))
 	var kind = str(level["type"])
-	var prompt = str(level["prompt"])
-	if kind == "sound":
-		prompt = "聽一聽，找出是哪隻動物！"
-	if kind == "habitat":
-		prompt = "看看圖片，幫動物找家！"
-	if kind == "food":
-		prompt = "看看圖片，選適合動物的食物！"
+	var prompt = _game_prompt(level)
 	layout.add_child(_label(prompt, 29))
 	var replay = _button("再聽一次" if kind != "sound" else "再聽叫聲", Callable(self, "_repeat_game_prompt").bind(level),Color("#FFE7BD"),Vector2(210,60))
 	replay.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	layout.add_child(replay)
 	if kind == "sound":
-		_narrate("仔細聽一聽，這是誰的聲音？看看圖片，點出正確的動物。")
+		_narrate("仔細聽一聽，這是誰的聲音？看看圖片，點出正確的%s。" % _friend_word(str(level["animal"])))
 		_prompt_sound_later.call_deferred(str(level["animal"]))
 	else:
 		_narrate(prompt)
@@ -699,7 +715,7 @@ func _repeat_game_prompt(level: Dictionary) -> void:
 	if str(level["type"]) == "sound":
 		_play_animal(str(level["animal"]))
 	else:
-		_narrate(str(level["prompt"]))
+		_narrate(_game_prompt(level))
 
 func _answer(choice: String, level: Dictionary) -> void:
 	if choice == str(level["answer"]):
@@ -733,7 +749,7 @@ func show_complete(level: Dictionary) -> void:
 	_header(layout, "完成了！", Callable(self,"show_zone").bind(current_zone))
 	layout.add_child(_spacer())
 	layout.add_child(_label("恭喜認識「%s」！" % _answer_name(str(level["animal"])), 42))
-	layout.add_child(_label("獲得一張可愛的動物貼紙", 30))
+	layout.add_child(_label("獲得一張可愛的%s貼紙" % _friend_word(str(level["animal"])), 30))
 	var art = _large_art(_animal(str(level["animal"])),Vector2(245,245))
 	art.set("mood", "happy")
 	art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -745,12 +761,12 @@ func show_complete(level: Dictionary) -> void:
 	row.add_child(_button("再玩一次",Callable(self,"show_game").bind(str(level["animal"]))))
 	row.add_child(_button("回樂園",Callable(self,"show_zone").bind(current_zone),Color("#D9EECF")))
 	layout.add_child(_spacer())
-	_narrate("答對了！你得到%s的動物貼紙！再玩一次，或是回到樂園。" % _answer_name(str(level["animal"])))
+	_narrate("答對了！你得到%s的%s貼紙！再玩一次，或是回到樂園。" % [_answer_name(str(level["animal"])),_friend_word(str(level["animal"]))])
 
 func show_album() -> void:
 	var layout = _switch("album")
 	_header(layout,"我的動物圖鑑",Callable(self,"show_home"))
-	layout.add_child(_label("已收集 %d / %d 張動物貼紙" % [int(progress.data["collected"].size()),animals.size()],29))
+	layout.add_child(_label("已收集 %d / %d 張動物與昆蟲貼紙" % [int(progress.data["collected"].size()),animals.size()],29))
 	var scroll = TouchAnimalScroll.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(scroll)
@@ -763,8 +779,8 @@ func show_album() -> void:
 		var is_collected = progress.data["collected"].has(str(info["id"]))
 		var callback: Callable = Callable(self,"show_animal").bind(str(info["id"])) if is_collected else Callable(self,"_locked")
 		grid.add_child(_animal_button(info,callback,not is_collected,scroll))
-	layout.add_child(_label("探索時點擊動物，就能找到更多朋友！",21))
-	_narrate("這是你的動物圖鑑。亮亮的貼紙，是你認識過的動物朋友。")
+	layout.add_child(_label("探索時點擊動物或昆蟲，就能找到更多朋友！",21))
+	_narrate("這是你的動物與昆蟲圖鑑。亮亮的貼紙，是你認識過的動物和昆蟲朋友。")
 
 func _locked() -> void:
 	# Locked stickers are intentionally non-destructive.

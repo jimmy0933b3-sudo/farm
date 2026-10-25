@@ -147,7 +147,7 @@ func _ready() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	voice.speak("歡迎來到大大的私人農場！手指左右滑動可以逛完整張地圖，昆蟲在天空飛，陸地朋友在草地散步，右邊有大水池喔！")
+	voice.speak("歡迎來到大大的私人農場！手指左右滑動逛地圖，會飛的昆蟲在天空，螳螂和糞金龜在草地上爬行，右邊有大水池喔！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -361,7 +361,7 @@ func place_animal(id: String) -> void:
 			return
 		"full":
 			info_label.text = "農場已住滿 16 隻！先選一隻移回圖鑑。"
-			voice.speak("農場已經住滿十六隻動物了！先選一隻，按移回圖鑑，就能換新朋友進來。")
+			voice.speak("農場已經住滿十六位朋友了！先選一位，按移回圖鑑，就能換新朋友進來。")
 			return
 		"already":
 			_set_resident(id,false)
@@ -387,7 +387,7 @@ func remove_current() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	_update_command_buttons()
-	info_label.text = "動物回圖鑑了，還可以再來玩！"
+	info_label.text = "朋友回圖鑑了，還可以再來玩！"
 
 func _set_resident(id: String, announce: bool = true) -> void:
 	if not id.is_empty() and not save_data.data["private_farm"].has(id):

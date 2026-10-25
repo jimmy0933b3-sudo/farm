@@ -43,7 +43,7 @@ func _ready() -> void:
 	left.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	left.add_theme_constant_override("separation",5)
 	add_child(left)
-	guide=_label("選好顏色，用手指在動物身上來回塗滿！",22)
+	guide=_label("選好顏色，用手指在朋友身上來回塗滿！",22)
 	left.add_child(guide)
 	var paper=PanelContainer.new()
 	paper.size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -101,7 +101,7 @@ func _ready() -> void:
 	right.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	right.add_theme_constant_override("separation",7)
 	add_child(right)
-	count_label=_label("選已收集的動物",21)
+	count_label=_label("選已收集的動物或昆蟲",21)
 	right.add_child(count_label)
 	var panel=PanelContainer.new()
 	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -129,8 +129,8 @@ func _ready() -> void:
 		select_animal(str(collected[0]),false)
 	else:
 		canvas.visible=false
-		guide.text="先去農場或森林收集動物，就能幫牠們上色！"
-	voice.speak("歡迎動物著色屋！現在有三十種顏色喔！選喜歡的顏色，用手指在動物身上慢慢來回塗，點一下不會整塊變色，也不會塗到其他格。")
+		guide.text="先去樂園認識動物或昆蟲，就能幫牠們上色！"
+	voice.speak("歡迎動物著色屋！這裡也能幫昆蟲上色，有三十種顏色喔！選喜歡的顏色，按住圖片慢慢來回塗，點一下不會整塊變色，也不會塗到其他格。")
 
 func _collected_ids() -> Array:
 	var result: Array=[]
@@ -210,7 +210,7 @@ func _rebuild_gallery() -> void:
 		gallery.add_child(b)
 	count_label.text="已收集 %d 隻，可選來上色" % count
 	if count==0:
-		gallery.add_child(_label("先去探索動物吧！",18))
+		gallery.add_child(_label("先去探索動物或昆蟲吧！",18))
 
 func select_animal(id: String, announce: bool=true) -> void:
 	if not store.data["collected"].has(id):
@@ -284,4 +284,4 @@ func reset_coloring() -> void:
 	guide.text="變回黑白線稿了！用手指來回塗滿顏色！"
 
 func repeat_guide() -> void:
-	voice.speak("選喜歡的顏色，手指按住動物並來回移動，像畫畫一樣慢慢塗滿。點一下不會直接填滿。")
+	voice.speak("選喜歡的顏色，手指按住圖片並來回移動，像畫畫一樣慢慢塗滿。點一下不會直接填滿。")

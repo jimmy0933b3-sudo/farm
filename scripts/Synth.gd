@@ -22,6 +22,8 @@ var voice_id: String = ""
 var tts_available: bool = false
 var enabled: bool = true
 var speech_enabled: bool = true
+# Last requested narration, even during headless tests without Android TTS.
+var last_spoken_text: String = ""
 
 func _ready() -> void:
 	player = AudioStreamPlayer.new()
@@ -36,9 +38,10 @@ func _ready() -> void:
 		tts_available = not voice_id.is_empty()
 
 func speak(message: String) -> bool:
-	if not enabled or not speech_enabled or not tts_available:
-		return false
 	if message.is_empty():
+		return false
+	last_spoken_text = message
+	if not enabled or not speech_enabled or not tts_available:
 		return false
 	DisplayServer.tts_speak(message,voice_id,85,1.06,0.86,0,true)
 	return true

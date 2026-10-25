@@ -133,7 +133,7 @@ func target_spot() -> int:
 func repeat_hint() -> void:
 	if moving_on or round_index>=ORDER.size():
 		return
-	var label=str(_get_animal(current_target()).get("name","動物"))
+	var label=str(_get_animal(current_target()).get("name","昆蟲"))
 	sound.speak("找找看，%s 藏在昆蟲花園哪裡？左右滑動昆蟲花園，點點花朵、樹葉、木頭和蘑菇。" % label)
 
 func hint_target() -> void:
@@ -163,8 +163,8 @@ func attempt_spot(index: int) -> void:
 	spots[index].reveal()
 	save_data.record_insect_explore_found(id)
 	status_label.text="★ %d / %d" % [found.size(),ORDER.size()]
-	subtitle.text="找到%s了！" % str(_get_animal(id).get("name","動物"))
-	sound.speak("找到啦！這是%s！好厲害！" % str(_get_animal(id).get("name","動物")))
+	subtitle.text="找到%s了！" % str(_get_animal(id).get("name","昆蟲"))
+	sound.speak("找到啦！這是%s！好厲害！" % str(_get_animal(id).get("name","昆蟲")))
 	_continue_later(round_index)
 
 func _continue_later(previous_round: int) -> void:
@@ -183,7 +183,7 @@ func _continue_later(previous_round: int) -> void:
 func _show_target(first_round: bool) -> void:
 	var animal=_get_animal(current_target())
 	target_art.setup(animal)
-	target_label.text="找一找：%s" % str(animal.get("name","動物"))
+	target_label.text="找一找：%s" % str(animal.get("name","昆蟲"))
 	status_label.text="★ %d / %d" % [found.size(),ORDER.size()]
 	subtitle.text="左右滑動花園，再點花朵、樹葉和蘑菇找找看！"
 	for spot in spots:

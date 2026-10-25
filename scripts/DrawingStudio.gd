@@ -63,7 +63,7 @@ func _ready() -> void:
 	left.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	left.add_theme_constant_override("separation",7)
 	add_child(left)
-	instruction=_label("選動物，跟著淡藍色點點畫出牠！",21)
+	instruction=_label("選動物或昆蟲，跟著淡藍色點點畫出牠！",21)
 	left.add_child(instruction)
 	var panel=PanelContainer.new()
 	panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -131,7 +131,7 @@ func _ready() -> void:
 	right.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	right.add_theme_constant_override("separation",7)
 	add_child(right)
-	resident_count=_label("選一位已收集的動物",19)
+	resident_count=_label("選一位已收集的朋友",19)
 	right.add_child(resident_count)
 	var side_panel=PanelContainer.new()
 	side_panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -154,10 +154,10 @@ func _ready() -> void:
 	var unlocked=_collected()
 	if unlocked.is_empty():
 		drawing.visible=false
-		instruction.text="先去樂園認識動物，才能照著牠的樣子畫畫！"
+		instruction.text="先去樂園認識動物或昆蟲，才能照著牠的樣子畫畫！"
 	else:
 		select_animal(str(unlocked[0]),false)
-	narrator.speak("歡迎動物畫畫學堂！先挑一隻動物，順著藍色點點畫身體、畫特色、畫細節，再用星星和愛心裝飾畫作。")
+	narrator.speak("歡迎動物畫畫學堂！昆蟲也可以畫喔！先挑一位朋友，順著藍色點點畫身體、畫特色、畫細節，再用星星和愛心裝飾畫作。")
 
 func _collected() -> Array:
 	var result=[]
@@ -194,7 +194,7 @@ func _rebuild_gallery() -> void:
 		box.add_child(title)
 		gallery.add_child(b)
 	if found.is_empty():
-		gallery.add_child(_label("先去收集動物！",18))
+		gallery.add_child(_label("先去收集動物或昆蟲！",18))
 
 func select_animal(id: String, announce: bool=true) -> void:
 	if not save_data.data["collected"].has(id): return
@@ -223,7 +223,7 @@ func choose_tool(kind: String) -> void:
 	drawing.set_mode(kind)
 	if drawing.stage!=3 and kind!="brush":
 		status.text="先沿線描完三步，最後才能蓋星星、愛心和腳印！"
-		narrator.speak("先把動物的輪廓畫好，才能自由裝飾。")
+		narrator.speak("先把這位朋友的輪廓畫好，才能自由裝飾。")
 	elif kind!="brush":
 		status.text="點一下畫紙，就能蓋上喜歡的裝飾！"
 
@@ -255,7 +255,7 @@ func next_stage() -> void:
 		var stars=drawing.finish_picture()
 		if stars<=0: return
 		instruction.text="太棒了！%s 的畫作完成！" % str(_find_info(selected_id).get("name","動物"))
-		status.text="獲得 %d 顆星！可以繼續裝飾，或選其他動物。" % stars
+		status.text="獲得 %d 顆星！可以繼續裝飾，或選其他朋友。" % stars
 		narrator.speak("你的%s畫好了！得到%d顆星，太棒了！" % [str(_find_info(selected_id).get("name","動物")),stars])
 		return
 	if drawing.advance():
@@ -263,7 +263,7 @@ func next_stage() -> void:
 		if drawing.stage==3:
 			narrator.speak("三個描畫步驟都完成了！現在可以畫背景、蓋上星星和愛心。")
 		else:
-			narrator.speak("描得真好！接下來畫動物的下一個部分。")
+			narrator.speak("描得真好！接下來畫%s的下一個部分。" % ("昆蟲" if str(_find_info(selected_id).get("zone",""))=="insect" else "動物"))
 	else:
 		narrator.speak("再沿著淡藍色的點點慢慢畫一些，就可以過關了。")
 
