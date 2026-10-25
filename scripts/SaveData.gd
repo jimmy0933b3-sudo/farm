@@ -24,6 +24,10 @@ func _fresh() -> Dictionary:
 		"zoo_explore_runs": 0,
 		"zoo_explore_previous": [],
 		"zoo_found": [],
+		"insect_explore_session": {},
+		"insect_explore_runs": 0,
+		"insect_explore_previous": [],
+		"insect_found": [],
 		"private_farm": [],
 		"coloring_pages": {},
 		"drawing_lessons": {},
@@ -376,6 +380,54 @@ func finish_zoo_explore(order: Array) -> void:
 	data["zoo_explore_runs"]=int(data.get("zoo_explore_runs",0))+1
 	data["zoo_explore_previous"]=session["placement"].duplicate()
 	data["zoo_explore_session"]={}
+	save()
+
+
+func get_insect_explore_session(order: Array) -> Dictionary:
+	var session=data.get("insect_explore_session",{})
+	var valid=session is Dictionary
+	if valid:
+		valid=session.get("placement",null) is Array and session.get("found",null) is Array
+	if valid:
+		var positions: Array=session["placement"]
+		var found: Array=session["found"]
+		valid=positions.size()==order.size() and found.size()<order.size()
+		if valid:
+			for id in order:
+				if positions.count(id)!=1:
+					valid=false
+			for i in range(found.size()):
+				if found[i]!=order[i]:
+					valid=false
+	if not valid:
+		var shuffled: Array=order.duplicate()
+		shuffled.shuffle()
+		if shuffled==data.get("insect_explore_previous",[]):
+			shuffled.reverse()
+		session={"placement":shuffled,"found":[]}
+		data["insect_explore_session"]=session
+		save()
+	return session
+
+func record_insect_explore_found(id: String) -> void:
+	var session: Dictionary=data.get("insect_explore_session",{})
+	if session.is_empty():
+		return
+	if not session["found"].has(id):
+		session["found"].append(id)
+	if not data["insect_found"].has(id):
+		data["insect_found"].append(id)
+	if not data["collected"].has(id):
+		data["collected"].append(id)
+	save()
+
+func finish_insect_explore(order: Array) -> void:
+	var session: Dictionary=data.get("insect_explore_session",{})
+	if session.get("found",[])!=order:
+		return
+	data["insect_explore_runs"]=int(data.get("insect_explore_runs",0))+1
+	data["insect_explore_previous"]=session["placement"].duplicate()
+	data["insect_explore_session"]={}
 	save()
 
 

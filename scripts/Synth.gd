@@ -12,7 +12,9 @@ const LABELS = {
 	"clownfish":"小丑魚","sea_turtle":"海龜","dolphin":"海豚",
 	"octopus":"章魚","seahorse":"海馬","pufferfish":"河豚",
 	"seal":"海豹","camel":"駱駝","lion":"獅子","tiger":"老虎",
-	"elephant":"大象","hippo":"河馬"
+	"elephant":"大象","hippo":"河馬",
+	"rhinoceros_beetle":"獨角仙","stag_beetle":"鍬形蟲","butterfly":"蝴蝶",
+	"ladybug":"瓢蟲","bee":"蜜蜂","mantis":"螳螂"
 }
 
 var player: AudioStreamPlayer

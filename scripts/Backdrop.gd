@@ -24,6 +24,12 @@ func _draw() -> void:
 			draw_circle(Vector2(bx+w*.008,h*.54),h*.017,Color("#F5DEAF"))
 		draw_rect(Rect2(w*.24,h*.43,w*.52,h*.04),Color("#D8B791"))
 		_poly([Vector2(w*.22,h*.43),Vector2(w*.50,h*.30),Vector2(w*.78,h*.43)],Color("#E5AA7A"))
+	if scene_type == "insect":
+		for i in range(10):
+			var x=w*(0.05+float(i)*0.105)
+			draw_line(Vector2(x,h*.88),Vector2(x,h*.54),Color("#469B6A"),8,true)
+			draw_circle(Vector2(x,h*.53),h*.055,Color("#F7C3D6") if i%2==0 else Color("#F6D889"))
+			draw_circle(Vector2(x,h*.53),h*.018,Color("#F4A460"))
 	if scene_type == "forest":
 		for i in range(9):
 			var x = w*(0.04+float(i)*0.12)

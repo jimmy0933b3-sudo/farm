@@ -308,5 +308,65 @@
     "sound": "海豹叫聲",
     "desc": "海豹在海裡游泳，會浮上水面呼吸，也會到岸上休息。",
     "care": false
+  },
+  {
+    "id": "rhinoceros_beetle",
+    "name": "獨角仙",
+    "zone": "insect",
+    "color": "#91664D",
+    "food": "果實",
+    "sound": "細小振翅聲",
+    "desc": "獨角仙的雄蟲有大角，會吸食樹液及成熟水果。",
+    "care": false
+  },
+  {
+    "id": "stag_beetle",
+    "name": "鍬形蟲",
+    "zone": "insect",
+    "color": "#79483F",
+    "food": "果實",
+    "sound": "細小振翅聲",
+    "desc": "鍬形蟲的大顎像鉗子，常在樹幹附近活動。",
+    "care": false
+  },
+  {
+    "id": "butterfly",
+    "name": "蝴蝶",
+    "zone": "insect",
+    "color": "#F3A86D",
+    "food": "花蜜",
+    "sound": "細小振翅聲",
+    "desc": "蝴蝶用細長的口器吸花蜜，翅膀有美麗花紋。",
+    "care": false
+  },
+  {
+    "id": "ladybug",
+    "name": "瓢蟲",
+    "zone": "insect",
+    "color": "#E75B55",
+    "food": "蚜蟲",
+    "sound": "細小振翅聲",
+    "desc": "許多瓢蟲會吃蚜蟲，翅鞘上有黑色小圓點。",
+    "care": false
+  },
+  {
+    "id": "bee",
+    "name": "蜜蜂",
+    "zone": "insect",
+    "color": "#F6C65C",
+    "food": "花蜜",
+    "sound": "細小振翅聲",
+    "desc": "蜜蜂會採集花蜜、花粉，幫助花朵傳粉。",
+    "care": false
+  },
+  {
+    "id": "mantis",
+    "name": "螳螂",
+    "zone": "insect",
+    "color": "#78C78A",
+    "food": "昆蟲",
+    "sound": "細小振翅聲",
+    "desc": "螳螂有一雙像鐮刀一樣的捕捉足，擅長在葉子間躲藏。",
+    "care": false
   }
 ]

@@ -38,6 +38,21 @@ func _draw() -> void:
 				var y=-19.0+float(j)*34.0
 				_line(Vector2(-33,y),Vector2(-79,y-23),Color("#80694D"),5.0)
 				_line(Vector2(33,y),Vector2(79,y-23),Color("#80694D"),5.0)
+		"花蜜":
+			for s in [-1.0,1.0]:
+				_oval(s*32,-15,40,39,Color("#F7A9C9"))
+				_oval(s*19,16,37,30,Color("#F2C36E"))
+			_oval(0,2,22,22,Color("#CE8455"))
+			_line(Vector2(0,23),Vector2(0,79),Color("#4F9973"),10)
+			_oval(22,63,26,14,Color("#75C685"))
+		"蚜蟲":
+			_oval(0,68,97,19,Color("#A5D58F"))
+			_oval(0,4,54,48,Color("#92C972"))
+			_oval(0,-48,29,26,Color("#7BAF65"))
+			for s in [-1.0,1.0]:
+				_oval(s*16,-51,7,8,Color("#283D3B"))
+				for n in range(3):
+					_line(Vector2(s*35,-5+float(n)*23),Vector2(s*76,-22+float(n)*32),Color("#59875C"),6)
 		"根莖":
 			for j in range(4):
 				var x=-64.0+float(j)*42.0
@@ -111,6 +126,27 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"insect":
+			_oval(0,68,105,26,Color("#8FD498"))
+			_oval(62,-23,35,44,Color("#F7AFD3"))
+			_oval(90,23,25,32,Color("#F7D984"))
+			_line(Vector2(69,0),Vector2(70,58),Color("#4F9565"),10)
+			_oval(-43,8,49,61,Color("#8C6651"))
+			_oval(-43,-49,37,33,Color("#785648"))
+			_shape([Vector2(-53,-68),Vector2(-54,-104),Vector2(-65,-116),Vector2(-42,-103),Vector2(-32,-116),Vector2(-33,-68)],Color("#5D443A"))
+			_oval(-57,-53,6,7,Color.WHITE)
+			_oval(-29,-53,6,7,Color.WHITE)
+			for s in [-1.0,1.0]:
+				for n in range(3):
+					_line(Vector2(-43+s*37,-10+float(n)*29),Vector2(-43+s*64,float(n)*33),Color("#6E5547"),5)
+		"insect_search":
+			_oval(0,74,110,24,Color("#92CF91"))
+			for s in [-1.0,1.0]:
+				_oval(s*42,-24,34,45,Color("#F7BA8C"))
+				_oval(s*40,32,27,30,Color("#E997CB"))
+			_oval(0,0,11,54,Color("#805D61"))
+			draw_arc(Vector2(56,-24),49,0,TAU,32,Color("#5A9D97"),11,true)
+			_line(Vector2(86,11),Vector2(119,58),Color("#AC8662"),13)
 		"zoo_search":
 			# Zoo hide-and-seek: a magnifying glass, tall giraffe-like tree
 			# silhouette and a lion face. Separate from the park entrance.

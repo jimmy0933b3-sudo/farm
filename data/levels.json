@@ -370,5 +370,77 @@
       "香蕉"
     ],
     "answer": "魚"
+  },
+  {
+    "id": 32,
+    "animal": "rhinoceros_beetle",
+    "type": "food",
+    "prompt": "找找看，獨角仙會吃什麼？",
+    "options": [
+      "果實",
+      "糖果",
+      "洋蔥"
+    ],
+    "answer": "果實"
+  },
+  {
+    "id": 33,
+    "animal": "stag_beetle",
+    "type": "food",
+    "prompt": "找找看，鍬形蟲會吃什麼？",
+    "options": [
+      "果實",
+      "巧克力",
+      "汽水"
+    ],
+    "answer": "果實"
+  },
+  {
+    "id": 34,
+    "animal": "butterfly",
+    "type": "food",
+    "prompt": "找找看，蝴蝶會吃什麼？",
+    "options": [
+      "花蜜",
+      "肉",
+      "乾草"
+    ],
+    "answer": "花蜜"
+  },
+  {
+    "id": 35,
+    "animal": "ladybug",
+    "type": "food",
+    "prompt": "找找看，瓢蟲會吃什麼？",
+    "options": [
+      "蚜蟲",
+      "糖果",
+      "青草"
+    ],
+    "answer": "蚜蟲"
+  },
+  {
+    "id": 36,
+    "animal": "bee",
+    "type": "food",
+    "prompt": "找找看，蜜蜂會吃什麼？",
+    "options": [
+      "花蜜",
+      "肉",
+      "洋蔥"
+    ],
+    "answer": "花蜜"
+  },
+  {
+    "id": 37,
+    "animal": "mantis",
+    "type": "food",
+    "prompt": "找找看，螳螂會吃什麼？",
+    "options": [
+      "昆蟲",
+      "果實",
+      "巧克力"
+    ],
+    "answer": "昆蟲"
   }
 ]

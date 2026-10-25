@@ -134,6 +134,9 @@ func _draw() -> void:
 	if scale_value <= 0.0:
 		return
 	draw_set_transform(Vector2(size.x * 0.5, size.y * 0.52), 0.0, Vector2(scale_value, scale_value))
+	if animal_id in ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis"]:
+		_draw_insect()
+		return
 	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]:
 		_draw_ocean_animal()
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
@@ -640,3 +643,88 @@ func _draw_fox() -> void:
 		_oval(-45,-8,11,6,Color("#F6AD9B"))
 		_oval(45,-8,11,6,Color("#F6AD9B"))
 		_oval(88,-100,10,11,Color("#F58BA3"))
+
+func _draw_insect() -> void:
+	var ink=COLOR_INK if coloring_mode else tint.darkened(0.40)
+	var dark=COLOR_INK if coloring_mode else tint.darkened(0.22)
+	var shine=Color.WHITE if coloring_mode else tint.lightened(0.22)
+	_oval(0,83,77,10,Color("#466B58",0.18))
+	match animal_id:
+		"rhinoceros_beetle", "stag_beetle":
+			for side in [-1.0,1.0]:
+				for n in range(3):
+					var y=-1.0+float(n)*34.0
+					_colorable_line(Vector2(side*35,y),Vector2(side*(83+float(n)*3),y+25),8,dark)
+			_oval(0,29,62,79,tint)
+			_oval(-26,27,30,64,shine)
+			_oval(26,27,30,64,dark)
+			_oval(0,-53,47,37,tint.darkened(.11))
+			if animal_id=="rhinoceros_beetle":
+				_poly([Vector2(-13,-69),Vector2(-14,-124),Vector2(-28,-140),Vector2(-8,-130),Vector2(0,-147),Vector2(8,-130),Vector2(28,-140),Vector2(14,-124),Vector2(13,-69)],tint.darkened(.29))
+			else:
+				for side in [-1.0,1.0]:
+					_poly([Vector2(side*16,-65),Vector2(side*26,-132),Vector2(side*58,-144),Vector2(side*49,-116),Vector2(side*38,-99),Vector2(side*35,-66)],tint.darkened(.28))
+					_poly([Vector2(side*37,-117),Vector2(side*12,-113),Vector2(side*31,-93)],shine)
+			_oval(-20,-54,7,8,Color.WHITE)
+			_oval(20,-54,7,8,Color.WHITE)
+			_oval(-20,-54,3,4,ink)
+			_oval(20,-54,3,4,ink)
+		"butterfly":
+			for side in [-1.0,1.0]:
+				_oval(side*63,-48,51,58,tint)
+				_oval(side*66,32,42,49,tint.lightened(.20))
+				_oval(side*65,-46,24,32,shine)
+				_oval(side*67,34,18,21,tint.darkened(.18))
+				_colorable_line(Vector2(side*7,-75),Vector2(side*35,-115),6,dark)
+			_oval(0,15,16,78,dark)
+			_oval(0,-67,21,22,tint)
+			_oval(-8,-71,5,7,Color.WHITE)
+			_oval(8,-71,5,7,Color.WHITE)
+		"ladybug":
+			for side in [-1.0,1.0]:
+				for n in range(3):
+					_colorable_line(Vector2(side*47,-4+float(n)*26),Vector2(side*85,-29+float(n)*52),7,dark)
+			_oval(0,23,76,75,tint.darkened(.13))
+			_oval(-35,24,39,65,tint)
+			_oval(35,24,39,65,tint)
+			for side in [-1.0,1.0]:
+				for y in [-8.0,39.0]:
+					_oval(side*38,y,13,14,ink)
+			_oval(0,-54,45,31,dark)
+			_oval(-18,-59,7,8,Color.WHITE)
+			_oval(18,-59,7,8,Color.WHITE)
+			_colorable_line(Vector2(-18,-75),Vector2(-36,-100),6,dark)
+			_colorable_line(Vector2(18,-75),Vector2(36,-100),6,dark)
+		"bee":
+			for side in [-1.0,1.0]:
+				_oval(side*54,-42,49,50,Color("#D6E8F6") if not coloring_mode else Color.WHITE)
+				for n in range(3):
+					_colorable_line(Vector2(side*34,-2+float(n)*24),Vector2(side*76,14+float(n)*33),7,dark)
+			_poly([Vector2(-24,78),Vector2(24,78),Vector2(0,110)],dark)
+			_oval(0,23,53,70,tint)
+			for y in [-9.0,18.0,46.0]:
+				_oval(0,y,51,9,dark)
+			_oval(0,-49,39,37,tint)
+			for side in [-1.0,1.0]:
+				_oval(side*17,-53,7,9,Color.WHITE)
+				_oval(side*17,-53,3,5,ink)
+				_colorable_line(Vector2(side*16,-79),Vector2(side*36,-102),6,dark)
+		"mantis":
+			for side in [-1.0,1.0]:
+				for n in range(2):
+					_colorable_line(Vector2(side*18,37+float(n)*21),Vector2(side*83,70+float(n)*17),8,dark)
+				_colorable_line(Vector2(side*20,-26),Vector2(side*74,-69),11,tint)
+				_colorable_line(Vector2(side*74,-69),Vector2(side*42,-108),12,dark)
+				_colorable_line(Vector2(side*22,-96),Vector2(side*43,-136),5,dark)
+			_oval(0,50,29,70,tint.darkened(.09))
+			_oval(0,-30,20,59,tint)
+			_poly([Vector2(-60,-89),Vector2(0,-119),Vector2(60,-89),Vector2(0,-60)],tint)
+			_oval(-37,-88,13,15,Color.WHITE)
+			_oval(37,-88,13,15,Color.WHITE)
+			_oval(-37,-88,6,9,ink)
+			_oval(37,-88,6,9,ink)
+			if mood in ["happy","play","clean"]:
+				draw_arc(Vector2(0,-79),12,0,PI,14,ink,3,true)
+	if mood in ["happy","play","surprised"] and animal_id!="mantis":
+		draw_arc(Vector2(0,-20),12,0.1,PI-.1,13,ink,2.8,true)
+	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
