@@ -317,7 +317,8 @@
     "food": "果實",
     "sound": "細小振翅聲",
     "desc": "獨角仙的雄蟲有大角，會吸食樹液及成熟水果。",
-    "care": false
+    "care": false,
+    "flies": true
   },
   {
     "id": "stag_beetle",
@@ -327,7 +328,8 @@
     "food": "果實",
     "sound": "細小振翅聲",
     "desc": "鍬形蟲的大顎像鉗子，常在樹幹附近活動。",
-    "care": false
+    "care": false,
+    "flies": true
   },
   {
     "id": "butterfly",
@@ -337,7 +339,8 @@
     "food": "花蜜",
     "sound": "細小振翅聲",
     "desc": "蝴蝶用細長的口器吸花蜜，翅膀有美麗花紋。",
-    "care": false
+    "care": false,
+    "flies": true
   },
   {
     "id": "ladybug",
@@ -347,7 +350,8 @@
     "food": "蚜蟲",
     "sound": "細小振翅聲",
     "desc": "許多瓢蟲會吃蚜蟲，翅鞘上有黑色小圓點。",
-    "care": false
+    "care": false,
+    "flies": true
   },
   {
     "id": "bee",
@@ -357,7 +361,8 @@
     "food": "花蜜",
     "sound": "細小振翅聲",
     "desc": "蜜蜂會採集花蜜、花粉，幫助花朵傳粉。",
-    "care": false
+    "care": false,
+    "flies": true
   },
   {
     "id": "mantis",
@@ -367,6 +372,7 @@
     "food": "昆蟲",
     "sound": "細小振翅聲",
     "desc": "螳螂有一雙像鐮刀一樣的捕捉足，擅長在葉子間躲藏。",
-    "care": false
+    "care": false,
+    "flies": true
   }
 ]

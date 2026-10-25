@@ -10,6 +10,7 @@ const CareEffects = preload("res://scripts/CareEffects.gd")
 var animal_info: Dictionary = {}
 var animal_id: String = ""
 var reduce_motion: bool = false
+var is_flying: bool = false
 var avatar: Control
 var effects: Control
 var rng := RandomNumberGenerator.new()
@@ -33,8 +34,9 @@ func setup(info: Dictionary, gentle_motion: bool = false) -> void:
 	animal_info = info
 	animal_id = str(info.get("id", ""))
 	reduce_motion = gentle_motion
+	is_flying = bool(info.get("flies",false))
 	rng.seed = abs(animal_id.hash()) + 93
-	walk_speed = 33.0 if animal_id in ["rabbit", "squirrel", "guinea_pig"] else 23.0
+	walk_speed = 62.0 if is_flying else (33.0 if animal_id in ["rabbit", "squirrel", "guinea_pig"] else 23.0)
 	if animal_id == "snake":
 		walk_speed = 17.0
 	if reduce_motion:
@@ -72,7 +74,8 @@ func _clamp_to_field(candidate: Vector2) -> Vector2:
 
 func _new_destination() -> void:
 	destination = _clamp_to_field(
-		position + Vector2(rng.randf_range(-145,145), rng.randf_range(-85,85))
+		position + Vector2(rng.randf_range(-235.0,235.0) if is_flying else rng.randf_range(-145.0,145.0),
+		rng.randf_range(-52.0,52.0) if is_flying else rng.randf_range(-85.0,85.0))
 	)
 	walking = true
 
@@ -84,7 +87,7 @@ func _process(delta: float) -> void:
 		else:
 			var diff = destination-position
 			if diff.length() <= 2.0:
-				idle_timer = rng.randf_range(0.65, 2.4)
+				idle_timer = rng.randf_range(0.05,0.24) if is_flying else rng.randf_range(0.65, 2.4)
 				walking = false
 				avatar.set("mood","blink")
 			else:
@@ -112,9 +115,9 @@ func _process(delta: float) -> void:
 	if heart_time > 0.0:
 		heart_time = maxf(0.0,heart_time-delta)
 	if not reduce_motion and not is_touched and reaction_time <= 0.0:
-		avatar.position.y = -absf(sin(step_time*8.0))*2.7 if walking else sin(step_time*1.5)*1.2
-		avatar.rotation = sin(step_time*9.0)*0.052 if is_touched or heart_time>0.0 else (sin(step_time*4.0)*0.017 if walking else 0.0)
-		avatar.scale = Vector2.ONE*(1.0+0.024*sin(step_time*10.0)) if heart_time>0.0 else Vector2.ONE
+		avatar.position.y = sin(step_time*6.5)*5.0 if is_flying else (-absf(sin(step_time*8.0))*2.7 if walking else sin(step_time*1.5)*1.2)
+		avatar.rotation = sin(step_time*9.0)*0.060 if is_flying else (sin(step_time*9.0)*0.052 if is_touched or heart_time>0.0 else (sin(step_time*4.0)*0.017 if walking else 0.0))
+		avatar.scale = Vector2.ONE*(1.0+0.045*sin(step_time*13.0)) if is_flying else (Vector2.ONE*(1.0+0.024*sin(step_time*10.0)) if heart_time>0.0 else Vector2.ONE)
 	else:
 		avatar.position.y = 0.0
 		avatar.rotation=0.0
@@ -175,12 +178,13 @@ func perform(action: String) -> bool:
 
 func _draw() -> void:
 	var center = size*0.5
-	# Contact shadow directly below the feet, so characters never look airborne.
-	var shadow = PackedVector2Array()
-	for i in range(24):
-		var a=TAU*float(i)/24.0
-		shadow.append(Vector2(center.x+cos(a)*size.x*0.31,size.y*0.92+sin(a)*size.y*0.052))
-	draw_colored_polygon(shadow,Color("#427A4B",0.27))
+	# Never paint a ground shadow under a flying insect. Land residents keep it.
+	if not is_flying:
+		var shadow = PackedVector2Array()
+		for i in range(24):
+			var a=TAU*float(i)/24.0
+			shadow.append(Vector2(center.x+cos(a)*size.x*0.31,size.y*0.92+sin(a)*size.y*0.052))
+		draw_colored_polygon(shadow,Color("#427A4B",0.27))
 	if selected:
 		draw_arc(center+Vector2(0,33),42,0,TAU,24,Color("#FFF6B6",0.9),3,true)
 	if heart_time > 0.0:

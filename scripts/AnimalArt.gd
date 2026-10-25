@@ -650,25 +650,59 @@ func _draw_insect() -> void:
 	var shine=Color.WHITE if coloring_mode else tint.lightened(0.22)
 	_oval(0,83,77,10,Color("#466B58",0.18))
 	match animal_id:
-		"rhinoceros_beetle", "stag_beetle":
+		"rhinoceros_beetle":
+			# Big rounded amber Hercules-style body and ONE tall Y-shaped
+			# central horn. No lateral mandibles: distinct even at 55px cards.
 			for side in [-1.0,1.0]:
 				for n in range(3):
-					var y=-1.0+float(n)*34.0
-					_colorable_line(Vector2(side*35,y),Vector2(side*(83+float(n)*3),y+25),8,dark)
-			_oval(0,29,62,79,tint)
-			_oval(-26,27,30,64,shine)
-			_oval(26,27,30,64,dark)
-			_oval(0,-53,47,37,tint.darkened(.11))
-			if animal_id=="rhinoceros_beetle":
-				_poly([Vector2(-13,-69),Vector2(-14,-100),Vector2(-28,-109),Vector2(-8,-103),Vector2(0,-117),Vector2(8,-103),Vector2(28,-109),Vector2(14,-100),Vector2(13,-69)],tint.darkened(.29))
-			else:
-				for side in [-1.0,1.0]:
-					_poly([Vector2(side*16,-65),Vector2(side*26,-100),Vector2(side*58,-114),Vector2(side*49,-96),Vector2(side*38,-87),Vector2(side*35,-66)],tint.darkened(.28))
-					_poly([Vector2(side*37,-103),Vector2(side*12,-98),Vector2(side*31,-83)],shine)
-			_oval(-20,-54,7,8,Color.WHITE)
-			_oval(20,-54,7,8,Color.WHITE)
-			_oval(-20,-54,3,4,ink)
-			_oval(20,-54,3,4,ink)
+					var leg_y=-2.0+float(n)*31.0
+					_colorable_line(Vector2(side*40,leg_y),Vector2(side*80,leg_y+27.0),9.0,dark)
+			_oval(0,34,65,72,tint.darkened(0.14))
+			_oval(-30,37,29,58,tint.lightened(0.22))
+			_oval(30,37,29,58,tint.darkened(0.21))
+			# Golden armored upper back and broad shoulders.
+			_oval(0,-40,62,43,tint.lightened(0.09))
+			_oval(-48,-47,20,24,tint.darkened(0.13))
+			_oval(48,-47,20,24,tint.darkened(0.13))
+			# A SINGLE giant branching horn rising from the center of the head.
+			_poly([
+				Vector2(-15,-63),Vector2(-12,-114),
+				Vector2(-29,-131),Vector2(-22,-140),
+				Vector2(0,-122),Vector2(22,-140),
+				Vector2(29,-131),Vector2(12,-114),Vector2(15,-63)
+			],tint.darkened(0.42))
+			_oval(-23,-46,7,8,Color.WHITE)
+			_oval(23,-46,7,8,Color.WHITE)
+			_oval(-23,-46,4,5,ink)
+			_oval(23,-46,4,5,ink)
+		"stag_beetle":
+			# Slim dark-mahogany beetle and TWO enormous opposing pincers.
+			# The wide open jaws replace the rhinoceros beetle's forehead horn.
+			for side in [-1.0,1.0]:
+				for n in range(3):
+					var leg_y=-9.0+float(n)*33.0
+					_colorable_line(Vector2(side*32,leg_y),Vector2(side*82,leg_y+25.0),8.0,dark)
+			_oval(0,34,47,77,tint.darkened(0.24))
+			_oval(-23,36,22,61,tint.lightened(0.09))
+			_oval(23,36,22,61,tint.darkened(0.36))
+			# Wide head, oversized black pincers sweep UP and OUT on both sides.
+			_oval(0,-49,53,37,tint.darkened(0.24))
+			for side in [-1.0,1.0]:
+				_poly([
+					Vector2(side*19,-56),Vector2(side*35,-74),
+					Vector2(side*76,-120),Vector2(side*94,-130),
+					Vector2(side*85,-105),Vector2(side*58,-71),
+					Vector2(side*43,-55)
+				],tint.darkened(0.51))
+				# Serrated inward tooth on each mandible.
+				_poly([
+					Vector2(side*67,-107),Vector2(side*35,-104),
+					Vector2(side*52,-87)
+				],tint.darkened(0.48))
+			_oval(-27,-52,8,10,Color.WHITE)
+			_oval(27,-52,8,10,Color.WHITE)
+			_oval(-27,-52,4,6,ink)
+			_oval(27,-52,4,6,ink)
 		"butterfly":
 			for side in [-1.0,1.0]:
 				_oval(side*63,-48,51,58,tint)

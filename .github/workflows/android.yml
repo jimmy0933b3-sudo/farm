@@ -98,6 +98,8 @@ jobs:
         run: godot --headless --path . --script tests/layout_smoke.gd
       - name: Test separated park header and distinct squirrel/fox original silhouettes
         run: godot --headless --path . --script tests/species_art_smoke.gd
+      - name: Test insect flight in farm sky, interaction and distinct beetle silhouettes
+        run: godot --headless --path . --script tests/flying_insects_smoke.gd
       - name: Test larger private farm sideways panning and direct petting
         run: godot --headless --path . --script tests/private_farm_pan_smoke.gd
       - name: Test expanded farm capacity and 16-slot resident selector

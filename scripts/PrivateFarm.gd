@@ -147,7 +147,7 @@ func _ready() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	voice.speak("歡迎來到大大的私人農場！手指左右滑動可以逛完整張地圖，摸摸動物會有開心反應，往右可以找到大水池喔！")
+	voice.speak("歡迎來到大大的私人農場！手指左右滑動可以逛完整張地圖，昆蟲在天空飛，陸地朋友在草地散步，右邊有大水池喔！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -252,10 +252,11 @@ func _sync_residents() -> void:
 			continue
 		var creature = SwimmingAnimal.new() if str(info.get("zone",""))=="ocean" else RoamingAnimal.new()
 		creature.setup(info,reduce_motion)
-		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else Vector2(74,78)
 		creature.petted.connect(_on_animal_petted)
 		creature.reaction_finished.connect(_on_reaction_finished)
 		habitat.add_child(creature)
+		# Assign the final touchable dimensions after _ready(), which sets a default size.
+		creature.size = Vector2(66,68) if str(info.get("zone",""))=="ocean" else (Vector2(68,64) if bool(info.get("flies",false)) else Vector2(74,78))
 		actors[name] = creature
 	if is_instance_valid(hand):
 		habitat.move_child(hand,habitat.get_child_count()-1)
@@ -304,8 +305,15 @@ func _layout_residents() -> void:
 		Vector2(habitat.size.x*0.632,habitat.size.y*0.535),
 		Vector2(habitat.size.x*0.285,habitat.size.y*0.29)
 	)
+	# Flying insects use an aerial lane ABOVE both grass and pond. Keep the
+	# sky as a dedicated region so they never crawl across the ground.
+	var sky=Rect2(
+		Vector2(16,habitat.size.y*0.055),
+		Vector2(habitat.size.x-32,habitat.size.y*0.395)
+	)
 	var land_slot=0
 	var sea_slot=0
+	var air_slot=0
 	for id in save_data.data["private_farm"]:
 		var name=str(id)
 		if not actors.has(name):
@@ -321,6 +329,16 @@ func _layout_residents() -> void:
 			)
 			creature.set_bounds(pond,pos)
 			sea_slot+=1
+		elif bool(_animal(name).get("flies",false)):
+			# Six insect guests get six wide horizontal lanes with independent
+			# fluttering motion; the water/grass actors are unaffected.
+			var column=air_slot%6
+			var pos=Vector2(
+				sky.position.x+sky.size.x*(float(column)+0.5)/6.0-creature.size.x*0.5,
+				sky.position.y+sky.size.y*0.5-creature.size.y*0.5
+			)
+			creature.set_bounds(sky,pos)
+			air_slot+=1
 		else:
 			# Up to 16 land species: two staggered rows of eight. Each row
 			# has room for a full-sized touchable animal in the long meadow.
@@ -339,7 +357,7 @@ func place_animal(id: String) -> void:
 	match result:
 		"locked":
 			info_label.text = "還沒認識這隻動物，先去探索吧！"
-			voice.speak("還沒收集到這隻動物，先去森林或農場找找看！")
+			voice.speak("還沒收集到這位朋友，先去樂園找找看！")
 			return
 		"full":
 			info_label.text = "農場已住滿 16 隻！先選一隻移回圖鑑。"
@@ -356,7 +374,7 @@ func place_animal(id: String) -> void:
 	_sync_residents()
 	_rebuild_cards()
 	focus_resident(id)
-	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else "%s來農場散步啦！" % str(_animal(id).get("name","動物"))
+	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("%s飛到天空囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else "%s來農場散步啦！" % str(_animal(id).get("name","動物")))
 	voice.speak("%s來玩囉！" % str(_animal(id).get("name","動物")))
 	_update_command_buttons()
 
@@ -382,7 +400,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 	_rebuild_cards()
 	_update_command_buttons()
 	if not id.is_empty():
-		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物"))
+		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("摸摸在天空飛行的%s！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物")))
 	if announce and not id.is_empty():
 		focus_resident(id)
 		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))
