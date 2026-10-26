@@ -33,9 +33,16 @@ func _run() -> void:
 		_fail("Farm entry button did not open kart lobby")
 		return
 	var lobby=main.race_lobby
-	if lobby.options.size()!=5 or lobby.selected_id!="cow":
-		_fail("Lobby must show all five collected animals/insects including unplaced sea creatures and weevil")
+	var expected_racers: Array=Rules.candidates(main.animals,
+		main.progress.data.get("private_farm",[]),main.progress.data.get("collected",[]))
+	if lobby.options.size()!=expected_racers.size():
+		_fail("Lobby must show every currently collected species, expected %d but got %d" %
+			[expected_racers.size(),lobby.options.size()])
 		return
+	for target_id in ["seal","weevil"]:
+		if not lobby.options.any(func(a): return str(a.get("id",""))==target_id):
+			_fail("Unplaced but collected animal absent from race lobby: "+target_id)
+			return
 	var selected_track: Button=lobby.track_buttons[0]
 	var other_track: Button=lobby.track_buttons[1]
 	if not _readable_button(selected_track) or not _readable_button(other_track):
