@@ -5,7 +5,7 @@ const AnimalArt = preload("res://scripts/AnimalArt.gd")
 var info: Dictionary = {}
 var selected: bool = false
 var body_color: Color = Color("#EE8B6F")
-var avatar: Control
+var avatar
 
 func setup(animal_info: Dictionary, is_player: bool = false) -> void:
 	info = animal_info
