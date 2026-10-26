@@ -2,6 +2,8 @@ extends Control
 ## Procedural vertical-scrolling kart track. All scenery stays offline.
 var track_id: String = "farm"
 var scroll: float = 0.0
+var race_objects: Array = []
+var race_distance: float = 0.0
 var reduce_motion: bool = false
 
 func setup(id: String, gentle: bool) -> void:
@@ -67,3 +69,29 @@ func _draw() -> void:
 			var y: float = fposmod(scroll*0.35+float(a)*220.0,size.y+220.0)
 			draw_arc(Vector2(size.x*0.5,y),size.x*0.36,PI,TAU,36,
 				[Color("#F56E86"),Color("#EEC65D"),Color("#78C7E1")][a],7.0)
+
+	# Pickups are drawn in the exact lane used by collision detection.
+	for thing in race_objects:
+		if bool(thing.get("hit",false)):
+			continue
+		var y: float=size.y*0.72-(float(thing.get("distance",0.0))-race_distance)*1.4
+		if y < -30.0 or y > size.y+30.0:
+			continue
+		var x: float=lane_center(int(thing.get("lane",1)))
+		match str(thing.get("type","star")):
+			"star":
+				var points=PackedVector2Array()
+				for n in range(10):
+					var angle: float=-PI*0.5+float(n)*PI/5.0
+					var radius: float=21.0 if n%2==0 else 9.0
+					points.append(Vector2(x+cos(angle)*radius,y+sin(angle)*radius))
+				draw_colored_polygon(points,Color("#FFDC54"))
+			"boost":
+				draw_circle(Vector2(x,y),20.0,Color("#F289B9"))
+				draw_line(Vector2(x-7,y+9),Vector2(x+8,y-8),Color.WHITE,7.0)
+			"shield":
+				draw_circle(Vector2(x,y),21.0,Color("#9CE7FF",0.85))
+				draw_arc(Vector2(x,y),17.0,0,TAU,24,Color.WHITE,3.0)
+			"bump":
+				draw_rect(Rect2(x-22.0,y-13.0,44.0,26.0),Color("#BD985D"))
+				draw_line(Vector2(x-20,y),Vector2(x+20,y),Color("#E9D6A5"),3.0)
