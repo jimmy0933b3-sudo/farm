@@ -1,11 +1,11 @@
 extends VBoxContainer
-## Insect find-six adventure using original art and a swipeable flower garden.
+## Eight-insect discovery adventure using original art and a swipeable flower garden.
 ## Uses its own saved session, but unlocks shared animal album/coloring/farm species.
 signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const Map = preload("res://scripts/InsectMap.gd")
-const ORDER: Array = ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]
+const ORDER: Array = ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle","weevil"]
 
 var animal_info: Array = []
 var save_data
