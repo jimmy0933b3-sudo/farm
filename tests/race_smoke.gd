@@ -48,6 +48,9 @@ func _run() -> void:
 		if not _readable_button(card) or card.modulate!=Color.WHITE:
 			_fail("Character labels and icons should stay fully visible when unselected")
 			return
+	if lobby.track_previews.size()!=3 or lobby.showcase_kart==null:
+		_fail("Illustrated track cards and large driver preview are missing")
+		return
 	lobby.choose_animal("stag_beetle")
 	lobby.choose_track("flower")
 	lobby.start()
@@ -93,9 +96,6 @@ func _run() -> void:
 		return
 	if race.player_kart.avatar==null or race.player_kart.title_label==null:
 		_fail("Actual species portrait and name should be visible inside kart")
-		return
-	if lobby.track_previews.size()!=3 or lobby.showcase_kart==null:
-		_fail("Illustrated track cards and large driver preview are missing")
 		return
 	var controls: HBoxContainer=race.get_child(2) as HBoxContainer
 	if controls==null or controls.get_child_count()!=3:
