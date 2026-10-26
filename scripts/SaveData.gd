@@ -29,6 +29,8 @@ func _fresh() -> Dictionary:
 		"insect_explore_previous": [],
 		"insect_found": [],
 		"private_farm": [],
+		"race_records": {},
+		"race_totals": {"races":0,"stars":0},
 		"coloring_pages": {},
 		"drawing_lessons": {},
 		"care": {},
@@ -506,3 +508,31 @@ func replace_drawing_lesson(animal_id: String, page: Dictionary) -> bool:
 	data["drawing_lessons"][animal_id]=cleaned
 	save()
 	return true
+
+## Racing is additive and does not alter collected animals, residents or care.
+func record_race(result: Dictionary) -> void:
+	var id: String=str(result.get("animal_id",""))
+	var track: String=str(result.get("track_id",""))
+	if id.is_empty() or track not in ["farm","flower","rainbow"]:
+		return
+	if not data["collected"].has(id) and not data["private_farm"].has(id):
+		# Existing offline saves can still race after a fresh install: the game
+		# does not silently unlock a species by adding a race result.
+		if id!="cow":
+			return
+	var records: Dictionary=data["race_records"]
+	var entry: Dictionary=records.get(id,{"races":0,"wins":0,"stars":0,"best_place":4,"tracks":{}})
+	entry["races"]=clampi(int(entry.get("races",0))+1,0,999999)
+	entry["wins"]=clampi(int(entry.get("wins",0))+(1 if int(result.get("place",4))==1 else 0),0,999999)
+	entry["stars"]=clampi(int(entry.get("stars",0))+int(result.get("stars_earned",0)),0,999999)
+	entry["best_place"]=mini(int(entry.get("best_place",4)),clampi(int(result.get("place",4)),1,4))
+	var tracks: Dictionary=entry.get("tracks",{})
+	tracks[track]=int(tracks.get(track,0))+1
+	entry["tracks"]=tracks
+	records[id]=entry
+	data["race_records"]=records
+	var totals: Dictionary=data["race_totals"]
+	totals["races"]=clampi(int(totals.get("races",0))+1,0,999999)
+	totals["stars"]=clampi(int(totals.get("stars",0))+int(result.get("stars_earned",0)),0,999999)
+	data["race_totals"]=totals
+	save()
