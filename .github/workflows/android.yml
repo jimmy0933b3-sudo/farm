@@ -119,7 +119,7 @@ jobs:
           godot --headless --path . --check-only --script scripts/RaceSounds.gd
           godot --headless --path . --check-only --script scripts/RacePodium.gd
       - name: Test Private Farm race navigation, AI, controls and saved podium
-        run: godot --headless --path . --script tests/race_smoke.gd
+        run: timeout --signal=TERM 75s godot --headless --path . --script tests/race_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
         run: |
           godot --headless --path . --check-only --script scripts/DrawingLessonCanvas.gd
