@@ -2,7 +2,7 @@ extends SceneTree
 ## Check the ACTUAL text passed to Mandarin TTS in headless Godot.
 ## Every insect species should be called 昆蟲 in its zone, quiz, reward and
 ## care instructions. Animal screens must still say 動物.
-const ALL_BUGS=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]
+const ALL_BUGS=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle","weevil"]
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -68,7 +68,7 @@ func _run() -> void:
 			return
 	game.show_insect_complete()
 	await process_frame
-	if not _said(sound,"七位昆蟲朋友") or sound.last_spoken_text.contains("駱駝") or sound.last_spoken_text.contains("河馬"):
+	if not _said(sound,"八位昆蟲朋友") or sound.last_spoken_text.contains("駱駝") or sound.last_spoken_text.contains("河馬"):
 		_fail("Insect adventure completion still plays zoo dialogue: "+sound.last_spoken_text)
 		return
 	game.show_album()
@@ -130,7 +130,7 @@ func _run() -> void:
 		return
 	store.data=backup
 	store.save()
-	print("PASS: seven insects and normal animals; insect narration for park, pet, games, repeat, reward, adventure, album, coloring, drawing and farm")
+	print("PASS: eight insects and normal animals; insect narration for park, pet, games, repeat, reward, adventure, album, coloring, drawing and farm")
 	game.queue_free()
 	await process_frame
 	quit(0)
