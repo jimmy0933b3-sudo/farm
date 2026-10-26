@@ -454,5 +454,17 @@
       "花蜜"
     ],
     "answer": "動物糞便"
+  },
+  {
+    "id": 39,
+    "animal": "weevil",
+    "type": "food",
+    "prompt": "象鼻蟲喜歡吃什麼？",
+    "options": [
+      "葉子",
+      "糖果",
+      "肉"
+    ],
+    "answer": "葉子"
   }
 ]

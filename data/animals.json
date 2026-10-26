@@ -386,5 +386,16 @@
     "care": false,
     "flies": false,
     "pushes_dung": true
+  },
+  {
+    "id": "weevil",
+    "name": "象鼻蟲",
+    "zone": "insect",
+    "color": "#B98B60",
+    "food": "葉子",
+    "sound": "細小爬行聲",
+    "desc": "象鼻蟲有長長彎彎的口吻，頭上的觸角像兩根小天線，六隻腳抓緊葉子爬行。",
+    "care": false,
+    "flies": false
   }
 ]

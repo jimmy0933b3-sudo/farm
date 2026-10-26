@@ -1,5 +1,5 @@
 extends SceneTree
-## Insect adventure: seven targets, swiping, helpful hint, resume and reshuffle.
+## Insect adventure: eight targets, swiping, helpful hint, resume and reshuffle.
 func _initialize() -> void:
 	call_deferred("_run")
 func _run() -> void:
@@ -16,9 +16,23 @@ func _run() -> void:
 	game.show_insect_search()
 	await process_frame
 	var bug=game.insect_game
-	var ids=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]
-	if bug.round_index!=2 or bug.found.size()!=2 or bug.placement.slice(0,6)!=["bee","rhinoceros_beetle","butterfly","ladybug","stag_beetle","mantis"] or bug.placement[6]!="dung_beetle":
+	var ids=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle","weevil"]
+	if bug.round_index!=2 or bug.found.size()!=2 or bug.placement.slice(0,6)!=["bee","rhinoceros_beetle","butterfly","ladybug","stag_beetle","mantis"] or bug.placement[6]!="dung_beetle" or bug.placement[7]!="weevil":
 		_fail("Existing six-insect in-progress save was reset instead of expanded")
+		return
+	# In-progress seven-target rounds must also preserve their already found
+	# insects and append the weevil as an eighth without wiping the save.
+	store.data["insect_explore_session"]={
+		"placement":["bee","rhinoceros_beetle","butterfly","ladybug",
+			"stag_beetle","mantis","dung_beetle"],
+		"found":["rhinoceros_beetle","stag_beetle"]
+	}
+	game.show_zone("insect")
+	game.show_insect_search()
+	await process_frame
+	bug=game.insect_game
+	if bug.placement.size()!=8 or bug.placement[7]!="weevil" or bug.round_index!=2:
+		_fail("Old seven-insect exploration progress was lost during weevil migration")
 		return
 	# Reset the session before testing a new full adventure.
 	store.data["insect_explore_session"]={}
@@ -27,8 +41,8 @@ func _run() -> void:
 	game.show_insect_search()
 	await process_frame
 	bug=game.insect_game
-	if bug.spots.size()!=7 or bug.placement.size()!=7:
-		_fail("Seven insect hiding places missing")
+	if bug.spots.size()!=8 or bug.placement.size()!=8:
+		_fail("Eight distinct insect hiding places missing")
 		return
 	for id in ids:
 		if bug.placement.count(id)!=1:
@@ -42,7 +56,7 @@ func _run() -> void:
 		_fail("Insect map did not pan")
 		return
 	bug.stage.pan_by(-390.0)
-	var wrong=(bug.target_spot()+1)%7
+	var wrong=(bug.target_spot()+1)%8
 	bug.attempt_spot(wrong)
 	bug.attempt_spot(wrong)
 	if not bug.spots[bug.target_spot()].hint:
@@ -67,11 +81,11 @@ func _run() -> void:
 		_fail("Leaving the garden did not preserve insect search")
 		return
 	var old_placement=bug.placement.duplicate()
-	for i in range(1,7):
+	for i in range(1,8):
 		bug.attempt_spot(bug.target_spot())
 		await create_timer(1.76).timeout
 	if game.screen!="insect_done":
-		_fail("Seven insects did not complete game")
+		_fail("Eight insects did not complete game")
 		return
 	for id in ids:
 		if not store.data["collected"].has(id):
@@ -92,7 +106,7 @@ func _run() -> void:
 		return
 	store.data=saved
 	store.save()
-	print("PASS: seven insect targets, panoramic drag, hint, collection, resume, replay and navigation")
+	print("PASS: eight insect targets, panoramic drag, hint, collection, resume, replay and navigation")
 	game.queue_free()
 	await process_frame
 	quit(0)

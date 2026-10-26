@@ -3,7 +3,7 @@ extends SceneTree
 func _initialize() -> void:
 	var a = _read("res://data/animals.json")
 	var l = _read("res://data/levels.json")
-	if a.size() != 38 or l.size() != 38:
+	if a.size() != 39 or l.size() != 39:
 		push_error("Expected exactly 38 animals and 38 levels")
 		quit(1)
 		return
@@ -33,8 +33,8 @@ func _initialize() -> void:
 			insect_count += 1
 		if bool(animal.get("care",false)):
 			care_count += 1
-	if farm_count != 7 or forest_count != 12 or ocean_count != 7 or zoo_count != 5 or insect_count != 7 or care_count != 7:
-		push_error("Expected 7 farm + 12 forest + 7 ocean + 5 zoo + 7 insect + 7 care animals (monkey reused in zoo)")
+	if farm_count != 7 or forest_count != 12 or ocean_count != 7 or zoo_count != 5 or insect_count != 8 or care_count != 7:
+		push_error("Expected 7 farm + 12 forest + 7 ocean + 5 zoo + 8 insect + 7 care animals (monkey reused in zoo)")
 		quit(1)
 		return
 	for level in l:
@@ -49,7 +49,7 @@ func _initialize() -> void:
 			push_error("Level missing valid options/answer: "+str(level.get("id")))
 			quit(1)
 			return
-	print("PASS: 38 animals, 38 valid levels, 5 habitats plus shared monkey and 7 care animals")
+	print("PASS: 39 animals, 39 valid levels, 5 habitats plus shared monkey and 7 care animals")
 	quit(0)
 
 func _read(path: String) -> Array:

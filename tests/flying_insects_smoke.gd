@@ -17,7 +17,7 @@ func _run() -> void:
 	var progress=game.progress
 	var snapshot=progress.data.duplicate(true)
 	var insects=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee"]
-	var starters=["cow","seal","mantis","dung_beetle"]
+	var starters=["cow","seal","mantis","dung_beetle","weevil"]
 	progress.data["collected"]=(starters+insects).duplicate()
 	progress.data["private_farm"]=[]
 	progress.save()
@@ -29,14 +29,15 @@ func _run() -> void:
 		farm.place_animal(id)
 	await process_frame
 	await process_frame
-	if farm.actors.size()!=9:
+	if farm.actors.size()!=10:
 		_fail("Mixed water grass and insect residents missing")
 		return
 	var cow=farm.actors["cow"]
 	var seal=farm.actors["seal"]
 	var mantis=farm.actors["mantis"]
 	var dung=farm.actors["dung_beetle"]
-	if cow.get("is_flying") or seal.get("is_flying") or mantis.get("is_flying") or dung.get("is_flying"):
+	var weevil=farm.actors["weevil"]
+	if cow.get("is_flying") or seal.get("is_flying") or mantis.get("is_flying") or dung.get("is_flying") or weevil.get("is_flying"):
 		_fail("Original ground and pond residents must not fly")
 		return
 	if cow.roaming_bounds.position.y<farm.habitat.size.y*.45:
@@ -48,7 +49,7 @@ func _run() -> void:
 	if not dung.pushes_dung or mantis.pushes_dung or dung.size.x<=mantis.size.x:
 		_fail("Dung beetle must roll a ball; mantis should crawl")
 		return
-	if mantis.roaming_bounds!=cow.roaming_bounds or dung.roaming_bounds!=cow.roaming_bounds:
+	if mantis.roaming_bounds!=cow.roaming_bounds or dung.roaming_bounds!=cow.roaming_bounds or weevil.roaming_bounds!=cow.roaming_bounds:
 		_fail("Mantis and dung beetle should crawl in grass")
 		return
 	var roll_before: float=dung.avatar.dung_ball_angle
@@ -138,7 +139,7 @@ func _run() -> void:
 		return
 	progress.data=snapshot
 	progress.save()
-	print("PASS: nine mixed residents, five flyers and two crawlers in sky, motion, touch, petting, care, beetle silhouettes, preserved save")
+	print("PASS: ten mixed residents, five flyers and three crawlers in sky, motion, touch, petting, care, beetle silhouettes, preserved save")
 	game.queue_free()
 	artist.queue_free()
 	await process_frame

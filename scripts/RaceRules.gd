@@ -13,20 +13,23 @@ static func track_for(id: String) -> Dictionary:
 			return track
 	return TRACKS[0]
 
-static func candidates(animals: Array, resident_ids: Array, collected_ids: Array) -> Array:
-	# Prefer the animals and insects actually living in this private farm.
-	# If the sanctuary is empty, use already collected friends so the race
-	# can still be played without manipulating the farm's pet capacity.
-	var eligible: Array = resident_ids if not resident_ids.is_empty() else collected_ids
+static func candidates(animals: Array, _resident_ids: Array, collected_ids: Array) -> Array:
+	# Every collected species is playable, independently of the 16-resident
+	# Private Farm limit. This includes ocean creatures and ground insects.
+	# Private Farm membership never restricts racing or grants a locked racer.
+	var unlocked: Dictionary = {}
+	for id in collected_ids:
+		unlocked[str(id)] = true
 	var found: Array = []
-	for id in eligible:
+	for animal in animals:
+		var id: String = str(animal.get("id",""))
+		if unlocked.has(id):
+			found.append(animal)
+	# A brand new child with an empty album can still learn the controls
+	# using the existing starter cow, without changing collection progress.
+	if found.is_empty() and collected_ids.is_empty():
 		for animal in animals:
-			if str(animal.get("id","")) == str(id) and not found.has(animal):
-				found.append(animal)
-				break
-	if found.is_empty():
-		for animal in animals:
-			if str(animal.get("id","")) == "cow":
+			if str(animal.get("id",""))=="cow":
 				found.append(animal)
 				break
 	return found

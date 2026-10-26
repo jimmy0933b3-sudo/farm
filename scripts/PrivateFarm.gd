@@ -155,7 +155,7 @@ func _ready() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	voice.speak("歡迎來到大大的私人農場！手指左右滑動逛地圖，會飛的昆蟲在天空，螳螂和糞金龜在草地上爬行，右邊有大水池喔！")
+	voice.speak("歡迎來到大大的私人農場！手指左右滑動逛地圖，會飛的昆蟲在天空，螳螂、糞金龜和象鼻蟲在草地上爬行，右邊有大水池喔！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -382,7 +382,7 @@ func place_animal(id: String) -> void:
 	_sync_residents()
 	_rebuild_cards()
 	focus_resident(id)
-	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("%s飛到天空囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else ("%s在草地推糞球囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("pushes_dung",false)) else ("%s在草地爬行囉！" % str(_animal(id).get("name","昆蟲")) if id=="mantis" else "%s來農場散步啦！" % str(_animal(id).get("name","動物")))))
+	info_label.text = "%s到水池游泳囉！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("%s飛到天空囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else ("%s在草地推糞球囉！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("pushes_dung",false)) else ("%s在草地爬行囉！" % str(_animal(id).get("name","昆蟲")) if id in ["mantis","weevil"] else "%s來農場散步啦！" % str(_animal(id).get("name","動物")))))
 	voice.speak("%s來玩囉！" % str(_animal(id).get("name","動物")))
 	_update_command_buttons()
 
@@ -408,7 +408,7 @@ func _set_resident(id: String, announce: bool = true) -> void:
 	_rebuild_cards()
 	_update_command_buttons()
 	if not id.is_empty():
-		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("摸摸在天空飛行的%s！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else ("看看%s推著糞球走！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("pushes_dung",false)) else ("摸摸爬行中的%s！" % str(_animal(id).get("name","昆蟲")) if id=="mantis" else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物")))))
+		info_label.text = "摸摸正在游泳的%s！" % str(_animal(id).get("name","動物")) if str(_animal(id).get("zone",""))=="ocean" else ("摸摸在天空飛行的%s！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("flies",false)) else ("看看%s推著糞球走！" % str(_animal(id).get("name","昆蟲")) if bool(_animal(id).get("pushes_dung",false)) else ("摸摸爬行中的%s！" % str(_animal(id).get("name","昆蟲")) if id in ["mantis","weevil"] else "摸摸正在散步的%s！" % str(_animal(id).get("name","動物")))))
 	if announce and not id.is_empty():
 		focus_resident(id)
 		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))

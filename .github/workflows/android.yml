@@ -118,6 +118,10 @@ jobs:
           godot --headless --path . --check-only --script scripts/RaceEffects.gd
           godot --headless --path . --check-only --script scripts/RaceSounds.gd
           godot --headless --path . --check-only --script scripts/RacePodium.gd
+      - name: Test every collected animal and insect is eligible to race
+        run: timeout --signal=TERM 30s godot --headless --path . --script tests/race_roster_smoke.gd
+      - name: Audit unique vector drawings of all eight old and new insects
+        run: timeout --signal=TERM 45s godot --headless --path . --script tests/insect_icon_uniqueness_smoke.gd
       - name: Test Private Farm race navigation, AI, controls and saved podium
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/race_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
@@ -217,7 +221,7 @@ jobs:
             "build/SIGNING-INFO.txt" \
             --target "$GITHUB_SHA" \
             --title "動物探險島 ${tag}｜最新版 APK" \
-            --notes "含昆蟲樂園、昆蟲大探險、動物園找動物、16 隻私人農場與 30 色手指著色。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
+            --notes "含八種昆蟲（新增象鼻蟲）、昆蟲大探險、全部已收集角色皆可賽車、動物園找動物、16 隻私人農場與 30 色手指著色。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
             --latest
           # Cleanup only AFTER release creation succeeds.
           while IFS= read -r old; do
