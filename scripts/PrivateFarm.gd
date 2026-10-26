@@ -8,6 +8,8 @@ const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 const TouchHand = preload("res://scripts/TouchHand.gd")
 const PrivateFarmLandscape = preload("res://scripts/PrivateFarmLandscape.gd")
 
+signal racing_requested
+
 const CAPACITY: int = 16
 
 var animals: Array = []
@@ -56,8 +58,14 @@ func _ready() -> void:
 	left.add_theme_constant_override("separation",6)
 	add_child(left)
 
-	info_label = _label("左右滑動逛大農場，摸摸動物吧！",21)
-	left.add_child(info_label)
+	var farm_header=HBoxContainer.new()
+	farm_header.add_theme_constant_override("separation",8)
+	left.add_child(farm_header)
+	info_label = _label("左右滑動逛農場，摸摸動物吧！",19)
+	info_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	farm_header.add_child(info_label)
+	farm_header.add_child(_round("🏎️ 賽車場",
+		Callable(self,"_request_race"),Vector2(144,51)))
 	# Wider-than-the-screen scenery under a fixed, clipped viewport.
 	farm_view=Control.new()
 	farm_view.custom_minimum_size=Vector2(555,310)
@@ -536,3 +544,6 @@ func _process(delta: float) -> void:
 func _on_reaction_finished(_id: String) -> void:
 	busy = false
 	_update_command_buttons()
+
+func _request_race() -> void:
+	racing_requested.emit()
