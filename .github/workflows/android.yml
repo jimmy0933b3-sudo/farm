@@ -115,6 +115,9 @@ jobs:
           godot --headless --path . --check-only --script scripts/RaceVehicle.gd
           godot --headless --path . --check-only --script scripts/RaceLobby.gd
           godot --headless --path . --check-only --script scripts/RaceGame.gd
+          godot --headless --path . --check-only --script scripts/RaceEffects.gd
+          godot --headless --path . --check-only --script scripts/RaceSounds.gd
+          godot --headless --path . --check-only --script scripts/RacePodium.gd
       - name: Test Private Farm race navigation, AI, controls and saved podium
         run: godot --headless --path . --script tests/race_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
