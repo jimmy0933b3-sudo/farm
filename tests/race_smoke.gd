@@ -59,6 +59,21 @@ func _run() -> void:
 	if race.ai_karts.size()!=3 or race.player_kart==null:
 		_fail("Three AI racers plus actual animal kart are required")
 		return
+	if race.countdown_remaining<=0.0 or race.countdown_label==null:
+		_fail("Kid-friendly 3-2-1-GO countdown is missing")
+		return
+	if race.track.race_distance!=0.0:
+		_fail("Race road must not start moving before countdown")
+		return
+	if race.track.lane_center_at(1,race.track.size.y*.3)<=0.0:
+		_fail("Racing track must provide actual visible lane geometry")
+		return
+	if race.player_kart.avatar==null or race.player_kart.title_label==null:
+		_fail("Actual species portrait and name should be visible inside kart")
+		return
+	if lobby.track_previews.size()!=3 or lobby.showcase_kart==null:
+		_fail("Illustrated track cards and large driver preview are missing")
+		return
 	var controls: HBoxContainer=race.get_child(2) as HBoxContainer
 	if controls==null or controls.get_child_count()!=3:
 		_fail("Three racing controls must remain visible")
@@ -101,6 +116,7 @@ func _run() -> void:
 	var old_collected: Array=main.progress.data["collected"].duplicate()
 	var old_residents: Array=main.progress.data["private_farm"].duplicate()
 	var old_races: int=int(main.progress.data["race_totals"].get("races",0))
+	race.countdown_remaining=0.0
 	race.distance=race.FINISH_DISTANCE-1.0
 	race._process(0.1)
 	await process_frame
