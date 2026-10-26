@@ -31,8 +31,8 @@ var enemy_lanes: Array = [0,2,1]
 var things: Array = []
 var hud: Label
 var bar: ProgressBar
-var countdown_remaining: float = 3.3
-var countdown_digit: int = 4
+var countdown_remaining: float = 3.0
+var countdown_digit: int = 3
 var countdown_label: Label
 var feedback_label: Label
 var feedback_time: float = 0.0
