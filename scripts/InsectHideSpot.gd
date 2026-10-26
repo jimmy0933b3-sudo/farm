@@ -38,6 +38,14 @@ func _draw() -> void:
 				draw_line(Vector2(x,79),Vector2(x+8,-20),Color("#69B274"),7,true)
 			_ell(4,28,36,30,Color("#825737"))
 			_ell(-8,19,10,7,Color("#AA784F"))
+		"seedpod":
+			# An eighth, unmistakable seed pod where the new weevil hides.
+			draw_line(Vector2(-14,81),Vector2(18,-69),Color("#5C9669"),11,true)
+			_ell(-32,-28,24,16,Color("#71B87A"))
+			_ell(42,-43,27,15,Color("#58A06D"))
+			_ell(0,14,60,40,Color("#9B704B"))
+			_ell(-10,3,42,29,Color("#C99E68"))
+			_ell(16,8,9,9,Color("#7C5435"))
 		"hive":
 			draw_line(Vector2(0,-89),Vector2(0,-45),Color("#8A795C"),13,true)
 			_ell(0,15,69,70,Color("#E5B660"))
