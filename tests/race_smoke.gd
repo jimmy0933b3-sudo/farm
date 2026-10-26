@@ -62,6 +62,23 @@ func _run() -> void:
 	if race.countdown_remaining<=0.0 or race.countdown_label==null:
 		_fail("Kid-friendly 3-2-1-GO countdown is missing")
 		return
+	var waiting_distance: float=race.distance
+	race._process(0.1)
+	if race.distance!=waiting_distance or race.countdown_label.text not in ["3","2"]:
+		_fail("Start countdown must pause driving before GO")
+		return
+	if race.soundfx==null or not race.soundfx.sounds.has("star"):
+		_fail("Race should supply offline sound effects")
+		return
+	if race.effects==null:
+		_fail("Race particle effects are missing")
+		return
+	if race.track.lane_center_at(0,race.track.size.y*.7)>=race.track.lane_center_at(1,race.track.size.y*.7):
+		_fail("Curved road lane centers must stay in order")
+		return
+	if race.track.lane_center_at(1,race.track.size.y*.1)>=race.track.lane_center_at(2,race.track.size.y*.1):
+		_fail("Curved road upper lanes must stay separated")
+		return
 	if race.track.race_distance!=0.0:
 		_fail("Race road must not start moving before countdown")
 		return
