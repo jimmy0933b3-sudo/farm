@@ -101,10 +101,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if screen == "home":
 				return
 			if screen == "race_game":
-			show_race_lobby()
-		elif screen in ["race_lobby","race_result"]:
-			show_private_farm()
-		elif screen in ["animal","game","complete"]:
+				show_race_lobby()
+			elif screen in ["race_lobby","race_result"]:
+				show_private_farm()
+			elif screen in ["animal","game","complete"]:
 				show_zone(current_zone)
 			elif screen in ["forest_search","forest_done"]:
 				show_zone("forest")
