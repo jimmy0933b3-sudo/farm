@@ -13,7 +13,7 @@ static func track_for(id: String) -> Dictionary:
 			return track
 	return TRACKS[0]
 
-static func candidates(animals: Array, resident_ids: Array, collected_ids: Array) -> Array:
+static func candidates(animals: Array, _resident_ids: Array, collected_ids: Array) -> Array:
 	# Every collected species is playable, independently of the 16-resident
 	# Private Farm limit. This includes ocean creatures and ground insects.
 	# Private Farm membership never restricts racing or grants a locked racer.
