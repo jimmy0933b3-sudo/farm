@@ -9,6 +9,7 @@ const PettingArea = preload("res://scripts/PettingArea.gd")
 const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
 const RaceLobby = preload("res://scripts/RaceLobby.gd")
 const RaceGame = preload("res://scripts/RaceGame.gd")
+const RacePodium = preload("res://scripts/RacePodium.gd")
 const RaceRules = preload("res://scripts/RaceRules.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const DrawingStudio = preload("res://scripts/DrawingStudio.gd")
@@ -618,7 +619,6 @@ func _finish_race(result: Dictionary) -> void:
 	progress.record_race(result)
 	var layout=_switch("race_result","farm")
 	_header(layout,"🏆 賽車比賽完成",Callable(self,"show_private_farm"))
-	layout.add_child(_spacer())
 	var who: String=str(result.get("animal_id","cow"))
 	var name: String="動物朋友"
 	for animal in animals:
@@ -628,9 +628,14 @@ func _finish_race(result: Dictionary) -> void:
 	var place: int=int(result.get("place",4))
 	var messages: Array=["","🥇 第一名！太厲害了！","🥈 第二名！很棒！",
 		"🥉 第三名！繼續加油！","🎉 第四名！完成比賽就是勝利！"]
-	layout.add_child(_label("%s %s" % [name,messages[clampi(place,1,4)]],35))
+	var podium=RacePodium.new()
+	podium.setup({"id":who,"name":name,"color":"#F4B67C"},place,
+		bool(progress.data["settings"].get("reduce_motion",false)))
+	podium.custom_minimum_size=Vector2(0,200)
+	layout.add_child(podium)
+	layout.add_child(_label("%s %s" % [name,messages[clampi(place,1,4)]],30))
 	layout.add_child(_label("⭐ 蒐集 %d 顆星星 · 獲得 %d 顆獎勵星星" % [
-		int(result.get("stars_collected",0)),int(result.get("stars_earned",1))],29))
+		int(result.get("stars_collected",0)),int(result.get("stars_earned",1))],24))
 	var summary: Dictionary=progress.data.get("race_totals",{})
 	layout.add_child(_label("農場賽車累積：%d 場比賽、%d 顆星星" % [
 		int(summary.get("races",0)),int(summary.get("stars",0))],22))
@@ -644,7 +649,6 @@ func _finish_race(result: Dictionary) -> void:
 		Color("#D3EFDB"),Vector2(220,66)))
 	choices.add_child(_button("🏠 回首頁",Callable(self,"show_home"),
 		Color("#E1E9FA"),Vector2(190,66)))
-	layout.add_child(_spacer())
 	_narrate("%s完成了賽車比賽！得到%d顆星星，真棒！" % [
 		name,int(result.get("stars_earned",1))])
 
