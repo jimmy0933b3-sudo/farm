@@ -7,6 +7,9 @@ const Store = preload("res://scripts/SaveData.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const PettingArea = preload("res://scripts/PettingArea.gd")
 const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
+const RaceLobby = preload("res://scripts/RaceLobby.gd")
+const RaceGame = preload("res://scripts/RaceGame.gd")
+const RaceRules = preload("res://scripts/RaceRules.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const DrawingStudio = preload("res://scripts/DrawingStudio.gd")
 const ForestDiscovery = preload("res://scripts/ForestDiscovery.gd")
@@ -41,6 +44,8 @@ var ocean_game: Control
 var zoo_game: Control
 var insect_game: Control
 var private_farm_game: Control
+var race_lobby: Control
+var race_game: Control
 var coloring_game: Control
 var drawing_game: Control
 var settings_scroll: ScrollContainer
@@ -66,6 +71,8 @@ func _ready() -> void:
 			show_album()
 		"private_farm":
 			show_private_farm()
+		"race_lobby":
+			show_race_lobby()
 		"coloring":
 			show_coloring()
 		"drawing":
@@ -93,7 +100,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			if screen == "home":
 				return
-			if screen in ["animal","game","complete"]:
+			if screen == "race_game":
+				show_race_lobby()
+			elif screen in ["race_lobby","race_result"]:
+				show_private_farm()
+			elif screen in ["animal","game","complete"]:
 				show_zone(current_zone)
 			elif screen in ["forest_search","forest_done"]:
 				show_zone("forest")
@@ -109,7 +120,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","coloring","drawing","ocean_search","ocean_park","zoo_search"]:
+	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -569,9 +580,73 @@ func show_private_farm() -> void:
 	_header(layout,"私人農場",Callable(self,"show_home"))
 	private_farm_game = PrivateFarm.new()
 	private_farm_game.setup(animals,progress,sound)
+	private_farm_game.racing_requested.connect(Callable(self,"show_race_lobby"))
 	private_farm_game.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	private_farm_game.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(private_farm_game)
+
+func show_race_lobby() -> void:
+	var layout=_switch("race_lobby","farm")
+	_header(layout,"🏁 動物昆蟲賽車場",Callable(self,"show_private_farm"))
+	race_lobby=RaceLobby.new()
+	race_lobby.configure(animals,progress,sound)
+	race_lobby.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	race_lobby.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	race_lobby.start_requested.connect(Callable(self,"_start_race"))
+	layout.add_child(race_lobby)
+
+func _start_race(player: Dictionary, route: Dictionary) -> void:
+	var layout=_switch("race_game","farm")
+	_header(layout,str(route.get("name","農場快樂盃")),
+		Callable(self,"show_race_lobby"))
+	var pool: Array=RaceRules.candidates(animals,
+		progress.data.get("private_farm",[]),progress.data.get("collected",[]))
+	if pool.size()<4:
+		for animal in animals:
+			if str(animal.get("zone",""))!="ocean" and not pool.has(animal):
+				pool.append(animal)
+	var other_racers: Array=RaceRules.opponents(pool,str(player.get("id","cow")))
+	race_game=RaceGame.new()
+	race_game.configure(player,other_racers,route,sound,
+		bool(progress.data["settings"].get("reduce_motion",false)))
+	race_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	race_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	race_game.finished.connect(Callable(self,"_finish_race"))
+	layout.add_child(race_game)
+
+func _finish_race(result: Dictionary) -> void:
+	progress.record_race(result)
+	var layout=_switch("race_result","farm")
+	_header(layout,"🏆 賽車比賽完成",Callable(self,"show_private_farm"))
+	layout.add_child(_spacer())
+	var who: String=str(result.get("animal_id","cow"))
+	var name: String="動物朋友"
+	for animal in animals:
+		if str(animal.get("id",""))==who:
+			name=str(animal.get("name","動物朋友"))
+			break
+	var place: int=int(result.get("place",4))
+	var messages: Array=["","🥇 第一名！太厲害了！","🥈 第二名！很棒！",
+		"🥉 第三名！繼續加油！","🎉 第四名！完成比賽就是勝利！"]
+	layout.add_child(_label("%s %s" % [name,messages[clampi(place,1,4)]],35))
+	layout.add_child(_label("⭐ 蒐集 %d 顆星星 · 獲得 %d 顆獎勵星星" % [
+		int(result.get("stars_collected",0)),int(result.get("stars_earned",1))],29))
+	var summary: Dictionary=progress.data.get("race_totals",{})
+	layout.add_child(_label("農場賽車累積：%d 場比賽、%d 顆星星" % [
+		int(summary.get("races",0)),int(summary.get("stars",0))],22))
+	var choices=HBoxContainer.new()
+	choices.alignment=BoxContainer.ALIGNMENT_CENTER
+	choices.add_theme_constant_override("separation",12)
+	layout.add_child(choices)
+	choices.add_child(_button("🔁 再玩一次",Callable(self,"show_race_lobby"),
+		Color("#F9E4B4"),Vector2(190,66)))
+	choices.add_child(_button("🌳 回私人農場",Callable(self,"show_private_farm"),
+		Color("#D3EFDB"),Vector2(220,66)))
+	choices.add_child(_button("🏠 回首頁",Callable(self,"show_home"),
+		Color("#E1E9FA"),Vector2(190,66)))
+	layout.add_child(_spacer())
+	_narrate("%s完成了賽車比賽！得到%d顆星星，真棒！" % [
+		name,int(result.get("stars_earned",1))])
 
 func show_forest_search() -> void:
 	current_zone = "forest"
