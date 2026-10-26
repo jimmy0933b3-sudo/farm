@@ -135,7 +135,7 @@ func _draw() -> void:
 	if scale_value <= 0.0:
 		return
 	draw_set_transform(Vector2(size.x * 0.5, size.y * 0.52), 0.0, Vector2(scale_value, scale_value))
-	if animal_id in ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]:
+	if animal_id in ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle","weevil"]:
 		_draw_insect()
 		return
 	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]:
@@ -744,6 +744,44 @@ func _draw_insect() -> void:
 				_oval(side*17,-53,7,9,Color.WHITE)
 				_oval(side*17,-53,3,5,ink)
 				_colorable_line(Vector2(side*16,-79),Vector2(side*36,-102),6,dark)
+		"weevil":
+			# Distinct eight-insect silhouette: a compact copper-brown pear
+			# body with a SINGLE curved, tubular elephant-like rostrum, two
+			# short elbowed antennae along it and six slim feet. The weevil
+			# deliberately has neither the rhino's Y-horn nor stag pincers.
+			for side in [-1.0,1.0]:
+				for n in range(3):
+					var foot_y: float=-10.0+float(n)*32.0
+					_colorable_line(Vector2(side*35,foot_y),
+						Vector2(side*(69+float(n)*3),foot_y+25.0),7.0,dark)
+			_oval(0,34,55,75,tint.darkened(.18))
+			_oval(-26,35,23,62,tint.lightened(.13))
+			_oval(26,35,23,62,tint.darkened(.20))
+			# Unique shell dots and short longitudinal elytra seam.
+			for side in [-1.0,1.0]:
+				for y in [12.0,39.0,65.0]:
+					_oval(side*25,y,5,8,tint.darkened(.40))
+			_oval(0,-45,42,37,tint.lightened(.07))
+			_oval(-26,-53,7,9,Color.WHITE)
+			_oval(26,-53,7,9,Color.WHITE)
+			_oval(-26,-53,4,5,ink)
+			_oval(26,-53,4,5,ink)
+			# A distinctly long curving SNOUT (rostrum). Keep the snout
+			# as a paintable polygon, not a thin unselectable decorative line.
+			_poly([
+				Vector2(-14,-65),Vector2(-12,-84),
+				Vector2(-25,-106),Vector2(-24,-123),
+				Vector2(-13,-145),Vector2(3,-145),
+				Vector2(1,-123),Vector2(11,-104),
+				Vector2(9,-85),Vector2(15,-66)
+			],tint.darkened(.23))
+			_oval(-5,-144,10,6,tint.darkened(.43))
+			# Antennae sprout from the middle of the snout rather than the
+			# top of the head; the rounded tips are easy to see on small cards.
+			_colorable_line(Vector2(-15,-109),Vector2(-43,-116),5.0,dark)
+			_colorable_line(Vector2(5,-104),Vector2(36,-120),5.0,dark)
+			_oval(-43,-116,9,7,tint.darkened(.40))
+			_oval(36,-120,9,7,tint.darkened(.40))
 		"dung_beetle":
 			# Scarab pushes a large brown dung ball. All regions remain paintable.
 			var dung_ink=COLOR_INK if coloring_mode else Color("#503527")
