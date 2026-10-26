@@ -108,6 +108,15 @@ jobs:
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd
+      - name: Check kart race, track, lobby and vehicle parsing
+        run: |
+          godot --headless --path . --check-only --script scripts/RaceRules.gd
+          godot --headless --path . --check-only --script scripts/RaceTrack.gd
+          godot --headless --path . --check-only --script scripts/RaceVehicle.gd
+          godot --headless --path . --check-only --script scripts/RaceLobby.gd
+          godot --headless --path . --check-only --script scripts/RaceGame.gd
+      - name: Test Private Farm race navigation, AI, controls and saved podium
+        run: godot --headless --path . --script tests/race_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
         run: |
           godot --headless --path . --check-only --script scripts/DrawingLessonCanvas.gd
