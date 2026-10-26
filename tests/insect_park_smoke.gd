@@ -1,5 +1,5 @@
 extends SceneTree
-## A fifth park with six distinct species, original art and correct navigation.
+## A fifth park with eight distinct species, original art and correct navigation.
 const ChoiceArt=preload("res://scripts/ChoiceArt.gd")
 const Art=preload("res://scripts/AnimalArt.gd")
 const Store=preload("res://scripts/SaveData.gd")
@@ -11,7 +11,7 @@ func _run() -> void:
 	await process_frame
 	game.show_home()
 	await process_frame
-	var ids=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle"]
+	var ids=["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle","weevil"]
 	var unique={}
 	for a in game.animals:
 		var id=str(a["id"])
@@ -19,8 +19,8 @@ func _run() -> void:
 			_fail("Duplicate ID: "+id)
 			return
 		unique[id]=a
-	if unique.size()!=38:
-		_fail("38 unique species expected")
+	if unique.size()!=39:
+		_fail("39 unique species expected")
 		return
 	var park_icon=0
 	var misplaced=0
@@ -40,8 +40,8 @@ func _run() -> void:
 	for n in _children(game):
 		if n.get_script()==ChoiceArt and str(n.item_id)=="insect_search": has_search=true
 		if n.get_script()==Art: visible[str(n.animal_id)]=true
-	if not has_search or visible.size()!=7:
-		_fail("Expected seven insect cards and a nested search entrance")
+	if not has_search or visible.size()!=8:
+		_fail("Expected eight insect cards and a nested search entrance")
 		return
 	for id in ids:
 		if not visible.has(id) or not unique.has(id) or str(unique[id]["zone"])!="insect":
@@ -73,7 +73,7 @@ func _run() -> void:
 	if game.screen!="insect":
 		_fail("Back from insect lost park")
 		return
-	print("PASS: insect park icon, seven distinct vector insects, paint masks, resident reuse and navigation")
+	print("PASS: insect park icon, eight distinct vector insects, paint masks, resident reuse and navigation")
 	game.queue_free()
 	await process_frame
 	quit(0)
