@@ -101,7 +101,7 @@ func _run() -> void:
 		return
 	game.show_private_farm()
 	await process_frame
-	if not _said(sound,"螳螂和糞金龜在草地"):
+	if not _said(sound,"螳螂、糞金龜和象鼻蟲在草地"):
 		_fail("Farm introduction still claims every insect flies")
 		return
 	var farm=game.private_farm_game
