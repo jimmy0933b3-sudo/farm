@@ -426,7 +426,7 @@ func show_zone(zone: String) -> void:
 			grid.add_child(_animal_button(info, Callable(self,"show_animal").bind(str(info["id"]),zone),false,scroll))
 	layout.add_child(_label("點昆蟲圖片聽介紹、摸摸牠、玩小遊戲！" if zone=="insect" else "點動物圖片聽介紹、摸摸牠、玩小遊戲！", 19,HORIZONTAL_ALIGNMENT_CENTER,Color("#527975")))
 	if zone=="insect":
-		_narrate("這裡是昆蟲樂園！有七隻昆蟲朋友。用手指點一隻昆蟲，聽牠的介紹，也可以玩昆蟲大探險！")
+		_narrate("這裡是昆蟲樂園！有八隻昆蟲朋友。用手指點一隻昆蟲，聽牠的介紹，也可以玩昆蟲大探險！")
 	else:
 		_narrate("這裡是%s。用手指點一隻動物，和牠交朋友吧！" % str({"farm":"農場","forest":"森林","zoo":"動物園","ocean":"海底樂園"}.get(zone,"探索樂園")))
 	# The forest hide-and-seek entry uses its own illustrated button, not a text-only menu.
@@ -491,7 +491,7 @@ func show_insect_search() -> void:
 func show_insect_complete() -> void:
 	var layout=_switch("insect_done","insect")
 	_header(layout,"昆蟲大探險完成！",Callable(self,"show_zone").bind("insect"))
-	layout.add_child(_label("太棒了！七位昆蟲朋友都找到了！",29))
+	layout.add_child(_label("太棒了！八位昆蟲朋友都找到了！",29))
 	var panel=_panel()
 	panel.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	layout.add_child(panel)
@@ -513,7 +513,7 @@ func show_insect_complete() -> void:
 	layout.add_child(actions)
 	actions.add_child(_button("再找一次",Callable(self,"show_insect_search"),Color("#F8E5C6"),Vector2(200,70)))
 	actions.add_child(_button("昆蟲樂園",Callable(self,"show_zone").bind("insect"),Color("#DFF0DE"),Vector2(200,70)))
-	_narrate("太棒啦！找到獨角仙、鍬形蟲、蝴蝶、瓢蟲、蜜蜂、螳螂和推糞球的糞金龜！七位昆蟲朋友都找到了！可以再玩一次！")
+	_narrate("太棒啦！找到獨角仙、鍬形蟲、蝴蝶、瓢蟲、蜜蜂、螳螂、推糞球的糞金龜，還有長鼻子的象鼻蟲！八位昆蟲朋友都找到了！可以再玩一次！")
 
 func show_ocean_search() -> void:
 	current_zone="ocean"
@@ -602,10 +602,14 @@ func _start_race(player: Dictionary, route: Dictionary) -> void:
 		Callable(self,"show_race_lobby"))
 	var pool: Array=RaceRules.candidates(animals,
 		progress.data.get("private_farm",[]),progress.data.get("collected",[]))
+	# Uncollected species may act as friendly NPCs only if there are not
+	# enough unlocked competitors; they never enter the player's selection.
 	if pool.size()<4:
 		for animal in animals:
-			if str(animal.get("zone",""))!="ocean" and not pool.has(animal):
+			if not pool.has(animal):
 				pool.append(animal)
+				if pool.size()>=4:
+					break
 	var other_racers: Array=RaceRules.opponents(pool,str(player.get("id","cow")))
 	race_game=RaceGame.new()
 	race_game.configure(player,other_racers,route,sound,
