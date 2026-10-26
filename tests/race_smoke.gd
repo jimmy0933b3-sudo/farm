@@ -31,6 +31,20 @@ func _run() -> void:
 	if lobby.options.size()!=3 or lobby.selected_id!="cow":
 		_fail("Lobby must show the current farm residents")
 		return
+	var selected_track: Button=lobby.track_buttons[0]
+	var other_track: Button=lobby.track_buttons[1]
+	if not _readable_button(selected_track) or not _readable_button(other_track):
+		_fail("Track button labels must have dark text on a light background")
+		return
+	var selected_style: StyleBoxFlat=selected_track.get_theme_stylebox("normal") as StyleBoxFlat
+	var other_style: StyleBoxFlat=other_track.get_theme_stylebox("normal") as StyleBoxFlat
+	if selected_style.border_color==other_style.border_color:
+		_fail("Selected track needs a visible border, without fading unselected labels")
+		return
+	for card in lobby.grid.get_children():
+		if not _readable_button(card) or card.modulate!=Color.WHITE:
+			_fail("Character labels and icons should stay fully visible when unselected")
+			return
 	lobby.choose_animal("stag_beetle")
 	lobby.choose_track("flower")
 	lobby.start()
@@ -44,6 +58,18 @@ func _run() -> void:
 		return
 	if race.ai_karts.size()!=3 or race.player_kart==null:
 		_fail("Three AI racers plus actual animal kart are required")
+		return
+	var controls: HBoxContainer=race.get_child(2) as HBoxContainer
+	if controls==null or controls.get_child_count()!=3:
+		_fail("Three racing controls must remain visible")
+		return
+	for button in controls.get_children():
+		if not _readable_button(button) or button.custom_minimum_size.y<64.0:
+			_fail("Racing buttons need legible high-contrast labels and large touch targets")
+			return
+	var disabled_style: StyleBoxFlat=race.boost_button.get_theme_stylebox("disabled") as StyleBoxFlat
+	if disabled_style==null or race.boost_button.get_theme_color("font_disabled_color").get_luminance()>0.45:
+		_fail("Boost cooldown label must remain readable when disabled")
 		return
 	race.move_lane(-1)
 	if race.lane!=0:
@@ -108,3 +134,9 @@ func _run() -> void:
 func _fail(reason: String) -> void:
 	push_error("RACE SMOKE FAILED: "+reason)
 	quit(1)
+
+func _readable_button(button: Button) -> bool:
+	var normal_style: StyleBoxFlat=button.get_theme_stylebox("normal") as StyleBoxFlat
+	if normal_style==null:
+		return false
+	return button.get_theme_color("font_color").get_luminance()<0.35 and normal_style.bg_color.get_luminance()>0.65

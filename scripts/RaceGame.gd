@@ -85,7 +85,7 @@ func _ready() -> void:
 
 	var bottom = HBoxContainer.new()
 	bottom.alignment = BoxContainer.ALIGNMENT_CENTER
-	bottom.add_theme_constant_override("separation",14)
+	bottom.add_theme_constant_override("separation",20)
 	add_child(bottom)
 	bottom.add_child(_control_button("⬅️ 往左",Callable(self,"move_lane").bind(-1)))
 	boost_button = _control_button("🚀 加速",Callable(self,"accelerate"))
@@ -106,14 +106,33 @@ func _ready() -> void:
 func _control_button(title: String, action: Callable) -> Button:
 	var btn = Button.new()
 	btn.text = title
-	btn.custom_minimum_size = Vector2(148,56)
-	btn.add_theme_font_size_override("font_size",21)
+	# High-contrast text and a large touch target for children.
+	btn.custom_minimum_size = Vector2(172,68)
+	btn.add_theme_font_size_override("font_size",23)
+	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
+		btn.add_theme_color_override(state,Color("#233649"))
+	btn.add_theme_color_override("font_disabled_color",Color("#485765"))
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color("#FFE3A6")
-	style.border_color = Color("#FFFFFF")
+	style.bg_color = Color("#FFE8AA")
+	style.border_color = Color("#976023")
 	style.set_border_width_all(3)
-	style.set_corner_radius_all(17)
+	style.set_corner_radius_all(18)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
 	btn.add_theme_stylebox_override("normal",style)
+	var hover = style.duplicate()
+	hover.bg_color = Color("#FFF2CD")
+	btn.add_theme_stylebox_override("hover",hover)
+	var pressed = style.duplicate()
+	pressed.bg_color = Color("#F5C96B")
+	btn.add_theme_stylebox_override("pressed",pressed)
+	var disabled = style.duplicate()
+	disabled.bg_color = Color("#E6EBEF")
+	disabled.border_color = Color("#8F9BA3")
+	btn.add_theme_stylebox_override("disabled",disabled)
+	btn.add_theme_stylebox_override("focus",StyleBoxEmpty.new())
 	btn.pressed.connect(action)
 	return btn
 

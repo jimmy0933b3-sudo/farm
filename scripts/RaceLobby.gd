@@ -39,7 +39,7 @@ func _ready() -> void:
 	add_child(track_row)
 	for t in Rules.TRACKS:
 		var choice=_button(str(t["name"]),Callable(self,"choose_track").bind(str(t["id"])))
-		choice.custom_minimum_size=Vector2(188,60)
+		choice.custom_minimum_size=Vector2(205,66)
 		track_row.add_child(choice)
 		track_buttons.append(choice)
 	chosen_label=_text("",21)
@@ -57,7 +57,7 @@ func _ready() -> void:
 	for animal in options:
 		grid.add_child(_character_button(animal))
 	var start=_button("🏁 開始比賽！",Callable(self,"start"))
-	start.custom_minimum_size=Vector2(260,62)
+	start.custom_minimum_size=Vector2(280,70)
 	add_child(start)
 	_refresh()
 	if narrator!=null:
@@ -72,17 +72,57 @@ func _text(value: String,font_size: int) -> Label:
 	return lbl
 
 func _button(title: String, callback: Callable) -> Button:
-	var button=Button.new()
-	button.text=title
-	button.add_theme_font_size_override("font_size",20)
-	var style=StyleBoxFlat.new()
-	style.bg_color=Color("#FEE9BD")
-	style.set_corner_radius_all(17)
-	style.set_border_width_all(2)
-	style.border_color=Color.WHITE
+	var button = Button.new()
+	button.text = title
+	button.add_theme_font_size_override("font_size",22)
+	# Set every interaction state explicitly; the default disabled/hover
+	# colors can otherwise wash out labels against pastel backgrounds.
+	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
+		button.add_theme_color_override(state,Color("#233649"))
+	button.add_theme_color_override("font_disabled_color",Color("#475765"))
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color("#FFE8B5")
+	style.set_corner_radius_all(18)
+	style.set_border_width_all(3)
+	style.border_color = Color("#A1763C")
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
 	button.add_theme_stylebox_override("normal",style)
-	button.pressed.connect(callback)
+	var hover = style.duplicate()
+	hover.bg_color = Color("#FFF1CB")
+	button.add_theme_stylebox_override("hover",hover)
+	var pressed = style.duplicate()
+	pressed.bg_color = Color("#F7D28A")
+	button.add_theme_stylebox_override("pressed",pressed)
+	var disabled = style.duplicate()
+	disabled.bg_color = Color("#E5EAEE")
+	disabled.border_color = Color("#98A3AD")
+	button.add_theme_stylebox_override("disabled",disabled)
+	button.add_theme_stylebox_override("focus",StyleBoxEmpty.new())
+	if callback.is_valid():
+		button.pressed.connect(callback)
 	return button
+
+func _style_selection(button: Button, selected: bool) -> void:
+	# Highlight the border/background only. Never fade the icon or text.
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color("#FFE4A0") if selected else Color("#FFF4DA")
+	style.border_color = Color("#246B54") if selected else Color("#B18D61")
+	style.set_border_width_all(4 if selected else 2)
+	style.set_corner_radius_all(18)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	button.add_theme_stylebox_override("normal",style)
+	var hover = style.duplicate()
+	hover.bg_color = Color("#FFD786") if selected else Color("#FFE9BB")
+	button.add_theme_stylebox_override("hover",hover)
+	var pressed = style.duplicate()
+	pressed.bg_color = Color("#F6C76A")
+	button.add_theme_stylebox_override("pressed",pressed)
 
 func _character_button(animal: Dictionary) -> Button:
 	var id=str(animal.get("id",""))
@@ -123,10 +163,10 @@ func _refresh() -> void:
 			animal_name=str(option.get("name","動物"))
 	for btn in grid.get_children():
 		var chosen: bool=str(btn.get_meta("racer_id",""))==selected_id
-		btn.modulate=Color.WHITE if chosen else Color("#D4D4D4")
+		_style_selection(btn,chosen)
 	chosen_label.text="目前選擇：%s    賽道：%s" % [animal_name,str(Rules.track_for(track_id)["name"])]
 	for index in range(track_buttons.size()):
-		track_buttons[index].modulate=Color.WHITE if str(Rules.TRACKS[index]["id"])==track_id else Color("#D3D3D3")
+		_style_selection(track_buttons[index],str(Rules.TRACKS[index]["id"])==track_id)
 
 func start() -> void:
 	for option in options:
