@@ -1,5 +1,5 @@
 extends VBoxContainer
-## Race entry screen inside Private Farm. Only collected/owned friends appear.
+## Race entry inside the Private Farm; EVERY collected species can race, even if not a resident.
 signal start_requested(animal: Dictionary, track_data: Dictionary)
 
 const Rules = preload("res://scripts/RaceRules.gd")
@@ -35,7 +35,7 @@ func _ready() -> void:
 	size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation",10)
-	header=_text("🏁 農場賽車嘉年華 · 選喜歡的車手和賽道",26)
+	header=_text("🏁 賽車嘉年華 · 所有已收集的朋友都可以參賽！",25)
 	add_child(header)
 	var track_row=HBoxContainer.new()
 	track_row.alignment=BoxContainer.ALIGNMENT_CENTER
@@ -217,7 +217,7 @@ func _refresh() -> void:
 	for btn in grid.get_children():
 		var chosen: bool=str(btn.get_meta("racer_id",""))==selected_id
 		_style_selection(btn,chosen)
-	chosen_label.text="🧸 車手：%s     🗺️ 賽道：%s     ⭐ 星星人人都能拿！" % [animal_name,str(Rules.track_for(track_id)["name"])]
+	chosen_label.text="🧸 車手：%s     🗺️ 賽道：%s     🔓 已收集 %d 位車手" % [animal_name,str(Rules.track_for(track_id)["name"]),options.size()]
 	if showcase_kart!=null:
 		for candidate in options:
 			if str(candidate.get("id",""))==selected_id:
