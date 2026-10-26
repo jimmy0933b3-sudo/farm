@@ -15,6 +15,8 @@ func _run() -> void:
 	main.progress.unlock("cow")
 	main.progress.unlock("rhinoceros_beetle")
 	main.progress.unlock("stag_beetle")
+	main.progress.unlock("seal")
+	main.progress.unlock("weevil")
 	main.progress.data["private_farm"]=["cow","rhinoceros_beetle","stag_beetle"]
 	main.progress.save()
 	main.show_private_farm()
@@ -31,8 +33,8 @@ func _run() -> void:
 		_fail("Farm entry button did not open kart lobby")
 		return
 	var lobby=main.race_lobby
-	if lobby.options.size()!=3 or lobby.selected_id!="cow":
-		_fail("Lobby must show the current farm residents")
+	if lobby.options.size()!=5 or lobby.selected_id!="cow":
+		_fail("Lobby must show all five collected animals/insects including unplaced sea creatures and weevil")
 		return
 	var selected_track: Button=lobby.track_buttons[0]
 	var other_track: Button=lobby.track_buttons[1]
@@ -50,6 +52,16 @@ func _run() -> void:
 			return
 	if lobby.track_previews.size()!=3 or lobby.showcase_kart==null:
 		_fail("Illustrated track cards and large driver preview are missing")
+		return
+	# Neither the seal nor the weevil occupies a farm resident slot.
+	# They must still be selectable from the exact in-app lobby UI.
+	lobby.choose_animal("seal")
+	if lobby.selected_id!="seal":
+		_fail("Collected ocean animal absent from racing character selection")
+		return
+	lobby.choose_animal("weevil")
+	if lobby.selected_id!="weevil" or str(lobby.showcase_kart.info.get("id",""))!="weevil":
+		_fail("New collected weevil must have its own selectable race kart")
 		return
 	lobby.choose_animal("stag_beetle")
 	lobby.choose_track("flower")
