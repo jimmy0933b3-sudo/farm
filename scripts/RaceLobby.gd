@@ -16,7 +16,7 @@ var header: Label
 var chosen_label: Label
 var grid: GridContainer
 var track_buttons: Array = []
-var scroll: ScrollContainer
+var scroll
 
 func configure(catalog: Array, progress, voice) -> void:
 	animals=catalog
