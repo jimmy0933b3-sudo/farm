@@ -4,6 +4,8 @@ signal start_requested(animal: Dictionary, track_data: Dictionary)
 
 const Rules = preload("res://scripts/RaceRules.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
+const Track = preload("res://scripts/RaceTrack.gd")
+const Kart = preload("res://scripts/RaceVehicle.gd")
 const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 
 var animals: Array = []
@@ -17,6 +19,8 @@ var chosen_label: Label
 var grid: GridContainer
 var track_buttons: Array = []
 var scroll
+var showcase_kart
+var track_previews: Array = []
 
 func configure(catalog: Array, progress, voice) -> void:
 	animals=catalog
@@ -31,7 +35,7 @@ func _ready() -> void:
 	size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation",10)
-	header=_text("🏎️ 選一位動物或昆蟲朋友開賽車！",24)
+	header=_text("🏁 農場賽車嘉年華 · 選喜歡的車手和賽道",26)
 	add_child(header)
 	var track_row=HBoxContainer.new()
 	track_row.alignment=BoxContainer.ALIGNMENT_CENTER
@@ -39,15 +43,44 @@ func _ready() -> void:
 	add_child(track_row)
 	for t in Rules.TRACKS:
 		var choice=_button(str(t["name"]),Callable(self,"choose_track").bind(str(t["id"])))
-		choice.custom_minimum_size=Vector2(205,66)
+		choice.custom_minimum_size=Vector2(217,125)
+		choice.text=""
 		track_row.add_child(choice)
+		var artwork=Track.new()
+		artwork.setup(str(t["id"]),true)
+		artwork.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		artwork.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		artwork.offset_left=8
+		artwork.offset_right=-8
+		artwork.offset_top=8
+		artwork.offset_bottom=-8
+		choice.add_child(artwork)
+		track_previews.append(artwork)
+		var caption=Label.new()
+		caption.text=str(t["name"])
+		caption.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		caption.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		caption.offset_top=-36
+		caption.offset_bottom=-5
+		caption.add_theme_font_size_override("font_size",19)
+		caption.add_theme_color_override("font_color",Color("#203B40"))
+		caption.add_theme_color_override("font_outline_color",Color("#FFFCDE"))
+		caption.add_theme_constant_override("outline_size",6)
+		choice.add_child(caption)
 		track_buttons.append(choice)
 	chosen_label=_text("",21)
 	add_child(chosen_label)
+	var center=HBoxContainer.new()
+	center.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	center.alignment=BoxContainer.ALIGNMENT_CENTER
+	center.add_theme_constant_override("separation",14)
+	add_child(center)
 	scroll=TouchAnimalScroll.new()
 	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
+	center.add_child(scroll)
 	grid=GridContainer.new()
 	grid.columns=4
 	grid.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
@@ -56,6 +89,26 @@ func _ready() -> void:
 	scroll.add_child(grid)
 	for animal in options:
 		grid.add_child(_character_button(animal))
+	var showcase=PanelContainer.new()
+	showcase.custom_minimum_size=Vector2(235,260)
+	var panel=StyleBoxFlat.new()
+	panel.bg_color=Color("#ECF9E7")
+	panel.border_color=Color("#FFF0C6")
+	panel.set_border_width_all(5)
+	panel.set_corner_radius_all(22)
+	showcase.add_theme_stylebox_override("panel",panel)
+	center.add_child(showcase)
+	var preview_stack=VBoxContainer.new()
+	preview_stack.alignment=BoxContainer.ALIGNMENT_CENTER
+	showcase.add_child(preview_stack)
+	preview_stack.add_child(_text("⭐ 我的賽車手",20))
+	showcase_kart=Kart.new()
+	showcase_kart.custom_minimum_size=Vector2(178,200)
+	showcase_kart.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	showcase_kart.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	showcase_kart.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	preview_stack.add_child(showcase_kart)
+	preview_stack.add_child(_text("選好就出發！",17))
 	var start=_button("🏁 開始比賽！",Callable(self,"start"))
 	start.custom_minimum_size=Vector2(280,70)
 	add_child(start)
@@ -164,7 +217,12 @@ func _refresh() -> void:
 	for btn in grid.get_children():
 		var chosen: bool=str(btn.get_meta("racer_id",""))==selected_id
 		_style_selection(btn,chosen)
-	chosen_label.text="目前選擇：%s    賽道：%s" % [animal_name,str(Rules.track_for(track_id)["name"])]
+	chosen_label.text="🧸 車手：%s     🗺️ 賽道：%s     ⭐ 星星人人都能拿！" % [animal_name,str(Rules.track_for(track_id)["name"])]
+	if showcase_kart!=null:
+		for candidate in options:
+			if str(candidate.get("id",""))==selected_id:
+				showcase_kart.setup(candidate,true)
+				break
 	for index in range(track_buttons.size()):
 		_style_selection(track_buttons[index],str(Rules.TRACKS[index]["id"])==track_id)
 
