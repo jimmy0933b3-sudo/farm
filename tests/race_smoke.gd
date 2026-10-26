@@ -144,8 +144,8 @@ func _run() -> void:
 	race.distance=race.FINISH_DISTANCE-1.0
 	race._process(0.1)
 	await process_frame
-	if main.screen!="race_result"
-	print("RACE PHASE 8: if main.screen!='race_result'") or int(main.progress.data["race_totals"]["races"])!=old_races+1:
+	print("RACE PHASE 8: verifying race finish")
+	if main.screen!="race_result" or int(main.progress.data["race_totals"]["races"])!=old_races+1:
 		_fail("Finish must show results and increment saved race count")
 		return
 	if main.progress.data["collected"]!=old_collected or main.progress.data["private_farm"]!=old_residents:
