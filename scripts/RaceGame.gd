@@ -29,8 +29,8 @@ var enemy_lanes: Array = [0,2,1]
 var things: Array = []
 var hud: Label
 var help_text: Label
-var track: Control
-var player_kart: Control
+var track
+var player_kart
 var ai_karts: Array = []
 var boost_button: Button
 var touch_origin: Vector2 = Vector2.ZERO
@@ -163,8 +163,8 @@ func _process(delta: float) -> void:
 			if int(thing["lane"])==lane:
 				_take_item(str(thing["type"]))
 	track.scroll += speed*dt*(1.4 if not reduce_motion else 0.65)
-	track.set("race_objects",things)
-	track.set("race_distance",distance)
+	track.race_objects=things
+	track.race_distance=distance
 	track.queue_redraw()
 	_position_karts()
 	boost_button.disabled = boost_cooldown>0.0
