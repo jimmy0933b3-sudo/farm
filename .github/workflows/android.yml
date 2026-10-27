@@ -118,12 +118,18 @@ jobs:
           godot --headless --path . --check-only --script scripts/RaceEffects.gd
           godot --headless --path . --check-only --script scripts/RaceSounds.gd
           godot --headless --path . --check-only --script scripts/RacePodium.gd
+          godot --headless --path . --check-only --script scripts/MonsterArt.gd
+          godot --headless --path . --check-only --script scripts/MonsterScenery.gd
+          godot --headless --path . --check-only --script scripts/MonsterWorld.gd
+          godot --headless --path . --check-only --script scripts/MonsterAlbum.gd
       - name: Test every collected animal and insect is eligible to race
         run: timeout --signal=TERM 30s godot --headless --path . --script tests/race_roster_smoke.gd
       - name: Audit unique vector drawings of all eight old and new insects
         run: timeout --signal=TERM 45s godot --headless --path . --script tests/insect_icon_uniqueness_smoke.gd
       - name: Test Private Farm race navigation, AI, controls and saved podium
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/race_smoke.gd
+      - name: Test monster exploration, collection, gallery and racing
+        run: timeout --signal=TERM 75s godot --headless --path . --script tests/monster_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
         run: |
           godot --headless --path . --check-only --script scripts/DrawingLessonCanvas.gd
