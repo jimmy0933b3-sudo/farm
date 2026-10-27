@@ -62,9 +62,10 @@ func choose_filter(only_monsters: bool) -> void:
 	_refresh()
 
 func _ready() -> void:
+	var compact: bool=get_viewport_rect().size.y<=720.0
 	size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
-	add_theme_constant_override("separation",10)
+	add_theme_constant_override("separation",5 if compact else 9)
 	header=_text("👾 怪獸賽車 · 找到怪獸就能來參賽！" if monster_mode_supported else "🏁 賽車嘉年華 · 所有已收集的朋友都可以參賽！",25)
 	add_child(header)
 	if monster_mode_supported:
@@ -74,11 +75,11 @@ func _ready() -> void:
 		add_child(filter_row)
 		for entry in [[true,"👾 怪獸車手"],[false,"⭐ 全部已收集"]]:
 			var button=_button(str(entry[1]),Callable(self,"choose_filter").bind(bool(entry[0])))
-			button.custom_minimum_size=Vector2(210,52)
+			button.custom_minimum_size=Vector2(210,46 if compact else 52)
 			filter_row.add_child(button)
 			filter_buttons.append(button)
 	var track_scroll=ScrollContainer.new()
-	track_scroll.custom_minimum_size=Vector2(0,140)
+	track_scroll.custom_minimum_size=Vector2(0,106 if compact else 140)
 	track_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	track_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
 	track_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
@@ -89,7 +90,7 @@ func _ready() -> void:
 	track_scroll.add_child(track_row)
 	for t in Rules.TRACKS:
 		var choice=_button(str(t["name"]),Callable(self,"choose_track").bind(str(t["id"])))
-		choice.custom_minimum_size=Vector2(217,125)
+		choice.custom_minimum_size=Vector2(195,98 if compact else 125)
 		choice.text=""
 		track_row.add_child(choice)
 		var artwork=Track.new()
@@ -136,7 +137,7 @@ func _ready() -> void:
 	for animal in options:
 		grid.add_child(_character_button(animal))
 	var showcase=PanelContainer.new()
-	showcase.custom_minimum_size=Vector2(235,260)
+	showcase.custom_minimum_size=Vector2(200,166 if compact else 260)
 	var panel=StyleBoxFlat.new()
 	panel.bg_color=Color("#ECF9E7")
 	panel.border_color=Color("#FFF0C6")
@@ -149,14 +150,14 @@ func _ready() -> void:
 	showcase.add_child(preview_stack)
 	preview_stack.add_child(_text("⭐ 我的賽車手",20))
 	showcase_kart=Kart.new()
-	showcase_kart.custom_minimum_size=Vector2(178,200)
+	showcase_kart.custom_minimum_size=Vector2(150,121 if compact else 200)
 	showcase_kart.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	showcase_kart.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	showcase_kart.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	preview_stack.add_child(showcase_kart)
 	preview_stack.add_child(_text("選好就出發！",17))
 	var start=_button("🏁 開始比賽！",Callable(self,"start"))
-	start.custom_minimum_size=Vector2(280,70)
+	start.custom_minimum_size=Vector2(280,60 if compact else 70)
 	add_child(start)
 	_refresh()
 	if narrator!=null:
