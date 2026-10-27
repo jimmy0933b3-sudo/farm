@@ -1,6 +1,7 @@
 extends VBoxContainer
 ## Tap-and-find monster park with three habitats, saved collection and interactions.
 signal racing_requested
+signal album_requested
 
 const MonsterArt=preload("res://scripts/MonsterArt.gd")
 const Scenery=preload("res://scripts/MonsterScenery.gd")
@@ -44,6 +45,7 @@ func _ready() -> void:
 	count_label=_label("",21)
 	count_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	top.add_child(count_label)
+	top.add_child(_button("📖 怪獸圖鑑",Callable(self,"_request_album"),Vector2(170,60)))
 	top.add_child(_button("🏎️ 怪獸賽車場",Callable(self,"_request_race"),Vector2(200,60)))
 	var nav=HBoxContainer.new()
 	nav.alignment=BoxContainer.ALIGNMENT_CENTER
@@ -178,6 +180,7 @@ func _refresh() -> void:
 		vbox.add_child(art)
 		vbox.add_child(_label(("✓ " if found else "🔎 ")+str(monster["name"]),16))
 		stage.add_child(btn)
+		btn.size=Vector2(112,123)
 		monster_buttons.append(btn)
 	_position_monsters()
 	var count: int=0
@@ -216,7 +219,7 @@ func discover(id: String) -> void:
 		_refresh()
 		tip_label.text="🌟 新朋友加入收藏！" if first else "💖 歡迎回來，再一起玩！"
 		if narrator!=null:
-			narrator.speak(("找到%s！" if first else "又見面了，%s！")+" "+str(info.get("desc","")) % str(info["name"]))
+			narrator.speak((("找到%s！" if first else "又見面了，%s！") % str(info["name"]))+" "+str(info.get("desc","")))
 		return
 
 func play(action: String) -> void:
@@ -239,6 +242,9 @@ func play(action: String) -> void:
 		tween.tween_property(avatar,"scale",Vector2.ONE,.20)
 	if narrator!=null:
 		narrator.speak(sentence)
+
+func _request_album() -> void:
+	album_requested.emit()
 
 func _request_race() -> void:
 	racing_requested.emit()

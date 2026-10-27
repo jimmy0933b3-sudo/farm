@@ -29,6 +29,8 @@ func _fresh() -> Dictionary:
 		"insect_explore_previous": [],
 		"insect_found": [],
 		"private_farm": [],
+		"monster_found": [],
+		"monster_plays": {},
 		"race_records": {},
 		"race_totals": {"races":0,"stars":0},
 		"coloring_pages": {},
@@ -81,6 +83,19 @@ func save() -> void:
 	var err = DirAccess.rename_absolute(new_path, old_path)
 	if err != OK:
 		push_error("Could not commit save: " + str(err))
+
+func record_monster_found(id: String) -> void:
+	if not data["monster_found"].has(id):
+		data["monster_found"].append(id)
+	if not data["collected"].has(id):
+		data["collected"].append(id)
+	save()
+
+func record_monster_play(id: String) -> void:
+	var plays: Dictionary=data.get("monster_plays",{})
+	plays[id]=int(plays.get(id,0))+1
+	data["monster_plays"]=plays
+	save()
 
 func unlock(animal_id: String) -> void:
 	if not data["collected"].has(animal_id):

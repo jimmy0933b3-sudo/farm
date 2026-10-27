@@ -10,6 +10,8 @@ const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
 const RaceLobby = preload("res://scripts/RaceLobby.gd")
 const RaceGame = preload("res://scripts/RaceGame.gd")
 const RacePodium = preload("res://scripts/RacePodium.gd")
+const MonsterWorld = preload("res://scripts/MonsterWorld.gd")
+const MonsterAlbum = preload("res://scripts/MonsterAlbum.gd")
 const RaceRules = preload("res://scripts/RaceRules.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const DrawingStudio = preload("res://scripts/DrawingStudio.gd")
@@ -24,6 +26,10 @@ const Backdrop = preload("res://scripts/Backdrop.gd")
 const Synth = preload("res://scripts/Synth.gd")
 
 var animals: Array = []
+var monsters: Array = []
+var monster_game: Control
+var monster_album: Control
+var race_from_monsters: bool = false
 var levels: Array = []
 var progress
 var sound
@@ -54,6 +60,7 @@ var parent_scroll_y: int=0
 
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
+	monsters = Data.read_array("res://data/monsters.json")
 	levels = Data.read_array("res://data/levels.json")
 	progress = Store.new()
 	progress.load_save()
@@ -74,6 +81,10 @@ func _ready() -> void:
 			show_private_farm()
 		"race_lobby":
 			show_race_lobby()
+		"monster_world":
+			show_monster_world()
+		"monster_album":
+			show_monster_album()
 		"coloring":
 			show_coloring()
 		"drawing":
@@ -102,9 +113,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if screen == "home":
 				return
 			if screen == "race_game":
-				show_race_lobby()
+				show_race_lobby(race_from_monsters)
 			elif screen in ["race_lobby","race_result"]:
-				show_private_farm()
+				if race_from_monsters:
+					show_monster_world()
+				else:
+					show_private_farm()
+			elif screen=="monster_album":
+				show_monster_world()
 			elif screen in ["animal","game","complete"]:
 				show_zone(current_zone)
 			elif screen in ["forest_search","forest_done"]:
@@ -121,7 +137,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search"]:
+	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search","monster_world","monster_album"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -273,7 +289,7 @@ func _game_prompt(level: Dictionary) -> String:
 func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
 	var color_choices={
 		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),"zoo":Color("#FFE8C3"),"insect":Color("#E4F6D9"),"insect_search":Color("#E9F8C9"),
-		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),
+		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),"monster":Color("#F4DFF8"),
 		"coloring":Color("#F6E5F7"),"drawing":Color("#E7ECFF"),"care":Color("#FDECD5"),
 		"album":Color("#F1E3CE"),"forest_explore":Color("#E4F1D9"),
 		"ocean":Color("#DDF6FC")
@@ -338,7 +354,8 @@ func show_home() -> void:
 		{"title":"森林樂園","zone":"forest"},
 		{"title":"動物園樂園","zone":"zoo"},
 		{"title":"昆蟲樂園","zone":"insect"},
-		{"title":"海底樂園","zone":"ocean_park"}
+		{"title":"海底樂園","zone":"ocean_park"},
+		{"title":"怪獸樂園","zone":"monster"}
 	],wide)
 	var separation=Control.new()
 	separation.custom_minimum_size=Vector2(0,42 if wide else 34)
@@ -351,8 +368,8 @@ func show_home() -> void:
 		{"title":"動物之家","zone":"care"},
 		{"title":"動物圖鑑","zone":"album"}
 	],wide)
-	layout.add_child(_label("★ 已認識 %d / %d 位動物與昆蟲朋友！" % [int(progress.data["collected"].size()),animals.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
-	_narrate("歡迎來到動物探險島！五個樂園裡面可以找動物和昆蟲。下面有私人農場、動物著色屋、新的動物畫畫學堂，還有動物之家和圖鑑。")
+	layout.add_child(_label("★ 已認識 %d / %d 位動物、昆蟲與怪獸朋友！" % [int(progress.data["collected"].size()),animals.size()+monsters.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
+	_narrate("歡迎來到動物探險島！六個樂園裡面有動物、昆蟲和可愛怪獸，還有私人農場、畫畫學堂和賽車。")
 
 func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
 	var section=VBoxContainer.new()
@@ -391,6 +408,8 @@ func _go(where: String) -> void:
 			show_ocean_search()
 		"ocean_park":
 			show_zone("ocean")
+		"monster":
+			show_monster_world()
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
@@ -576,6 +595,27 @@ func show_coloring() -> void:
 	coloring_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	layout.add_child(coloring_game)
 
+
+func show_monster_world() -> void:
+	var layout=_switch("monster_world","monster")
+	_header(layout,"👾 怪獸樂園",Callable(self,"show_home"))
+	monster_game=MonsterWorld.new()
+	monster_game.setup(monsters,progress,sound)
+	monster_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	monster_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	monster_game.racing_requested.connect(Callable(self,"show_race_lobby").bind(true))
+	monster_game.album_requested.connect(Callable(self,"show_monster_album"))
+	layout.add_child(monster_game)
+
+func show_monster_album() -> void:
+	var layout=_switch("monster_album","monster")
+	_header(layout,"📖 怪獸收藏圖鑑",Callable(self,"show_monster_world"))
+	monster_album=MonsterAlbum.new()
+	monster_album.setup(monsters,progress,sound)
+	monster_album.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	monster_album.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	layout.add_child(monster_album)
+
 func show_private_farm() -> void:
 	var layout = _switch("private_farm","farm")
 	_header(layout,"私人農場",Callable(self,"show_home"))
@@ -586,26 +626,27 @@ func show_private_farm() -> void:
 	private_farm_game.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(private_farm_game)
 
-func show_race_lobby() -> void:
-	var layout=_switch("race_lobby","farm")
-	_header(layout,"🏁 動物昆蟲賽車場",Callable(self,"show_private_farm"))
+func show_race_lobby(from_monster_world: bool = false) -> void:
+	race_from_monsters=from_monster_world
+	var layout=_switch("race_lobby","monster" if from_monster_world else "farm")
+	_header(layout,"👾 怪獸賽車場" if from_monster_world else "🏁 動物昆蟲賽車場",Callable(self,"show_monster_world") if from_monster_world else Callable(self,"show_private_farm"))
 	race_lobby=RaceLobby.new()
-	race_lobby.configure(animals,progress,sound)
+	race_lobby.configure(animals+monsters,progress,sound,from_monster_world)
 	race_lobby.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	race_lobby.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	race_lobby.start_requested.connect(Callable(self,"_start_race"))
 	layout.add_child(race_lobby)
 
 func _start_race(player: Dictionary, route: Dictionary) -> void:
-	var layout=_switch("race_game","farm")
+	var layout=_switch("race_game","monster" if race_from_monsters else "farm")
 	_header(layout,str(route.get("name","農場快樂盃")),
-		Callable(self,"show_race_lobby"))
-	var pool: Array=RaceRules.candidates(animals,
+		Callable(self,"show_race_lobby").bind(race_from_monsters))
+	var pool: Array=RaceRules.candidates(animals+monsters,
 		progress.data.get("private_farm",[]),progress.data.get("collected",[]))
 	# Uncollected species may act as friendly NPCs only if there are not
 	# enough unlocked competitors; they never enter the player's selection.
 	if pool.size()<4:
-		for animal in animals:
+		for animal in animals+monsters:
 			if not pool.has(animal):
 				pool.append(animal)
 				if pool.size()>=4:
@@ -621,19 +662,21 @@ func _start_race(player: Dictionary, route: Dictionary) -> void:
 
 func _finish_race(result: Dictionary) -> void:
 	progress.record_race(result)
-	var layout=_switch("race_result","farm")
-	_header(layout,"🏆 賽車比賽完成",Callable(self,"show_private_farm"))
+	var layout=_switch("race_result","monster" if race_from_monsters else "farm")
+	_header(layout,"🏆 賽車比賽完成",Callable(self,"show_monster_world") if race_from_monsters else Callable(self,"show_private_farm"))
 	var who: String=str(result.get("animal_id","cow"))
 	var name: String="動物朋友"
-	for animal in animals:
+	var racer_info: Dictionary={"id":who,"name":name,"color":"#F4B67C"}
+	for animal in animals+monsters:
 		if str(animal.get("id",""))==who:
 			name=str(animal.get("name","動物朋友"))
+			racer_info=animal
 			break
 	var place: int=int(result.get("place",4))
 	var messages: Array=["","🥇 第一名！太厲害了！","🥈 第二名！很棒！",
 		"🥉 第三名！繼續加油！","🎉 第四名！完成比賽就是勝利！"]
 	var podium=RacePodium.new()
-	podium.setup({"id":who,"name":name,"color":"#F4B67C"},place,
+	podium.setup(racer_info,place,
 		bool(progress.data["settings"].get("reduce_motion",false)))
 	podium.custom_minimum_size=Vector2(0,200)
 	layout.add_child(podium)
@@ -641,15 +684,15 @@ func _finish_race(result: Dictionary) -> void:
 	layout.add_child(_label("⭐ 蒐集 %d 顆星星 · 獲得 %d 顆獎勵星星" % [
 		int(result.get("stars_collected",0)),int(result.get("stars_earned",1))],24))
 	var summary: Dictionary=progress.data.get("race_totals",{})
-	layout.add_child(_label("農場賽車累積：%d 場比賽、%d 顆星星" % [
+	layout.add_child(_label("賽車累積：%d 場比賽、%d 顆星星" % [
 		int(summary.get("races",0)),int(summary.get("stars",0))],22))
 	var choices=HBoxContainer.new()
 	choices.alignment=BoxContainer.ALIGNMENT_CENTER
 	choices.add_theme_constant_override("separation",12)
 	layout.add_child(choices)
-	choices.add_child(_button("🔁 再玩一次",Callable(self,"show_race_lobby"),
+	choices.add_child(_button("🔁 再玩一次",Callable(self,"show_race_lobby").bind(race_from_monsters),
 		Color("#F9E4B4"),Vector2(190,66)))
-	choices.add_child(_button("🌳 回私人農場",Callable(self,"show_private_farm"),
+	choices.add_child(_button("👾 回怪獸樂園" if race_from_monsters else "🌳 回私人農場",Callable(self,"show_monster_world") if race_from_monsters else Callable(self,"show_private_farm"),
 		Color("#D3EFDB"),Vector2(220,66)))
 	choices.add_child(_button("🏠 回首頁",Callable(self,"show_home"),
 		Color("#E1E9FA"),Vector2(190,66)))
@@ -849,7 +892,7 @@ func show_complete(level: Dictionary) -> void:
 func show_album() -> void:
 	var layout = _switch("album")
 	_header(layout,"我的動物圖鑑",Callable(self,"show_home"))
-	layout.add_child(_label("已收集 %d / %d 張動物與昆蟲貼紙" % [int(progress.data["collected"].size()),animals.size()],29))
+	layout.add_child(_label("已收集 %d / %d 張動物與昆蟲貼紙" % [animals.filter(func(animal): return progress.data["collected"].has(str(animal["id"]))).size(),animals.size()],29))
 	var scroll = TouchAnimalScroll.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(scroll)
