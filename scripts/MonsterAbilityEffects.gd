@@ -13,7 +13,7 @@ func trigger(id: String, action: String, reduce_motion: bool=false) -> void:
 	time_left=1.7
 	elapsed=0.0
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
-	set_process(not gentle)
+	set_process(true)
 	queue_redraw()
 
 func _process(delta: float) -> void:
