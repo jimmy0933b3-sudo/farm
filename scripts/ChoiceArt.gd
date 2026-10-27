@@ -126,6 +126,17 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"monster":
+			_oval(0,72,109,27,Color("#D8B7ED"))
+			_oval(-48,-6,42,54,Color("#F4A66C"))
+			_shape([Vector2(-73,-37),Vector2(-84,-78),Vector2(-55,-62)],Color("#E48B59"))
+			_oval(45,-1,43,52,Color("#9ECDF0"))
+			_shape([Vector2(41,-42),Vector2(64,-91),Vector2(72,-39)],Color("#80B7E8"))
+			for x in [-65.0,-34.0,26.0,57.0]:
+				_oval(x,-20,8,10,Color.WHITE)
+				_oval(x+1,-19,4,6,Color("#3E5264"))
+			_line(Vector2(-61,16),Vector2(-34,19),Color("#744B5F"),3)
+			_line(Vector2(30,21),Vector2(58,24),Color("#375A76"),3)
 		"insect":
 			_oval(0,68,105,26,Color("#8FD498"))
 			_oval(62,-23,35,44,Color("#F7AFD3"))

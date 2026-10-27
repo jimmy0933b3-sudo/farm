@@ -33,7 +33,7 @@ func _run() -> void:
 		_fail("Farm entry button did not open kart lobby")
 		return
 	var lobby=main.race_lobby
-	var expected_racers: Array=Rules.candidates(main.animals,
+	var expected_racers: Array=Rules.candidates(main.animals+main.monsters,
 		main.progress.data.get("private_farm",[]),main.progress.data.get("collected",[]))
 	if lobby.options.size()!=expected_racers.size():
 		_fail("Lobby must show every currently collected species, expected %d but got %d" %
@@ -57,7 +57,7 @@ func _run() -> void:
 		if not _readable_button(card) or card.modulate!=Color.WHITE:
 			_fail("Character labels and icons should stay fully visible when unselected")
 			return
-	if lobby.track_previews.size()!=3 or lobby.showcase_kart==null:
+	if lobby.track_previews.size()!=Rules.TRACKS.size() or lobby.showcase_kart==null:
 		_fail("Illustrated track cards and large driver preview are missing")
 		return
 	# Neither the seal nor the weevil occupies a farm resident slot.

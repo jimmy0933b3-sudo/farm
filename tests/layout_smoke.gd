@@ -20,8 +20,8 @@ func _run() -> void:
 		for node in _descendants(game):
 			if node is Button and _has_picture(node):
 				cards.append(node)
-		if cards.size()!=10:
-			_fail("Home must show exactly 10 fully illustrated actions, got "+str(cards.size()))
+		if cards.size()!=11:
+			_fail("Home must show exactly 11 fully illustrated actions, got "+str(cards.size()))
 			return
 		# Parks must form a visually distinct FIRST ROW. Tool icons start below a
 		# generous 40px+ gap, not pressed against park cards.

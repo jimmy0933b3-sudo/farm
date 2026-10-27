@@ -24,6 +24,13 @@ func _draw() -> void:
 			draw_circle(Vector2(bx+w*.008,h*.54),h*.017,Color("#F5DEAF"))
 		draw_rect(Rect2(w*.24,h*.43,w*.52,h*.04),Color("#D8B791"))
 		_poly([Vector2(w*.22,h*.43),Vector2(w*.50,h*.30),Vector2(w*.78,h*.43)],Color("#E5AA7A"))
+	if scene_type == "monster":
+		draw_rect(Rect2(Vector2.ZERO,size),Color("#EEDBF6"))
+		for i in range(8):
+			var x=w*(.08+float(i)*.13)
+			var y=h*(.70+float(i%2)*.05)
+			draw_circle(Vector2(x,y),h*.11,Color("#C7A6E7") if i%2==0 else Color("#F7BBD6"))
+			draw_circle(Vector2(x-15,y-17),h*.033,Color("#FFF5DB"))
 	if scene_type == "insect":
 		for i in range(10):
 			var x=w*(0.05+float(i)*0.105)
