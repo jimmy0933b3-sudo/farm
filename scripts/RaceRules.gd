@@ -4,7 +4,9 @@ extends RefCounted
 const TRACKS: Array = [
 	{"id":"farm","name":"🌾 農場快樂盃","short":"農場","duration":54.0,"bg":"#A6DEA4"},
 	{"id":"flower","name":"🌸 昆蟲迷你盃","short":"花園","duration":62.0,"bg":"#F7C9DB"},
-	{"id":"rainbow","name":"🌈 彩虹冠軍盃","short":"彩虹","duration":68.0,"bg":"#B4D8FC"}
+	{"id":"rainbow","name":"🌈 彩虹冠軍盃","short":"彩虹","duration":68.0,"bg":"#B4D8FC"},
+	{"id":"candy","name":"🍬 糖果山谷盃","short":"糖果","duration":60.0,"bg":"#FFD7D9"},
+	{"id":"cosmic","name":"🌌 星空飛行盃","short":"星空","duration":64.0,"bg":"#B3C5FA"}
 ]
 
 static func track_for(id: String) -> Dictionary:

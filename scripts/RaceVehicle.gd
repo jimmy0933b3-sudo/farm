@@ -3,6 +3,7 @@ extends Control
 ## A vehicle has wheels, wing, rounded body, cockpit, headlights, steering lean,
 ## shield bubble, boost sparks, bobbing suspension and a readable racer name.
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
+const MonsterArt = preload("res://scripts/MonsterArt.gd")
 
 var info: Dictionary = {}
 var selected: bool = false
@@ -44,7 +45,7 @@ func _attach_character() -> void:
 		avatar.queue_free()
 	if title_label != null and is_instance_valid(title_label):
 		title_label.queue_free()
-	avatar=AnimalArt.new()
+	avatar=MonsterArt.new() if str(info.get("zone",""))=="monster" else AnimalArt.new()
 	avatar.setup(info)
 	avatar.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	avatar.set_anchors_preset(Control.PRESET_FULL_RECT)

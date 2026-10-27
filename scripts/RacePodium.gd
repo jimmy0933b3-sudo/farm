@@ -1,6 +1,7 @@
 extends Control
 ## Celebration card shown before the rewards. No failure screen for young kids.
 const AnimalArt=preload("res://scripts/AnimalArt.gd")
+const MonsterArt=preload("res://scripts/MonsterArt.gd")
 var racer: Dictionary={}
 var place: int=1
 var time: float=0.0
@@ -16,7 +17,7 @@ func _ready() -> void:
 	custom_minimum_size=Vector2(0,205)
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
-	portrait=AnimalArt.new()
+	portrait=MonsterArt.new() if str(racer.get("zone",""))=="monster" else AnimalArt.new()
 	portrait.setup(racer)
 	portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(portrait)

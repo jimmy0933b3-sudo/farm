@@ -17,7 +17,11 @@ const SCENES = {
 	"flower":{"land":"#D3E8A3","field":"#A4D783","road":"#C9A7BD",
 		"border":"#FFFFFF","detail":"#EFA5D4"},
 	"rainbow":{"land":"#9FDCED","field":"#BCEAF2","road":"#B8B1DB",
-		"border":"#FFF8ED","detail":"#8FC7ED"}
+		"border":"#FFF8ED","detail":"#8FC7ED"},
+	"candy":{"land":"#FFD8D9","field":"#F4AFBC","road":"#CA94B5",
+		"border":"#FFF3C9","detail":"#E78CA7"},
+	"cosmic":{"land":"#A7B7ED","field":"#8EA4E1","road":"#938EC8",
+		"border":"#FFF6C8","detail":"#D2C6F5"}
 }
 
 func setup(id: String, gentle: bool) -> void:
@@ -171,6 +175,10 @@ func _draw_scenery() -> void:
 					_draw_leaf(pos)
 				else:
 					_draw_flower(pos,1.2)
+			elif track_id=="candy":
+				_draw_candy(pos,i)
+			elif track_id=="cosmic":
+				_draw_cosmic(pos,i)
 			else:
 				if i%3==0:
 					_draw_balloon(pos,.95)
@@ -178,6 +186,23 @@ func _draw_scenery() -> void:
 					_draw_cloud(pos)
 				else:
 					_draw_rainbow_flower(pos)
+
+func _draw_candy(p: Vector2,n: int) -> void:
+	var flavor: Color=[Color("#F39AB4"),Color("#F6D283"),Color("#A2D7C6")][posmod(n,3)]
+	draw_line(p+Vector2(0,4),p+Vector2(0,42),Color("#B58D77"),7,true)
+	draw_circle(p,27.0,flavor)
+	draw_arc(p,15.0,0,TAU,24,Color("#FFF6DF"),4.5,true)
+	draw_circle(p+Vector2(-11,-10),6.0,Color.WHITE)
+
+func _draw_cosmic(p: Vector2,n: int) -> void:
+	_draw_cloud(p)
+	var center=p+Vector2(0,-32)
+	var points=PackedVector2Array()
+	for t in range(10):
+		var a=-PI/2.0+float(t)*PI/5.0
+		var radius=20.0 if t%2==0 else 9.0
+		points.append(center+Vector2(cos(a),sin(a))*radius)
+	draw_colored_polygon(points,Color("#FFE7A1") if n%2==0 else Color("#EAD6FE"))
 
 func _draw_tree(p: Vector2,factor: float=1.0) -> void:
 	draw_circle(p+Vector2(4,13)*factor,30.0*factor,Color("#6A9650",.22))

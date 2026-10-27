@@ -4,6 +4,7 @@ signal start_requested(animal: Dictionary, track_data: Dictionary)
 
 const Rules = preload("res://scripts/RaceRules.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
+const MonsterArt = preload("res://scripts/MonsterArt.gd")
 const Track = preload("res://scripts/RaceTrack.gd")
 const Kart = preload("res://scripts/RaceVehicle.gd")
 const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
@@ -21,26 +22,71 @@ var track_buttons: Array = []
 var scroll
 var showcase_kart
 var track_previews: Array = []
+var monsters_only_mode: bool = false
+var monster_mode_supported: bool = false
+var filter_buttons: Array = []
 
-func configure(catalog: Array, progress, voice) -> void:
+func configure(catalog: Array, progress, voice, only_monsters: bool=false) -> void:
 	animals=catalog
 	store=progress
 	narrator=voice
-	options=Rules.candidates(animals,store.data.get("private_farm",[]),
+	monsters_only_mode=only_monsters
+	monster_mode_supported=only_monsters
+	track_id="candy" if only_monsters else "farm"
+	_rebuild_options()
+
+func _rebuild_options() -> void:
+	var unlocked: Array=Rules.candidates(animals,store.data.get("private_farm",[]),
 		store.data.get("collected",[]))
-	if not options.is_empty():
-		selected_id=str(options[0].get("id","cow"))
+	options=[]
+	for item in unlocked:
+		if not monsters_only_mode or str(item.get("zone",""))=="monster":
+			options.append(item)
+	if options.is_empty() and monsters_only_mode:
+		# A starter racer is available even before the child finds a monster.
+		for item in animals:
+			if str(item.get("id",""))=="monster_fire":
+				options.append(item)
+				break
+	if not options.any(func(item): return str(item.get("id",""))==selected_id):
+		selected_id=str(options[0].get("id","")) if not options.is_empty() else ""
+
+func choose_filter(only_monsters: bool) -> void:
+	monsters_only_mode=only_monsters
+	_rebuild_options()
+	for card in grid.get_children():
+		grid.remove_child(card)
+		card.queue_free()
+	for animal in options:
+		grid.add_child(_character_button(animal))
+	_refresh()
 
 func _ready() -> void:
 	size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation",10)
-	header=_text("🏁 賽車嘉年華 · 所有已收集的朋友都可以參賽！",25)
+	header=_text("👾 怪獸賽車 · 找到怪獸就能來參賽！" if monster_mode_supported else "🏁 賽車嘉年華 · 所有已收集的朋友都可以參賽！",25)
 	add_child(header)
+	if monster_mode_supported:
+		var filter_row=HBoxContainer.new()
+		filter_row.alignment=BoxContainer.ALIGNMENT_CENTER
+		filter_row.add_theme_constant_override("separation",15)
+		add_child(filter_row)
+		for entry in [[true,"👾 怪獸車手"],[false,"⭐ 全部已收集"]]:
+			var button=_button(str(entry[1]),Callable(self,"choose_filter").bind(bool(entry[0])))
+			button.custom_minimum_size=Vector2(210,52)
+			filter_row.add_child(button)
+			filter_buttons.append(button)
+	var track_scroll=ScrollContainer.new()
+	track_scroll.custom_minimum_size=Vector2(0,140)
+	track_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	track_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
+	track_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(track_scroll)
 	var track_row=HBoxContainer.new()
 	track_row.alignment=BoxContainer.ALIGNMENT_CENTER
 	track_row.add_theme_constant_override("separation",12)
-	add_child(track_row)
+	track_scroll.add_child(track_row)
 	for t in Rules.TRACKS:
 		var choice=_button(str(t["name"]),Callable(self,"choose_track").bind(str(t["id"])))
 		choice.custom_minimum_size=Vector2(217,125)
@@ -186,7 +232,7 @@ func _character_button(animal: Dictionary) -> Button:
 	column.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	btn.add_child(column)
-	var art=AnimalArt.new()
+	var art=MonsterArt.new() if str(animal.get("zone",""))=="monster" else AnimalArt.new()
 	art.setup(animal)
 	art.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	art.custom_minimum_size=Vector2(107,94)
@@ -210,6 +256,8 @@ func choose_track(id: String) -> void:
 	_refresh()
 
 func _refresh() -> void:
+	for i in range(filter_buttons.size()):
+		_style_selection(filter_buttons[i],monsters_only_mode if i==0 else not monsters_only_mode)
 	var animal_name="動物"
 	for option in options:
 		if str(option.get("id",""))==selected_id:
