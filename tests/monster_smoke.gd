@@ -42,6 +42,9 @@ func _run() -> void:
 		_fail("Finding a monster must unlock it in the shared collection")
 		return
 	world.play("ability")
+	if world.power_fx==null or world.power_fx.monster_id!="monster_fire":
+		_fail("Monster ability must trigger a visible original visual effect")
+		return
 	if int(main.progress.data["monster_plays"].get("monster_fire",0))<1:
 		_fail("Monster ability play count is not saved")
 		return

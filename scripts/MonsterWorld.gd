@@ -5,6 +5,7 @@ signal album_requested
 
 const MonsterArt=preload("res://scripts/MonsterArt.gd")
 const Scenery=preload("res://scripts/MonsterScenery.gd")
+const AbilityEffects=preload("res://scripts/MonsterAbilityEffects.gd")
 
 const ZONES=[
 	{"id":"rainbow","name":"🌈 彩虹森林"},
@@ -19,6 +20,7 @@ var zone_id: String="rainbow"
 var selected: Dictionary={}
 var stage: Control
 var background_art
+var power_fx
 var zone_buttons: Array=[]
 var monster_buttons: Array=[]
 var count_label: Label
@@ -75,6 +77,10 @@ func _ready() -> void:
 	background_art.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	background_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	stage.add_child(background_art)
+	power_fx=AbilityEffects.new()
+	power_fx.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	power_fx.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	stage.add_child(power_fx)
 	stage.resized.connect(_position_monsters)
 	var right=VBoxContainer.new()
 	right.custom_minimum_size=Vector2(280,0)
@@ -236,6 +242,7 @@ func play(action: String) -> void:
 		"ability":
 			sentence="%s使用超能力：%s！" % [str(selected["name"]),str(selected.get("ability","變魔法"))]
 	feedback_label.text=sentence
+	power_fx.trigger(id,action,gentle)
 	if not gentle:
 		var tween=create_tween()
 		tween.tween_property(avatar,"scale",Vector2(1.08,1.08),.14)

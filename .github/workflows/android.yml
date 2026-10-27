@@ -122,6 +122,7 @@ jobs:
           godot --headless --path . --check-only --script scripts/MonsterScenery.gd
           godot --headless --path . --check-only --script scripts/MonsterWorld.gd
           godot --headless --path . --check-only --script scripts/MonsterAlbum.gd
+          godot --headless --path . --check-only --script scripts/MonsterAbilityEffects.gd
       - name: Test every collected animal and insect is eligible to race
         run: timeout --signal=TERM 30s godot --headless --path . --script tests/race_roster_smoke.gd
       - name: Audit unique vector drawings of all eight old and new insects
