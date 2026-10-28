@@ -4,6 +4,16 @@ var info: Dictionary={}
 var species: String="bird_mandarin"
 var tint: Color=Color("#EFA66D")
 var wing_flap: float=0.0
+# Gallery and exploration portraits face left; in-flight birds face the direction
+# of travel. Mirror only the vector drawing, not its Control or UI children.
+var facing_right: bool=false
+
+func set_facing_right(value: bool) -> void:
+	facing_right=value
+	queue_redraw()
+
+func horizontal_draw_scale() -> float:
+	return -1.0 if facing_right else 1.0
 
 func setup(bird: Dictionary) -> void:
 	info=bird
@@ -40,10 +50,11 @@ func _draw() -> void:
 	var k=minf(size.x/250.0,size.y/210.0)
 	if k<=0.0:
 		return
-	draw_set_transform(Vector2(size.x*.5,size.y*.52),0.0,Vector2(k,k))
+	draw_set_transform(Vector2(size.x*.5,size.y*.52),0.0,
+		Vector2(k*horizontal_draw_scale(),k))
 	var dark=tint.darkened(.25)
 	var light=tint.lightened(.24)
-	# Every bird faces left; distinct wing, head, feet and tail silhouettes.
+	# Distinct wings, heads, feet and tails. Flight portraits are mirrored to face right.
 	match species:
 		"bird_mandarin":
 			_oval(5,51,94,12,Color("#5C8592",.13))

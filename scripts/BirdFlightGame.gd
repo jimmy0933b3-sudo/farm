@@ -72,11 +72,13 @@ func _ready() -> void:
 	track.resized.connect(_place_birds)
 	my_bird=BirdArt.new()
 	my_bird.setup(player)
+	my_bird.set_facing_right(true)
 	my_bird.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	track.add_child(my_bird)
 	for i in range(3):
 		var rival=BirdArt.new()
 		rival.setup(opponents[i])
+		rival.set_facing_right(true)
 		rival.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		track.add_child(rival)
 		rival_birds.append(rival)

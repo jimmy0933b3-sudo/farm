@@ -79,6 +79,20 @@ func _run() -> void:
 	if race.course_id!="forest" or race.rival_birds.size()!=3 or not race.my_bird is BirdArt:
 		_fail("Sky race must render four birds and preserve chosen route")
 		return
+	# World items approach from the right: all racers must face their direction
+	# of travel, while ordinary encyclopedia portraits remain unchanged.
+	if not race.my_bird.facing_right or race.my_bird.horizontal_draw_scale()!=-1.0:
+		_fail("Player bird must face right when the sky race moves forward")
+		return
+	for rival in race.rival_birds:
+		if not rival.facing_right or rival.horizontal_draw_scale()!=-1.0:
+			_fail("AI birds must face the same direction of travel as the player")
+			return
+	var encyclopedia_bird=BirdArt.new()
+	encyclopedia_bird.setup(main.birds[0])
+	if encyclopedia_bird.facing_right or encyclopedia_bird.horizontal_draw_scale()!=1.0:
+		_fail("Bird portraits outside the race must retain their original facing")
+		return
 	if race.track.course!="forest" or race.track.lane_y(0)>=race.track.lane_y(1):
 		_fail("Three altitude lanes need distinct layout")
 		return
