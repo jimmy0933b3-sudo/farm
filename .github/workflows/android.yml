@@ -123,6 +123,13 @@ jobs:
           godot --headless --path . --check-only --script scripts/MonsterWorld.gd
           godot --headless --path . --check-only --script scripts/MonsterAlbum.gd
           godot --headless --path . --check-only --script scripts/MonsterAbilityEffects.gd
+          godot --headless --path . --check-only --script scripts/BirdArt.gd
+          godot --headless --path . --check-only --script scripts/BirdScenery.gd
+          godot --headless --path . --check-only --script scripts/BirdWorld.gd
+          godot --headless --path . --check-only --script scripts/BirdAlbum.gd
+          godot --headless --path . --check-only --script scripts/BirdFlightLobby.gd
+          godot --headless --path . --check-only --script scripts/BirdFlightTrack.gd
+          godot --headless --path . --check-only --script scripts/BirdFlightGame.gd
       - name: Test every collected animal and insect is eligible to race
         run: timeout --signal=TERM 30s godot --headless --path . --script tests/race_roster_smoke.gd
       - name: Audit unique vector drawings of all eight old and new insects
@@ -131,6 +138,8 @@ jobs:
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/race_smoke.gd
       - name: Test monster exploration, collection, gallery and racing
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/monster_smoke.gd
+      - name: Test Bird World, bird album, flight controls and persistent sky races
+        run: timeout --signal=TERM 75s godot --headless --path . --script tests/bird_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
         run: |
           godot --headless --path . --check-only --script scripts/DrawingLessonCanvas.gd
