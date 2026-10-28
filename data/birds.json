@@ -1,0 +1,82 @@
+[
+  {
+    "id": "bird_mandarin",
+    "name": "鴛鴦",
+    "zone": "bird",
+    "area": "wetland",
+    "color": "#EFA66D",
+    "food": "水草與種子",
+    "desc": "鴛鴦的雄鳥有鮮豔的羽毛和橘色帆狀翼羽，喜歡在湖邊游泳。",
+    "trait": "橘色帆羽"
+  },
+  {
+    "id": "bird_teal",
+    "name": "小水鴨",
+    "zone": "bird",
+    "area": "wetland",
+    "color": "#AF9F82",
+    "food": "水草與小種子",
+    "desc": "小水鴨身形小巧，常在淺水裡尋找水草和種子。",
+    "trait": "綠色眼帶"
+  },
+  {
+    "id": "bird_myna",
+    "name": "八哥",
+    "zone": "bird",
+    "area": "woodland",
+    "color": "#353E4F",
+    "food": "果實與昆蟲",
+    "desc": "八哥羽毛深色，額頭有翹起的小冠羽，翅膀帶白色斑紋。",
+    "trait": "頭頂冠羽"
+  },
+  {
+    "id": "bird_sparrow",
+    "name": "麻雀",
+    "zone": "bird",
+    "area": "woodland",
+    "color": "#B18A63",
+    "food": "穀物與小種子",
+    "desc": "麻雀在樹梢和屋簷附近跳躍，喜歡結伴找食物。",
+    "trait": "栗色頭頂"
+  },
+  {
+    "id": "bird_jacana",
+    "name": "水雉",
+    "zone": "bird",
+    "area": "wetland",
+    "color": "#AD7653",
+    "food": "小蟲與水生生物",
+    "desc": "水雉擁有細長的腳趾，能在漂浮的葉片上輕巧行走。",
+    "trait": "長長腳趾"
+  },
+  {
+    "id": "bird_barbet",
+    "name": "五色鳥",
+    "zone": "bird",
+    "area": "woodland",
+    "color": "#5DB77F",
+    "food": "果實",
+    "desc": "五色鳥全身偏綠，頭部有藍、紅、黃等亮麗顏色，也叫臺灣擬啄木。",
+    "trait": "彩色頭部"
+  },
+  {
+    "id": "bird_heron",
+    "name": "夜鷺",
+    "zone": "bird",
+    "area": "wetland",
+    "color": "#8797AC",
+    "food": "小魚與水生生物",
+    "desc": "夜鷺常在水邊安靜等待，頭頂深色，眼睛紅紅的。",
+    "trait": "紅色眼睛"
+  },
+  {
+    "id": "bird_swallow",
+    "name": "家燕",
+    "zone": "bird",
+    "area": "woodland",
+    "color": "#3E658B",
+    "food": "飛行的小昆蟲",
+    "desc": "家燕翅膀細長，尾巴像分叉的小剪刀，飛行轉彎很靈巧。",
+    "trait": "剪刀尾巴"
+  }
+]
