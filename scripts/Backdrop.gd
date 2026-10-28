@@ -24,6 +24,14 @@ func _draw() -> void:
 			draw_circle(Vector2(bx+w*.008,h*.54),h*.017,Color("#F5DEAF"))
 		draw_rect(Rect2(w*.24,h*.43,w*.52,h*.04),Color("#D8B791"))
 		_poly([Vector2(w*.22,h*.43),Vector2(w*.50,h*.30),Vector2(w*.78,h*.43)],Color("#E5AA7A"))
+	if scene_type == "bird":
+		draw_rect(Rect2(Vector2.ZERO,size),Color("#D8EDF1"))
+		_oval(w*.42,h*.98,w*.71,h*.27,Color("#92C9B1"))
+		_oval(w*.83,h*1.02,w*.49,h*.22,Color("#75B8BE"))
+		for n in range(8):
+			var x=w*(.04+float(n)*.135)
+			draw_line(Vector2(x,h*.86),Vector2(x,h*.54),Color("#85A67B"),5,true)
+			draw_circle(Vector2(x,h*.51),h*.065,Color("#79B59C"))
 	if scene_type == "monster":
 		draw_rect(Rect2(Vector2.ZERO,size),Color("#EEDBF6"))
 		for i in range(8):

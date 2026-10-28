@@ -31,6 +31,10 @@ func _fresh() -> Dictionary:
 		"private_farm": [],
 		"monster_found": [],
 		"monster_plays": {},
+		"bird_found": [],
+		"bird_interactions": {},
+		"bird_flight_records": {},
+		"bird_flight_totals": {"races":0,"stars":0},
 		"race_records": {},
 		"race_totals": {"races":0,"stars":0},
 		"coloring_pages": {},
@@ -83,6 +87,41 @@ func save() -> void:
 	var err = DirAccess.rename_absolute(new_path, old_path)
 	if err != OK:
 		push_error("Could not commit save: " + str(err))
+
+func record_bird_found(id: String) -> void:
+	if not data["bird_found"].has(id):
+		data["bird_found"].append(id)
+	if not data["collected"].has(id):
+		data["collected"].append(id)
+	save()
+
+func record_bird_interaction(id: String) -> void:
+	var entries: Dictionary=data.get("bird_interactions",{})
+	entries[id]=int(entries.get(id,0))+1
+	data["bird_interactions"]=entries
+	save()
+
+func record_bird_flight(result: Dictionary) -> void:
+	var id=str(result.get("bird_id",""))
+	var route=str(result.get("course_id",""))
+	if id.is_empty() or route not in ["lake","forest"]:
+		return
+	# A child can try the mandarin duck before collecting anyone.
+	if not data["bird_found"].has(id) and id!="bird_mandarin":
+		return
+	var records: Dictionary=data.get("bird_flight_records",{})
+	var entry: Dictionary=records.get(id,{"races":0,"wins":0,"stars":0,"best_place":4})
+	entry["races"]=int(entry.get("races",0))+1
+	entry["wins"]=int(entry.get("wins",0))+(1 if int(result.get("place",4))==1 else 0)
+	entry["stars"]=int(entry.get("stars",0))+int(result.get("stars_earned",0))
+	entry["best_place"]=mini(int(entry.get("best_place",4)),clampi(int(result.get("place",4)),1,4))
+	records[id]=entry
+	data["bird_flight_records"]=records
+	var totals: Dictionary=data.get("bird_flight_totals",{"races":0,"stars":0})
+	totals["races"]=int(totals.get("races",0))+1
+	totals["stars"]=int(totals.get("stars",0))+int(result.get("stars_earned",0))
+	data["bird_flight_totals"]=totals
+	save()
 
 func record_monster_found(id: String) -> void:
 	if not data["monster_found"].has(id):
@@ -528,7 +567,7 @@ func replace_drawing_lesson(animal_id: String, page: Dictionary) -> bool:
 func record_race(result: Dictionary) -> void:
 	var id: String=str(result.get("animal_id",""))
 	var track: String=str(result.get("track_id",""))
-	if id.is_empty() or track not in ["farm","flower","rainbow"]:
+	if id.is_empty() or track not in ["farm","flower","rainbow","candy","cosmic"]:
 		return
 	if not data["collected"].has(id) and not data["private_farm"].has(id):
 		# Existing offline saves can still race after a fresh install: the game

@@ -12,6 +12,11 @@ const RaceGame = preload("res://scripts/RaceGame.gd")
 const RacePodium = preload("res://scripts/RacePodium.gd")
 const MonsterWorld = preload("res://scripts/MonsterWorld.gd")
 const MonsterAlbum = preload("res://scripts/MonsterAlbum.gd")
+const BirdWorld = preload("res://scripts/BirdWorld.gd")
+const BirdAlbum = preload("res://scripts/BirdAlbum.gd")
+const BirdFlightLobby = preload("res://scripts/BirdFlightLobby.gd")
+const BirdFlightGame = preload("res://scripts/BirdFlightGame.gd")
+const BirdArt = preload("res://scripts/BirdArt.gd")
 const RaceRules = preload("res://scripts/RaceRules.gd")
 const ColoringRoom = preload("res://scripts/ColoringRoom.gd")
 const DrawingStudio = preload("res://scripts/DrawingStudio.gd")
@@ -27,6 +32,11 @@ const Synth = preload("res://scripts/Synth.gd")
 
 var animals: Array = []
 var monsters: Array = []
+var birds: Array = []
+var bird_world: Control
+var bird_album: Control
+var bird_flight_lobby: Control
+var bird_flight_game: Control
 var monster_game: Control
 var monster_album: Control
 var race_from_monsters: bool = false
@@ -61,6 +71,7 @@ var parent_scroll_y: int=0
 func _ready() -> void:
 	animals = Data.read_array("res://data/animals.json")
 	monsters = Data.read_array("res://data/monsters.json")
+	birds = Data.read_array("res://data/birds.json")
 	levels = Data.read_array("res://data/levels.json")
 	progress = Store.new()
 	progress.load_save()
@@ -85,6 +96,12 @@ func _ready() -> void:
 			show_monster_world()
 		"monster_album":
 			show_monster_album()
+		"bird_world":
+			show_bird_world()
+		"bird_album":
+			show_bird_album()
+		"bird_flight_lobby":
+			show_bird_flight_lobby()
 		"coloring":
 			show_coloring()
 		"drawing":
@@ -121,6 +138,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 					show_private_farm()
 			elif screen=="monster_album":
 				show_monster_world()
+			elif screen=="bird_flight_game":
+				show_bird_flight_lobby()
+			elif screen in ["bird_flight_lobby","bird_flight_result","bird_album"]:
+				show_bird_world()
 			elif screen in ["animal","game","complete"]:
 				show_zone(current_zone)
 			elif screen in ["forest_search","forest_done"]:
@@ -137,7 +158,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search","monster_world","monster_album"]:
+	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search","monster_world","monster_album","bird_world","bird_album","bird_flight_lobby"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -289,7 +310,7 @@ func _game_prompt(level: Dictionary) -> String:
 func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
 	var color_choices={
 		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),"zoo":Color("#FFE8C3"),"insect":Color("#E4F6D9"),"insect_search":Color("#E9F8C9"),
-		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),"monster":Color("#F4DFF8"),
+		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),"monster":Color("#F4DFF8"),"bird":Color("#D9F0E5"),
 		"coloring":Color("#F6E5F7"),"drawing":Color("#E7ECFF"),"care":Color("#FDECD5"),
 		"album":Color("#F1E3CE"),"forest_explore":Color("#E4F1D9"),
 		"ocean":Color("#DDF6FC")
@@ -355,7 +376,8 @@ func show_home() -> void:
 		{"title":"動物園樂園","zone":"zoo"},
 		{"title":"昆蟲樂園","zone":"insect"},
 		{"title":"海底樂園","zone":"ocean_park"},
-		{"title":"怪獸樂園","zone":"monster"}
+		{"title":"怪獸樂園","zone":"monster"},
+		{"title":"鳥類樂園","zone":"bird"}
 	],wide)
 	var separation=Control.new()
 	separation.custom_minimum_size=Vector2(0,42 if wide else 34)
@@ -368,8 +390,8 @@ func show_home() -> void:
 		{"title":"動物之家","zone":"care"},
 		{"title":"動物圖鑑","zone":"album"}
 	],wide)
-	layout.add_child(_label("★ 已認識 %d / %d 位動物、昆蟲與怪獸朋友！" % [int(progress.data["collected"].size()),animals.size()+monsters.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
-	_narrate("歡迎來到動物探險島！六個樂園裡面有動物、昆蟲和可愛怪獸，還有私人農場、畫畫學堂和賽車。")
+	layout.add_child(_label("★ 已認識 %d / %d 位動物、昆蟲與怪獸朋友！" % [int(progress.data["collected"].size()),animals.size()+monsters.size()+birds.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
+	_narrate("歡迎來到動物探險島！七個探索樂園裡面有動物、昆蟲、怪獸和八種可愛鳥兒，鳥類樂園還能參加飛行大賽！")
 
 func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
 	var section=VBoxContainer.new()
@@ -410,6 +432,8 @@ func _go(where: String) -> void:
 			show_zone("ocean")
 		"monster":
 			show_monster_world()
+		"bird":
+			show_bird_world()
 
 func show_zone(zone: String) -> void:
 	current_zone = zone
@@ -595,6 +619,83 @@ func show_coloring() -> void:
 	coloring_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	layout.add_child(coloring_game)
 
+
+
+func show_bird_world() -> void:
+	var layout=_switch("bird_world","bird")
+	_header(layout,"🐦 鳥類樂園",Callable(self,"show_home"))
+	bird_world=BirdWorld.new()
+	bird_world.setup(birds,progress,sound)
+	bird_world.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	bird_world.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	bird_world.album_requested.connect(Callable(self,"show_bird_album"))
+	bird_world.flying_requested.connect(Callable(self,"show_bird_flight_lobby"))
+	layout.add_child(bird_world)
+
+func show_bird_album() -> void:
+	var layout=_switch("bird_album","bird")
+	_header(layout,"📖 鳥類圖鑑",Callable(self,"show_bird_world"))
+	bird_album=BirdAlbum.new()
+	bird_album.setup(birds,progress,sound)
+	bird_album.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	bird_album.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	layout.add_child(bird_album)
+
+func show_bird_flight_lobby() -> void:
+	var layout=_switch("bird_flight_lobby","bird")
+	_header(layout,"🏆 鳥類飛行大賽",Callable(self,"show_bird_world"))
+	bird_flight_lobby=BirdFlightLobby.new()
+	bird_flight_lobby.setup(birds,progress,sound)
+	bird_flight_lobby.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	bird_flight_lobby.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	bird_flight_lobby.start_requested.connect(Callable(self,"_start_bird_flight"))
+	layout.add_child(bird_flight_lobby)
+
+func _start_bird_flight(chosen: Dictionary,course: String) -> void:
+	var course_title="💧 湖畔微風盃" if course=="lake" else "🌳 森林天空盃"
+	var layout=_switch("bird_flight_game","bird")
+	_header(layout,course_title,Callable(self,"show_bird_flight_lobby"))
+	bird_flight_game=BirdFlightGame.new()
+	bird_flight_game.configure(chosen,birds,course,sound,
+		bool(progress.data["settings"].get("reduce_motion",false)))
+	bird_flight_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	bird_flight_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	bird_flight_game.finished.connect(Callable(self,"_finish_bird_flight"))
+	layout.add_child(bird_flight_game)
+
+func _finish_bird_flight(result: Dictionary) -> void:
+	progress.record_bird_flight(result)
+	var layout=_switch("bird_flight_result","bird")
+	_header(layout,"🏆 鳥類飛行大賽完成！",Callable(self,"show_bird_world"))
+	var who=str(result.get("bird_id","bird_mandarin"))
+	var selected_bird: Dictionary={}
+	for bird in birds:
+		if str(bird.get("id",""))==who:
+			selected_bird=bird
+			break
+	if not selected_bird.is_empty():
+		var art=BirdArt.new()
+		art.setup(selected_bird)
+		art.custom_minimum_size=Vector2(0,165)
+		art.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		art.size_flags_vertical=Control.SIZE_EXPAND_FILL
+		art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		layout.add_child(art)
+	var place=clampi(int(result.get("place",4)),1,4)
+	layout.add_child(_label("🎉 %s 飛行第 %d 名！" % [str(selected_bird.get("name","鳥兒")),place],30))
+	layout.add_child(_label("⭐ 收集 %d 顆星星，獲得 %d 顆獎勵星星！" % [
+		int(result.get("stars_collected",0)),int(result.get("stars_earned",1))],23))
+	var total: Dictionary=progress.data.get("bird_flight_totals",{})
+	layout.add_child(_label("飛行總成績：%d 場　累積 %d 顆星星" % [
+		int(total.get("races",0)),int(total.get("stars",0))],22))
+	var choices=HBoxContainer.new()
+	choices.alignment=BoxContainer.ALIGNMENT_CENTER
+	choices.add_theme_constant_override("separation",20)
+	layout.add_child(choices)
+	choices.add_child(_button("🪽 再飛一次",Callable(self,"show_bird_flight_lobby"),Color("#FFE7B3"),Vector2(190,64)))
+	choices.add_child(_button("🐦 回鳥類樂園",Callable(self,"show_bird_world"),Color("#CFEAD7"),Vector2(220,64)))
+	choices.add_child(_button("🏠 回首頁",Callable(self,"show_home"),Color("#D9E6F4"),Vector2(185,64)))
+	_narrate("%s完成飛行大賽！每一隻鳥兒都很棒！" % str(selected_bird.get("name","鳥兒")))
 
 func show_monster_world() -> void:
 	var layout=_switch("monster_world","monster")
