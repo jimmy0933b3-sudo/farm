@@ -4,6 +4,7 @@ extends RefCounted
 const PATH = "user://animal_island_save.json"
 const BAK = "user://animal_island_save.bak"
 const TEMP = "user://animal_island_save.tmp"
+const GardenRules=preload("res://scripts/GardenRules.gd")
 
 var data: Dictionary = {}
 
@@ -29,6 +30,17 @@ func _fresh() -> Dictionary:
 		"insect_explore_previous": [],
 		"insect_found": [],
 		"private_farm": [],
+		"garden_plots": [
+			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
+			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
+			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
+			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
+			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
+			{"crop":"","planted_at":0,"ready_at":0,"watered":false}
+		],
+		"garden_inventory": {"carrot":0,"cabbage":0,"pumpkin":0},
+		"garden_harvests": 0,
+		"garden_feeds": {},
 		"monster_found": [],
 		"monster_plays": {},
 		"bird_found": [],
@@ -87,6 +99,79 @@ func save() -> void:
 	var err = DirAccess.rename_absolute(new_path, old_path)
 	if err != OK:
 		push_error("Could not commit save: " + str(err))
+
+## Every planting/watering/harvesting/feeding change is saved as a whole.
+## Optional timestamps allow deterministic game-lifecycle tests.
+func garden_plant(index: int,id: String,epoch: int=-1) -> bool:
+	var crop: Dictionary=GardenRules.crop_for(id)
+	var plots: Array=data.get("garden_plots",[])
+	if crop.is_empty() or index<0 or index>=plots.size():
+		return false
+	if not str(plots[index].get("crop","")).is_empty():
+		return false
+	var now=int(Time.get_unix_time_from_system()) if epoch<0 else epoch
+	plots[index]={"crop":id,"planted_at":now,"ready_at":now+int(crop["seconds"]),"watered":false}
+	data["garden_plots"]=plots
+	save()
+	return true
+
+func garden_water(index: int,epoch: int=-1) -> bool:
+	var plots: Array=data.get("garden_plots",[])
+	if index<0 or index>=plots.size():
+		return false
+	var slot: Dictionary=plots[index]
+	if GardenRules.crop_for(str(slot.get("crop",""))).is_empty() or bool(slot.get("watered",false)):
+		return false
+	var now=int(Time.get_unix_time_from_system()) if epoch<0 else epoch
+	if now>=int(slot.get("ready_at",0)):
+		return false
+	var remaining=maxi(1,int(slot["ready_at"])-now)
+	slot["ready_at"]=now+maxi(3,int(ceil(float(remaining)*.65)))
+	slot["watered"]=true
+	plots[index]=slot
+	data["garden_plots"]=plots
+	save()
+	return true
+
+func garden_harvest(index: int,epoch: int=-1) -> bool:
+	var plots: Array=data.get("garden_plots",[])
+	if index<0 or index>=plots.size():
+		return false
+	var slot: Dictionary=plots[index]
+	var id=str(slot.get("crop",""))
+	var crop: Dictionary=GardenRules.crop_for(id)
+	var now=int(Time.get_unix_time_from_system()) if epoch<0 else epoch
+	if crop.is_empty() or now<int(slot.get("ready_at",0)):
+		return false
+	var basket: Dictionary=data.get("garden_inventory",{})
+	basket[id]=clampi(int(basket.get(id,0))+int(crop["harvest"]),0,9999)
+	data["garden_inventory"]=basket
+	plots[index]=GardenRules.empty_plot()
+	data["garden_plots"]=plots
+	data["garden_harvests"]=int(data.get("garden_harvests",0))+1
+	save()
+	return true
+
+func garden_can_feed(animal_id: String,crop_id: String) -> bool:
+	var basket: Dictionary=data.get("garden_inventory",{})
+	return data.get("private_farm",[]).has(animal_id) and \
+		GardenRules.suitable(animal_id,crop_id) and int(basket.get(crop_id,0))>0
+
+func garden_feed(animal_id: String,crop_id: String) -> bool:
+	if not garden_can_feed(animal_id,crop_id):
+		return false
+	var basket: Dictionary=data.get("garden_inventory",{})
+	basket[crop_id]=int(basket.get(crop_id,0))-1
+	data["garden_inventory"]=basket
+	var stats: Dictionary=care_stats(animal_id)
+	stats["food"]=mini(100,int(stats.get("food",60))+18)
+	stats["happy"]=mini(100,int(stats.get("happy",70))+25)
+	data["care"][animal_id]=stats
+	var fed: Dictionary=data.get("garden_feeds",{})
+	fed[animal_id]=int(fed.get(animal_id,0))+1
+	data["garden_feeds"]=fed
+	save()
+	return true
 
 func record_bird_found(id: String) -> void:
 	if not data["bird_found"].has(id):
