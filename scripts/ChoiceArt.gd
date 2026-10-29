@@ -126,6 +126,21 @@ func _draw() -> void:
 			_line(Vector2(24,-35),Vector2(45,-91),Color("#E85D69"),8.0)
 			_line(Vector2(45,-91),Vector2(70,-91),Color("#E85D69"),8.0)
 			_oval(0,-55,63,12,Color("#DAF4F9"))
+		"garden":
+			_oval(0,72,111,23,Color("#8DCB89"))
+			for n in range(3):
+				var x=-66+float(n)*65
+				_oval(x,51,37,24,Color("#A87D51"))
+				_oval(x,45,33,19,Color("#C09260"))
+			_shape([Vector2(-82,-28),Vector2(-38,-28),Vector2(-59,50)],Color("#F09B45"))
+			for n in range(3):
+				_line(Vector2(-59,0),Vector2(-78+float(n)*18,-57),Color("#6CA75A"),6)
+				_oval(-78+float(n)*18,-55,14,23,Color("#6DBA63"))
+			for n in range(3):
+				_oval(7+float(n)*22,20,23,30,Color("#83C96C"))
+			_oval(63,20,29,26,Color("#EDA44C"))
+			for n in range(3):
+				_line(Vector2(63,2),Vector2(54+float(n)*9,-31),Color("#69A962"),5)
 		"bird":
 			_oval(0,77,110,24,Color("#95CDB3"))
 			_oval(-39,4,58,40,Color("#AF7955"))

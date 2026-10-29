@@ -7,6 +7,7 @@ const Store = preload("res://scripts/SaveData.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const PettingArea = preload("res://scripts/PettingArea.gd")
 const PrivateFarm = preload("res://scripts/PrivateFarm.gd")
+const GardenWorld = preload("res://scripts/GardenWorld.gd")
 const RaceLobby = preload("res://scripts/RaceLobby.gd")
 const RaceGame = preload("res://scripts/RaceGame.gd")
 const RacePodium = preload("res://scripts/RacePodium.gd")
@@ -61,6 +62,7 @@ var ocean_game: Control
 var zoo_game: Control
 var insect_game: Control
 var private_farm_game: Control
+var garden_game: Control
 var race_lobby: Control
 var race_game: Control
 var coloring_game: Control
@@ -90,6 +92,8 @@ func _ready() -> void:
 			show_album()
 		"private_farm":
 			show_private_farm()
+		"garden":
+			show_garden()
 		"race_lobby":
 			show_race_lobby()
 		"monster_world":
@@ -138,6 +142,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 					show_private_farm()
 			elif screen=="monster_album":
 				show_monster_world()
+			elif screen=="garden":
+				show_private_farm()
 			elif screen=="bird_flight_game":
 				show_bird_flight_lobby()
 			elif screen in ["bird_flight_lobby","bird_flight_result","bird_album"]:
@@ -158,7 +164,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	sound.stop_speaking()
 	screen = name
-	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search","monster_world","monster_album","bird_world","bird_album","bird_flight_lobby"]:
+	if name in ["home","farm","forest","zoo","insect","insect_search","care","album","forest_search","private_farm","race_lobby","coloring","drawing","ocean_search","ocean_park","zoo_search","monster_world","monster_album","bird_world","bird_album","bird_flight_lobby","garden"]:
 		progress.data["last_screen"] = name
 		progress.save()
 	for node in get_children():
@@ -310,7 +316,7 @@ func _game_prompt(level: Dictionary) -> String:
 func _picture_button(item_id: String, caption: String, action: Callable, minimum: Vector2 = Vector2(242, 226), scroll: ScrollContainer = null) -> Button:
 	var color_choices={
 		"farm":Color("#E6F4D2"),"forest":Color("#DDF1DE"),"zoo":Color("#FFE8C3"),"insect":Color("#E4F6D9"),"insect_search":Color("#E9F8C9"),
-		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),"monster":Color("#F4DFF8"),"bird":Color("#D9F0E5"),
+		"ocean_park":Color("#D7F0FA"),"private_farm":Color("#F7EAD7"),"monster":Color("#F4DFF8"),"bird":Color("#D9F0E5"),"garden":Color("#E7F4D4"),
 		"coloring":Color("#F6E5F7"),"drawing":Color("#E7ECFF"),"care":Color("#FDECD5"),
 		"album":Color("#F1E3CE"),"forest_explore":Color("#E4F1D9"),
 		"ocean":Color("#DDF6FC")
@@ -385,6 +391,7 @@ func show_home() -> void:
 	content.add_child(separation)
 	_home_section(content,scrolling,"🎨 我的動物天地",[
 		{"title":"私人農場","zone":"private_farm"},
+		{"title":"我的開心農田","zone":"garden"},
 		{"title":"動物著色屋","zone":"coloring"},
 		{"title":"動物畫畫學堂","zone":"drawing"},
 		{"title":"動物之家","zone":"care"},
@@ -422,6 +429,8 @@ func _go(where: String) -> void:
 			show_forest_search()
 		"private_farm":
 			show_private_farm()
+		"garden":
+			show_garden()
 		"coloring":
 			show_coloring()
 		"drawing":
@@ -717,12 +726,23 @@ func show_monster_album() -> void:
 	monster_album.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	layout.add_child(monster_album)
 
+func show_garden() -> void:
+	var layout=_switch("garden","garden")
+	_header(layout,"🌻 我的開心農田",Callable(self,"show_home"))
+	garden_game=GardenWorld.new()
+	garden_game.setup(progress,sound)
+	garden_game.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	garden_game.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	garden_game.farm_requested.connect(Callable(self,"show_private_farm"))
+	layout.add_child(garden_game)
+
 func show_private_farm() -> void:
 	var layout = _switch("private_farm","farm")
 	_header(layout,"私人農場",Callable(self,"show_home"))
 	private_farm_game = PrivateFarm.new()
 	private_farm_game.setup(animals,progress,sound)
 	private_farm_game.racing_requested.connect(Callable(self,"show_race_lobby"))
+	private_farm_game.garden_requested.connect(Callable(self,"show_garden"))
 	private_farm_game.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	private_farm_game.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(private_farm_game)
