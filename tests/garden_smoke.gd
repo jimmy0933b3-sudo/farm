@@ -116,6 +116,10 @@ func _run() -> void:
 	if cow.reaction_action!="garden_feed" or cow.avatar.mood!="garden_happy" or cow.heart_time<2.0:
 		_fail("Eating garden produce must display happy face and animated hearts")
 		return
+	cow._process(.24)
+	if cow.avatar.position.y>=0.0 and not farm.reduce_motion:
+		_fail("Happy garden feeding should make the animal bounce joyfully")
+		return
 	if cow.effects.action!="garden_feed" or cow.effects.crop_id!="carrot":
 		_fail("Food animation must depict the actual vegetable used")
 		return

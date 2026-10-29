@@ -139,6 +139,11 @@ func _process(delta: float) -> void:
 		avatar.position.y = 0.0
 		avatar.rotation=0.0
 		avatar.scale=Vector2.ONE
+	# Garden treats trigger joyful little hops; still respect reduced-motion mode.
+	if reaction_action=="garden_feed" and not reduce_motion:
+		avatar.position.y=-absf(sin(step_time*10.0))*12.0
+		avatar.rotation=sin(step_time*8.0)*.09
+		avatar.scale=Vector2.ONE*(1.0+.07*absf(sin(step_time*10.0)))
 	# Keep the dung ball in front of the walking beetle, even on a turn.
 	if pushes_dung:
 		avatar.pivot_offset=avatar.size*0.5
