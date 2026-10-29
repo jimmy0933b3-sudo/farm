@@ -244,7 +244,7 @@ func _draw() -> void:
 	if mood == "sleep" or mood == "blink":
 		draw_arc(Vector2(-25,-37),13.0,0.15,PI-0.15,14,ink,3.5)
 		draw_arc(Vector2(25,-37),13.0,0.15,PI-0.15,14,ink,3.5)
-	elif mood in ["happy","clean","play","surprised"]:
+	elif mood in ["happy","clean","play","surprised","garden_happy"]:
 		draw_arc(Vector2(-25,-36),12.0,PI+0.13,TAU-0.13,14,ink,4.0)
 		draw_arc(Vector2(25,-36),12.0,PI+0.13,TAU-0.13,14,ink,4.0)
 	else:
@@ -252,7 +252,7 @@ func _draw() -> void:
 		_accent_oval(25,-38,8,11,ink)
 		_accent_oval(-27,-42,3,4,Color.WHITE)
 		_accent_oval(23,-42,3,4,Color.WHITE)
-	var blush_size = 21.0 if mood in ["happy","clean","play","surprised"] else 12.0
+	var blush_size = 24.0 if mood=="garden_happy" else (21.0 if mood in ["happy","clean","play","surprised"] else 12.0)
 	_oval(-43,-9,blush_size,9,cheek)
 	_oval(43,-9,blush_size,9,cheek)
 	if animal_id in ["duck", "chicken", "owl"]:
@@ -263,7 +263,7 @@ func _draw() -> void:
 		_oval(12,-4,4,6,dark)
 	else:
 		_oval(0,-14,9,7,Color("#705C54"))
-		if mood in ["happy","clean","play","eating"]:
+		if mood in ["happy","clean","play","eating","garden_happy"]:
 			draw_arc(Vector2(0,-6),18.0,0.15,PI-0.15,16,ink,3.0)
 		elif mood == "sleep":
 			draw_line(Vector2(-8,-1),Vector2(8,-1),ink,3.0)
@@ -277,15 +277,21 @@ func _draw() -> void:
 	if animal_id == "pig":
 		_oval(-66,-67,22,27,tint)
 		_oval(66,-67,22,27,tint)
-	if mood in ["happy","play","clean","surprised"]:
+	if mood in ["happy","play","clean","surprised","garden_happy"]:
 		_oval(69,-110,9,10,Color("#F57892"))
 		_oval(83,-115,9,10,Color("#F57892"))
 		_poly([Vector2(60,-111),Vector2(92,-111),Vector2(76,-92)],Color("#F57892"))
 	if mood == "eating":
 		_oval(-13,25,4,6,Color("#DDB46B"))
 		_oval(16,31,5,5,Color("#DDB46B"))
-	if mood in ["happy","eating","clean","play","surprised"] and animal_id in ["cow","pig","horse","duck","chicken","owl"]:
+	if mood in ["happy","eating","clean","play","surprised","garden_happy"] and animal_id in ["cow","pig","horse","duck","chicken","owl"]:
 		draw_arc(Vector2(0,24),18.0,0.15,PI-0.15,16,ink,3.0)
+	if mood == "garden_happy":
+		# Garden treats earn the biggest cheeky grin and extra rosy glow.
+		_oval(0,17,23,15,Color("#B85A78"))
+		_oval(0,24,13,5,Color("#F7A5AD"))
+		_oval(-46,-6,13,11,Color("#F99CB1"))
+		_oval(46,-6,13,11,Color("#F99CB1"))
 	if mood == "surprised":
 		# Wow! Big eyes, a happy little open mouth and rosy cheeks.
 		_oval(0,9,13,14,Color("#BD647B"))
@@ -435,7 +441,7 @@ func _draw_ocean_animal() -> void:
 			_oval(-3,104,33,23,tint)
 			_oval(11,103,16,10,belly)
 	# All sea creatures respond visually to petting and care as land animals do.
-	if mood in ["happy","play","clean","surprised"]:
+	if mood in ["happy","play","clean","surprised","garden_happy"]:
 		_oval(-89,-102,9,11,Color("#F793B4"))
 		_oval(-75,-109,9,11,Color("#F793B4"))
 		_poly([Vector2(-98,-105),Vector2(-66,-105),Vector2(-82,-87)],Color("#F793B4"))
@@ -544,7 +550,7 @@ func _draw_zoo_animal() -> void:
 			draw_line(Vector2(-14,13),Vector2(14,13),ink,3,true)
 		else:
 			draw_arc(Vector2(0,5),14,0.2,PI-0.2,16,ink,2.5,true)
-	if mood in ["happy","play","clean","surprised"]:
+	if mood in ["happy","play","clean","surprised","garden_happy"]:
 		for side in [-1,1]:
 			_oval(face.x+float(side)*56,face.y+42,13,8,Color("#F6B7A7"))
 		_oval(90,-119,9,11,Color("#F48DAC"))

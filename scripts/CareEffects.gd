@@ -2,6 +2,7 @@ extends Control
 ## Animated visual props drawn in front of an animal.
 var action: String = ""
 var phase: float = 0.0
+var crop_id: String = ""
 
 func _oval(x:float,y:float,rx:float,ry:float,color:Color) -> void:
 	var points=PackedVector2Array()
@@ -16,6 +17,32 @@ func _draw() -> void:
 	var k=minf(size.x/420.0,size.y/340.0)
 	draw_set_transform(Vector2(size.x*0.5,size.y*0.48),0.0,Vector2(k,k))
 	match action:
+		"garden_feed":
+			# Fresh vegetables float to the mouth while hearts appear above.
+			var t=minf(1.0,phase*1.9)
+			var x=-91.0+91.0*t
+			var y=112.0-112.0*t
+			if crop_id=="carrot":
+				draw_colored_polygon(PackedVector2Array([
+					Vector2(x-20,y-13),Vector2(x+20,y-13),Vector2(x,y+38)]),Color("#F1A14C"))
+				for n in range(3):
+					_oval(x-16+float(n)*16,y-25,9,17,Color("#78B967"))
+			elif crop_id=="cabbage":
+				for n in range(5):
+					_oval(x-24+float(n)*12,y,17,28,Color("#81C87D"))
+				_oval(x,y,24,24,Color("#B8E99C"))
+			else:
+				for n in range(5):
+					_oval(x-24+float(n)*12,y,17,26,Color("#E99444"))
+				_oval(x,y-27,13,8,Color("#71AE66"))
+			for n in range(5):
+				var cx=-95+float(n)*47
+				var cy=-104-sin(phase*TAU+float(n)*.17)*15-35*phase
+				var color=Color("#F07E9F",.95)
+				_oval(cx-7,cy,10,10,color)
+				_oval(cx+7,cy,10,10,color)
+				draw_colored_polygon(PackedVector2Array([
+					Vector2(cx-16,cy+4),Vector2(cx+16,cy+4),Vector2(cx,cy+23)]),color)
 		"feed":
 			# Hay/food visibly moves up to the animal's mouth, then disappears.
 			var p=minf(1.0,phase*2.0)
