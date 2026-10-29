@@ -25,6 +25,7 @@ var walk_speed: float = 25.0
 var idle_timer: float = 0.0
 var step_time: float = 0.0
 var reaction_time: float = 0.0
+var reaction_duration: float=1.65
 var reaction_action: String = ""
 var heart_time: float = 0.0
 var stroke_distance: float = 0.0
@@ -119,7 +120,7 @@ func _process(delta: float) -> void:
 	pet_cooldown = maxf(0.0,pet_cooldown-delta)
 	if reaction_time > 0.0:
 		reaction_time = maxf(0.0, reaction_time-delta)
-		effects.set("phase",1.0-reaction_time/1.65)
+		effects.set("phase",1.0-reaction_time/reaction_duration)
 		effects.queue_redraw()
 		if reaction_time <= 0.0:
 			reaction_action = ""
@@ -184,13 +185,16 @@ func tap_reaction() -> void:
 	avatar.queue_redraw()
 
 func perform(action: String) -> bool:
-	if action not in ["feed","wash","play","sleep"]:
+	if action not in ["feed","wash","play","sleep","garden_feed"]:
 		return false
-	reaction_time = 1.65
+	reaction_duration = 2.65 if action=="garden_feed" else 1.65
+	reaction_time = reaction_duration
 	reaction_action = action
+	if action=="garden_feed":
+		heart_time=2.65
 	idle_timer = 0.8
 	walking = false
-	avatar.set("mood",{"feed":"eating","wash":"clean","play":"play","sleep":"sleep"}[action])
+	avatar.set("mood",{"feed":"eating","wash":"clean","play":"play","sleep":"sleep","garden_feed":"garden_happy"}[action])
 	effects.set("action",action)
 	effects.set("phase",0.0)
 	effects.queue_redraw()
