@@ -466,5 +466,53 @@
       "肉"
     ],
     "answer": "葉子"
+  },
+  {
+    "id": 40,
+    "animal": "axolotl",
+    "type": "habitat",
+    "prompt": "娃娃魚（美西螈）住在什麼水中環境？",
+    "options": [
+      "ocean",
+      "forest",
+      "farm"
+    ],
+    "answer": "ocean"
+  },
+  {
+    "id": 41,
+    "animal": "dog",
+    "type": "habitat",
+    "prompt": "狗狗在哪個小動物樂園交朋友？",
+    "options": [
+      "cola",
+      "ocean",
+      "forest"
+    ],
+    "answer": "cola"
+  },
+  {
+    "id": 42,
+    "animal": "cat",
+    "type": "habitat",
+    "prompt": "貓咪的家在哪一個樂園？",
+    "options": [
+      "cola",
+      "farm",
+      "ocean"
+    ],
+    "answer": "cola"
+  },
+  {
+    "id": 43,
+    "animal": "golden_hamster",
+    "type": "habitat",
+    "prompt": "黃金鼠喜歡住在哪個小動物樂園？",
+    "options": [
+      "cola",
+      "zoo",
+      "ocean"
+    ],
+    "answer": "cola"
   }
 ]
