@@ -19,8 +19,8 @@ func _run() -> void:
 			_fail("Duplicate ID: "+id)
 			return
 		unique[id]=a
-	if unique.size()!=39:
-		_fail("39 unique species expected")
+	if unique.size()!=43:
+		_fail("43 unique species expected")
 		return
 	var park_icon=0
 	var misplaced=0
