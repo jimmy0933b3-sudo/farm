@@ -4,10 +4,10 @@ extends Control
 signal hideout_tapped(index: int)
 
 const Hideout = preload("res://scripts/OceanHideSpot.gd")
-const WORLD_WIDTH: float = 3480.0
-const X_POSITIONS: Array = [270.0, 770.0, 1270.0, 1770.0, 2270.0, 2770.0, 3270.0]
-const Y_FRACTIONS: Array = [0.67, 0.40, 0.63, 0.40, 0.66, 0.42, 0.64]
-const COVER_TYPES: Array = ["coral","shell","kelp","rocks","reef","wreck","rocks"]
+const WORLD_WIDTH: float = 3950.0
+const X_POSITIONS: Array = [270.0, 770.0, 1270.0, 1770.0, 2270.0, 2770.0, 3270.0, 3770.0]
+const Y_FRACTIONS: Array = [0.67, 0.40, 0.63, 0.40, 0.66, 0.42, 0.64, 0.45]
+const COVER_TYPES: Array = ["coral","shell","kelp","rocks","reef","wreck","rocks","kelp"]
 
 var animals: Array = []
 var placements: Array = []
