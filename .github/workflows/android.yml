@@ -161,6 +161,8 @@ jobs:
         run: godot --headless --path . --script tests/coloring_boundary_smoke.gd
       - name: Test black-white coloring game, touch fill and autosave
         run: godot --headless --path . --script tests/coloring_smoke.gd
+      - name: Test cola pet park, axolotl and full shared animal album and coloring roster
+        run: timeout --signal=TERM 100s godot --headless --path . --script tests/park_catalog_smoke.gd
       - name: Launch game smoke test
         run: |
           godot --headless --path . --quit-after 8 > "$RUNNER_TEMP/game-smoke.log" 2>&1
