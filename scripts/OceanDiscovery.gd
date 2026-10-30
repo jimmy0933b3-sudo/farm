@@ -5,7 +5,7 @@ signal completed
 
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const Map = preload("res://scripts/OceanMap.gd")
-const ORDER: Array = ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]
+const ORDER: Array = ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal","axolotl"]
 
 var animal_info: Array = []
 var save_data
