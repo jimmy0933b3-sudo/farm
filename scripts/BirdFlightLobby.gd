@@ -1,10 +1,12 @@
 extends VBoxContainer
-## Choose one of eight bird pilots and one of two child-friendly sky routes.
+## Choose twelve original birds across four child-friendly flight cups.
 signal start_requested(bird: Dictionary,course_id: String)
 const BirdArt=preload("res://scripts/BirdArt.gd")
 const COURSES=[
 	{"id":"lake","name":"💧 湖畔微風盃"},
-	{"id":"forest","name":"🌳 森林天空盃"}
+	{"id":"forest","name":"🌳 森林天空盃"},
+	{"id":"mountain","name":"⛰️ 山谷盤旋盃"},
+	{"id":"night","name":"🌙 月夜飛行盃"}
 ]
 var birds: Array=[]
 var progress
@@ -39,12 +41,18 @@ func _ready() -> void:
 	message.add_theme_font_size_override("font_size",24)
 	message.add_theme_color_override("font_color",Color("#294F5E"))
 	add_child(message)
+	var tracks_scroll=ScrollContainer.new()
+	tracks_scroll.custom_minimum_size=Vector2(0,66)
+	tracks_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
+	tracks_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	tracks_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	add_child(tracks_scroll)
 	var tracks=HBoxContainer.new()
 	tracks.alignment=BoxContainer.ALIGNMENT_CENTER
-	tracks.add_theme_constant_override("separation",18)
-	add_child(tracks)
+	tracks.add_theme_constant_override("separation",12)
+	tracks_scroll.add_child(tracks)
 	for course in COURSES:
-		var b=_button(str(course["name"]),Callable(self,"choose_course").bind(str(course["id"])),Vector2(250,58))
+		var b=_button(str(course["name"]),Callable(self,"choose_course").bind(str(course["id"])),Vector2(236,55))
 		tracks.add_child(b)
 		course_buttons.append(b)
 	status=Label.new()
