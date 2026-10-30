@@ -1,5 +1,5 @@
 extends Control
-## Eight identifiable original Taiwanese bird vector portraits. No fetched assets.
+## Twelve distinct original bird vector portraits. No fetched assets.
 var info: Dictionary={}
 var species: String="bird_mandarin"
 var tint: Color=Color("#EFA66D")
@@ -156,6 +156,66 @@ func _draw() -> void:
 			# Suspended feet and swept-back feathered wings.
 			_line(Vector2(-17,36),Vector2(-12,51),Color("#8A675B"),3)
 			_line(Vector2(1,35),Vector2(11,49),Color("#8A675B"),3)
+		"bird_eagle":
+			# Broad mountain eagle, hooked golden beak and fanned primary feathers.
+			_poly([Vector2(40,-8),Vector2(122,-75),Vector2(94,-18),Vector2(130,20),Vector2(67,41)],Color("#69513E"))
+			_poly([Vector2(52,26),Vector2(113,61),Vector2(88,68),Vector2(121,86),Vector2(46,47)],Color("#775941"))
+			_oval(7,13,78,46,Color("#96714E"))
+			_oval(-42,-35,37,37,Color("#8C6749"))
+			_poly([Vector2(-75,-36),Vector2(-113,-29),Vector2(-81,-10),Vector2(-87,-25)],Color("#D9B95F"))
+			_oval(14,-6,48,26,Color("#6E5340"))
+			for j in range(5):
+				_line(Vector2(9+float(j)*8,-14),Vector2(52+float(j)*10,30),Color("#A98C6E"),3)
+			_eye(-58,-44,Color("#C4A04F"))
+			_line(Vector2(-6,53),Vector2(-13,83),Color("#CBA659"),5)
+			_line(Vector2(27,53),Vector2(34,83),Color("#CBA659"),5)
+		"bird_owl_park":
+			# Round frontal facial discs, huge eyes, upright ear tufts.
+			_poly([Vector2(-73,-58),Vector2(-91,-102),Vector2(-31,-80)],Color("#8B7056"))
+			_poly([Vector2(32,-81),Vector2(91,-104),Vector2(73,-57)],Color("#8B7056"))
+			_oval(0,20,73,77,Color("#987C5E"))
+			_oval(0,31,56,59,Color("#DEC9A5"))
+			_oval(-37,-41,46,49,Color("#B39A78"))
+			_oval(37,-41,46,49,Color("#B39A78"))
+			for x in [-36.0,36.0]:
+				_oval(x,-40,34,35,Color("#F8E5C6"))
+				_oval(x,-39,19,21,Color("#E9B95E"))
+				_oval(x,-39,10,13,Color("#293842"))
+				_oval(x-4,-43,3,4,Color.WHITE)
+			_poly([Vector2(-12,-17),Vector2(12,-17),Vector2(0,4)],Color("#D4A258"))
+			for j in range(5):
+				_oval(-37+float(j)*19,36+float(j%2)*7,7,11,Color("#BDA382"))
+			_line(Vector2(-19,83),Vector2(-19,98),Color("#C7A56D"),4)
+			_line(Vector2(20,83),Vector2(20,98),Color("#C7A56D"),4)
+		"bird_crested_goshawk":
+			# Small sharp raptor: tall crest, striped breast and rounded wing.
+			_poly([Vector2(54,5),Vector2(122,37),Vector2(67,48)],Color("#6E6057"))
+			_oval(8,12,78,46,Color("#8A796A"))
+			_oval(-17,17,50,37,Color("#E9DECA"))
+			for j in range(5):
+				_line(Vector2(-52,1+float(j)*11),Vector2(31,3+float(j)*11),Color("#AD8A7B"),3)
+			_oval(-47,-35,35,36,Color("#807366"))
+			_poly([Vector2(-58,-59),Vector2(-45,-103),Vector2(-27,-55)],Color("#58564E"))
+			_poly([Vector2(-77,-29),Vector2(-109,-15),Vector2(-80,-7)],Color("#A8A19A"))
+			_oval(18,0,42,23,Color("#6D625E"))
+			_poly([Vector2(19,-11),Vector2(71,14),Vector2(44,33),Vector2(-7,14)],Color("#938175"))
+			_eye(-58,-45,Color("#D9B869"))
+			_line(Vector2(-6,51),Vector2(-8,85),Color("#C8B174"),4)
+			_line(Vector2(29,52),Vector2(34,85),Color("#C8B174"),4)
+		"bird_osprey":
+			# White crown, dark eye mask and strong hooked beak; fish-grabbing feet.
+			_poly([Vector2(43,1),Vector2(127,-21),Vector2(92,22),Vector2(115,60),Vector2(48,41)],Color("#655747"))
+			_oval(8,16,78,45,Color("#7D6959"))
+			_oval(-12,25,53,31,Color("#F1E8D9"))
+			_oval(-49,-36,36,39,Color("#F4F0E7"))
+			_poly([Vector2(-79,-51),Vector2(-17,-39),Vector2(-28,-27),Vector2(-79,-36)],Color("#4E4B4C"))
+			_poly([Vector2(-76,-23),Vector2(-112,-15),Vector2(-77,-6)],Color("#4A4B4C"))
+			_oval(13,2,45,25,Color("#6A5748"))
+			for j in range(4):
+				_line(Vector2(1+float(j)*11,0),Vector2(34+float(j)*10,26),Color("#A1907A"),3)
+			_eye(-56,-46,Color("#E5BD64"))
+			_line(Vector2(-4,56),Vector2(-11,91),Color("#A9A79E"),5)
+			_line(Vector2(33,54),Vector2(39,89),Color("#A9A79E"),5)
 		_:
 			_oval(0,0,70,45,tint)
 	# Wings move subtly during flight without replacing species-specific colors.
