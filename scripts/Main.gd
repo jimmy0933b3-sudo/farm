@@ -69,6 +69,8 @@ var coloring_game: Control
 var drawing_game: Control
 var settings_scroll: ScrollContainer
 var parent_scroll_y: int=0
+# Speak the homepage tour at most once per app launch, never on back navigation.
+var home_intro_spoken: bool=false
 
 func _all_friends() -> Array:
 	return animals+birds+monsters
@@ -410,7 +412,9 @@ func show_home() -> void:
 		{"title":"動物圖鑑","zone":"album"}
 	],wide)
 	layout.add_child(_label("★ 已認識 %d / %d 位動物、昆蟲、鳥兒與怪獸朋友！" % [int(progress.data["collected"].size()),_all_friends().size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
-	_narrate("歡迎來到動物探險島！八個探索樂園裡面有動物、昆蟲、怪獸、可樂小動物和十二種可愛鳥兒，鳥類樂園還能參加飛行大賽！")
+	if not home_intro_spoken:
+		home_intro_spoken=true
+		_narrate("歡迎來到動物探險島！八個探索樂園裡面有動物、昆蟲、怪獸、可樂小動物和十二種可愛鳥兒，鳥類樂園還能參加飛行大賽！")
 
 func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
 	var section=VBoxContainer.new()
