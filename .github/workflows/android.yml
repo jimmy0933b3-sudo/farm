@@ -147,6 +147,8 @@ jobs:
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/bird_smoke.gd
       - name: Test vegetable garden, watering, harvest saves and happy animal feeding
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/garden_smoke.gd
+      - name: Test crop drag and multi-plot planting by touch and mouse
+        run: timeout --signal=TERM 75s godot --headless --path . --script tests/garden_drag_smoke.gd
       - name: Check guided drawing mini-game GDScript parsing
         run: |
           godot --headless --path . --check-only --script scripts/DrawingLessonCanvas.gd
