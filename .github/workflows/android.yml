@@ -68,6 +68,8 @@ jobs:
           godot --headless --path . --script tests/ui_smoke.gd
       - name: Check touch petting and persistent care animations
         run: godot --headless --path . --script tests/interaction_smoke.gd
+      - name: Test homepage narration plays only on first entry per app launch
+        run: godot --headless --path . --script tests/home_narration_smoke.gd
       - name: Test parental settings vertical scrolling and retained position
         run: godot --headless --path . --script tests/parent_scroll_smoke.gd
       - name: Test multiple animal expressions and playful care animation
