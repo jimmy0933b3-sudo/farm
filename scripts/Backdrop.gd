@@ -24,6 +24,13 @@ func _draw() -> void:
 			draw_circle(Vector2(bx+w*.008,h*.54),h*.017,Color("#F5DEAF"))
 		draw_rect(Rect2(w*.24,h*.43,w*.52,h*.04),Color("#D8B791"))
 		_poly([Vector2(w*.22,h*.43),Vector2(w*.50,h*.30),Vector2(w*.78,h*.43)],Color("#E5AA7A"))
+	if scene_type == "cola":
+		draw_rect(Rect2(Vector2.ZERO,size),Color("#FAE6CE"))
+		_oval(w*.52,h*.96,w*.8,h*.21,Color("#D7C7A3"))
+		for i in range(5):
+			var x=w*(.08+float(i)*.20)
+			_oval(x,h*.86,w*.075,h*.07,Color("#DFA2A9") if i%2==0 else Color("#A7D7CA"))
+			draw_circle(Vector2(x,h*.79),h*.035,Color("#FFF6DC"))
 	if scene_type == "garden":
 		draw_rect(Rect2(Vector2.ZERO,size),Color("#E8F4CF"))
 		for i in range(10):
