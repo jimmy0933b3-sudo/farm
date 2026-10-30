@@ -398,7 +398,7 @@ func show_home() -> void:
 		{"title":"動物圖鑑","zone":"album"}
 	],wide)
 	layout.add_child(_label("★ 已認識 %d / %d 位動物、昆蟲與怪獸朋友！" % [int(progress.data["collected"].size()),animals.size()+monsters.size()+birds.size()],22,HORIZONTAL_ALIGNMENT_CENTER,Color("#34736F")))
-	_narrate("歡迎來到動物探險島！七個探索樂園裡面有動物、昆蟲、怪獸和八種可愛鳥兒，鳥類樂園還能參加飛行大賽！")
+	_narrate("歡迎來到動物探險島！七個探索樂園裡面有動物、昆蟲、怪獸和十二種可愛鳥兒，鳥類樂園還能參加飛行大賽！")
 
 func _home_section(parent: VBoxContainer, scroll: ScrollContainer, heading: String, places: Array, wide: bool) -> void:
 	var section=VBoxContainer.new()
