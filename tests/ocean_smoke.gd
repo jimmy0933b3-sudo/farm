@@ -32,7 +32,7 @@ func _run() -> void:
 		return
 	var ocean=game.ocean_game
 	if ocean.spots.size()!=8 or ocean.placement.size()!=8:
-		_fail("Not exactly seven findable sea creatures")
+		_fail("Not exactly eight findable water creatures")
 		return
 	ocean.stage.pan_by(530.0)
 	if ocean.stage.camera_x<240.0:
@@ -59,13 +59,13 @@ func _run() -> void:
 		_fail("Ocean session did not resume")
 		return
 	var previous=int(game.progress.data["ocean_explore_runs"])
-	for n in range(1,7):
+	for n in range(1,8):
 		ocean.attempt_spot(ocean.target_spot())
 		await create_timer(1.73).timeout
 	if game.screen!="ocean_done" or int(game.progress.data["ocean_explore_runs"])!=previous+1:
-		_fail("Seven finds did not complete")
+		_fail("Eight finds did not complete")
 		return
-	for id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]:
+	for id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal","axolotl"]:
 		if not game.progress.data["collected"].has(id):
 			_fail("Ocean species is not collected: "+id)
 			return
