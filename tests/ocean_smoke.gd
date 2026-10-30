@@ -31,7 +31,7 @@ func _run() -> void:
 		_fail("Ocean icon did not open game")
 		return
 	var ocean=game.ocean_game
-	if ocean.spots.size()!=7 or ocean.placement.size()!=7:
+	if ocean.spots.size()!=8 or ocean.placement.size()!=8:
 		_fail("Not exactly seven findable sea creatures")
 		return
 	ocean.stage.pan_by(530.0)
@@ -39,7 +39,7 @@ func _run() -> void:
 		_fail("Ocean map cannot be swiped")
 		return
 	ocean.stage.pan_by(-530.0)
-	var wrong=(ocean.target_spot()+1)%7
+	var wrong=(ocean.target_spot()+1)%8
 	ocean.attempt_spot(wrong)
 	ocean.attempt_spot(wrong)
 	if not ocean.spots[ocean.target_spot()].hint:
