@@ -217,6 +217,20 @@ func _draw() -> void:
 			_line(Vector2(53,19),Vector2(56,60),Color("#9BABB9"),16)
 			_oval(23,-6,4,6,Color("#384C52"))
 			_oval(52,-6,4,6,Color("#384C52"))
+		"cola":
+			# Four small pets sharing a friendly indoor playroom.
+			_oval(0,77,111,23,Color("#B6DCAD"))
+			_oval(-64,-5,44,49,Color("#E9BB8B"))
+			_oval(-86,-37,18,38,Color("#CB966B"))
+			_oval(-39,-37,18,38,Color("#CB966B"))
+			_oval(41,7,45,47,Color("#C6C3CA"))
+			_shape([Vector2(10,-26),Vector2(16,-84),Vector2(42,-36)],Color("#D7A9B9"))
+			_shape([Vector2(55,-36),Vector2(77,-85),Vector2(79,-15)],Color("#D7A9B9"))
+			_oval(2,45,28,23,Color("#F1C47B"))
+			for eye in [Vector2(-76,-12),Vector2(-48,-12),Vector2(25,-4),Vector2(56,-4),Vector2(-10,41),Vector2(12,41)]:
+				_oval(eye.x,eye.y,5,6,Color("#354851"))
+			_oval(-62,9,9,7,Color("#9D6B63"))
+			_oval(41,25,9,7,Color("#9D6B63"))
 		"ocean_park":
 			# A different home icon from ocean searching: smiling sea friends.
 			_oval(0,60,105,44,Color("#7DD6E1"))
