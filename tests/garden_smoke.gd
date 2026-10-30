@@ -35,6 +35,14 @@ func _run() -> void:
 		if not art is CropArt:
 			_fail("Every plot needs an original crop illustration")
 			return
+	for crop in Rules.CROPS:
+		var id=str(crop["id"])
+		if not garden.inventory_tiles.has(id) or not garden.inventory_tiles[id].art is CropArt:
+			_fail("Every vegetable must have a real illustrated basket counter")
+			return
+		if garden.inventory_tiles[id].count!=0:
+			_fail("Fresh garden basket must show zero, not cached stock")
+			return
 	garden.select_seed("pumpkin")
 	garden.press_plot(5)
 	if str(game.progress.data["garden_plots"][5].get("crop",""))!="pumpkin":
@@ -83,6 +91,10 @@ func _run() -> void:
 	if int(basket.get("carrot",0))!=4 or int(basket.get("cabbage",0))!=4 or int(basket.get("pumpkin",0))!=2:
 		_fail("Harvest yields and vegetable stock should match exactly")
 		return
+	garden._refresh()
+	if garden.inventory_tiles["carrot"].quantity.text!="× 4" or garden.inventory_tiles["pumpkin"].count!=2:
+		_fail("Harvest must visibly increase illustrated stock, not just hidden save data")
+		return
 	if not game.progress.data["garden_plots"][0].get("crop","").is_empty():
 		_fail("Harvested plots should become available again")
 		return
@@ -129,11 +141,31 @@ func _run() -> void:
 	if int(game.progress.data["garden_inventory"]["carrot"])!=3:
 		_fail("One consumed carrot must remove exactly one from the basket")
 		return
+	if farm.farm_inventory_tiles["carrot"].count!=3 or farm.farm_inventory_tiles["carrot"].quantity.text!="× 3":
+		_fail("Farm basket must visibly decrease immediately after vegetable feeding")
+		return
+	if not farm.info_label.text.contains("4 → 3") or not farm.veg_stock_text["carrot"].text.contains("×3"):
+		_fail("Feeding confirmation and picker must show exactly one stock deduction")
+		return
 	if int(game.progress.care_stats("cow")["happy"])<int(before["happy"]) or int(game.progress.care_stats("cow")["food"])<int(before["food"]):
 		_fail("Vegetable feeding must improve fullness and happiness")
 		return
 	if farm.feed_garden("carrot"):
 		_fail("Repeated taps during the eating animation cannot double-charge stock")
+		return
+	farm._on_reaction_finished("cow")
+	farm._refresh_vegetable_picker()
+	if farm.veg_buttons["carrot"].disabled:
+		_fail("Crop remains disabled after animal finishes its bite")
+		return
+	if not farm.feed_garden("carrot"):
+		_fail("A second separate feeding should be allowed after the previous one finishes")
+		return
+	if int(game.progress.data["garden_inventory"]["carrot"])!=2 or farm.farm_inventory_tiles["carrot"].count!=2:
+		_fail("Every additional vegetable treat must deduct and refresh exactly one unit")
+		return
+	if not farm.info_label.text.contains("3 → 2"):
+		_fail("Second feeding confirmation must use the latest remaining stock")
 		return
 	farm._on_reaction_finished("cow")
 	farm._set_resident("snake",false)
@@ -146,8 +178,33 @@ func _run() -> void:
 		return
 	var reloaded=Store.new()
 	reloaded.load_save()
-	if int(reloaded.data["garden_inventory"]["carrot"])!=3 or int(reloaded.data["garden_feeds"].get("cow",0))<1:
+	if int(reloaded.data["garden_inventory"]["carrot"])!=2 or int(reloaded.data["garden_feeds"].get("cow",0))<2:
 		_fail("Consumed stock and feeding achievements must remain saved")
+		return
+	game.show_garden()
+	await process_frame
+	if game.garden_game.inventory_tiles["carrot"].count!=2:
+		_fail("Garden stock must agree with farm stock after two consumed treats")
+		return
+	# Validate the convenient one-tap all-water and all-harvest actions.
+	var current=int(Time.get_unix_time_from_system())
+	if not game.progress.garden_plant(0,"carrot",current):
+		_fail("Freshly harvested plot should accept a new seed")
+		return
+	if not game.progress.garden_plant(1,"cabbage",current):
+		_fail("Freshly harvested second plot should accept a seed")
+		return
+	game.garden_game.water_all()
+	if not bool(game.progress.data["garden_plots"][0].get("watered",false)):
+		_fail("Water-all should accelerate every growing plot")
+		return
+	for index in [0,1]:
+		var plot: Dictionary=game.progress.data["garden_plots"][index]
+		plot["ready_at"]=current-1
+		game.progress.data["garden_plots"][index]=plot
+	game.garden_game.harvest_all()
+	if game.garden_game.inventory_tiles["carrot"].count!=4 or game.garden_game.inventory_tiles["cabbage"].count!=6:
+		_fail("Harvest-all must update the same persisted inventory counters")
 		return
 	game.progress.data=backup
 	game.progress.save()
