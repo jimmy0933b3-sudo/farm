@@ -45,21 +45,43 @@ func _draw() -> void:
 	if size.x<=1.0 or size.y<=1.0:
 		return
 	var lake=course=="lake"
-	var sky=Color("#A9D7E8") if lake else Color("#B4DACE")
-	var horizon=Color("#D8EFE5") if lake else Color("#CDE6BD")
+	var mountain=course=="mountain"
+	var night=course=="night"
+	var sky=Color("#A9D7E8") if lake else (Color("#B4DACE") if course=="forest" else (Color("#A8C8DC") if mountain else Color("#435B8C")))
+	var horizon=Color("#D8EFE5") if lake else (Color("#CDE6BD") if course=="forest" else (Color("#CEDCD9") if mountain else Color("#6C82AA")))
 	draw_rect(Rect2(Vector2.ZERO,size),sky)
 	for n in range(16):
 		var y=float(n)*size.y/15.0
 		draw_line(Vector2(0,y),Vector2(size.x,y),
 			sky.lerp(horizon,.10+float(n)/35.0),maxf(2.0,size.y/15.0)+1.0,true)
-	draw_circle(Vector2(size.x*.80,size.y*.17),size.y*.065,Color("#FFF3C5"))
-	# Parallax mountain canopy, low enough to keep flight paths readable.
+	draw_circle(Vector2(size.x*.80,size.y*.17),size.y*.065,Color("#FFF6D8") if night else Color("#FFF3C5"))
+	if night:
+		for n in range(36):
+			var p=Vector2(fposmod(float(n*123+19)-scroll*.03,size.x),
+				fposmod(float(n*67+11),size.y*.65))
+			draw_circle(p,2.0+float(n%3),Color("#FFF2C7"))
+	# Parallax mountains / lakeshore / fir trees remain beneath bird lanes.
 	for n in range(13):
 		var x=fposmod(float(n)*139.0-scroll*.24,size.x+260.0)-130.0
 		if lake:
 			_oval(Vector2(x,size.y*.99),115,70,Color("#97C6B3"))
 			_oval(Vector2(x+37,size.y*1.02),106,56,Color("#83B6AE"))
 			draw_line(Vector2(x-40,size.y*.90),Vector2(x-45,size.y*.77),Color("#689E8F"),5,true)
+		elif mountain:
+			draw_colored_polygon(PackedVector2Array([
+				Vector2(x-125,size.y),Vector2(x,size.y*.64),Vector2(x+130,size.y)]),
+				Color("#7898AA"))
+			draw_colored_polygon(PackedVector2Array([
+				Vector2(x-36,size.y*.74),Vector2(x,size.y*.64),Vector2(x+40,size.y*.75)]),
+				Color("#F7F4E9"))
+		elif night:
+			draw_rect(Rect2(x-7,size.y*.82,14,size.y*.18),Color("#3D566E"))
+			for level in range(3):
+				var y=size.y*(.64+float(level)*.07)
+				draw_colored_polygon(PackedVector2Array([
+					Vector2(x-43+float(level)*8,y+size.y*.15),Vector2(x,y),
+					Vector2(x+43-float(level)*8,y+size.y*.15)]),
+					Color("#416B78"))
 		else:
 			draw_rect(Rect2(x-8,size.y*.77,16,size.y*.20),Color("#8E8469"))
 			_oval(Vector2(x,size.y*.77),72,54,Color("#7FB99E"))
