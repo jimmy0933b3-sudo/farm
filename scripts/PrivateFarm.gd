@@ -8,6 +8,8 @@ const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 const TouchHand = preload("res://scripts/TouchHand.gd")
 const PrivateFarmLandscape = preload("res://scripts/PrivateFarmLandscape.gd")
 const GardenRules = preload("res://scripts/GardenRules.gd")
+const CropArt = preload("res://scripts/CropArt.gd")
+const StockTile = preload("res://scripts/CropStockTile.gd")
 
 signal racing_requested
 signal garden_requested
@@ -45,6 +47,8 @@ var reduce_motion: bool = false
 var veg_popup: PopupPanel
 var veg_buttons: Dictionary = {}
 var veg_notice: Label
+var veg_stock_text: Dictionary = {}
+var farm_inventory_tiles: Dictionary = {}
 var last_fed_crop: String = ""
 
 func setup(info: Array, store, narrator) -> void:
@@ -106,12 +110,24 @@ func _ready() -> void:
 	commands.alignment = BoxContainer.ALIGNMENT_CENTER
 	commands.add_theme_constant_override("separation",6)
 	left.add_child(commands)
-	for data in [["feed","餵食"],["veg_feed","🥕 餵蔬菜"],["wash","洗澡"],["play","玩耍"],["sleep","休息"],["sound","聽聲音"]]:
+	for data in [["feed","🍽️ 一般餵食"],["veg_feed","🥕 蔬菜點心"],["wash","洗澡"],["play","玩耍"],["sleep","休息"],["sound","聽聲音"]]:
 		var cb=Callable(self,"open_vegetable_picker") if str(data[0])=="veg_feed" else Callable(self,"interact").bind(str(data[0]))
-		var btn = _round(str(data[1]),cb,Vector2(86,54))
+		var btn = _round(str(data[1]),cb,Vector2(106,54))
 		btn.disabled = true
 		commands.add_child(btn)
 
+	# Permanently visible stock: a veggie meal takes exactly one crop from here.
+	var stock_strip=HBoxContainer.new()
+	stock_strip.alignment=BoxContainer.ALIGNMENT_CENTER
+	stock_strip.add_theme_constant_override("separation",8)
+	left.add_child(stock_strip)
+	stock_strip.add_child(_label("🧺 菜籃：",18))
+	for crop in GardenRules.CROPS:
+		var tile=StockTile.new()
+		tile.setup(str(crop["id"]))
+		stock_strip.add_child(tile)
+		farm_inventory_tiles[str(crop["id"])]=tile
+	_refresh_farm_stock()
 	_build_vegetable_picker()
 
 	var right = VBoxContainer.new()
@@ -183,13 +199,30 @@ func _round(title: String, action: Callable, minimum: Vector2) -> Button:
 	btn.text = title
 	btn.custom_minimum_size = minimum
 	btn.add_theme_font_size_override("font_size",19)
-	btn.add_theme_color_override("font_color",Color("#31544C"))
+	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
+		btn.add_theme_color_override(state,Color("#233E39"))
+	btn.add_theme_color_override("font_disabled_color",Color("#54685E"))
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color("#FFE6AE")
 	style.set_corner_radius_all(17)
-	style.set_border_width_all(2)
-	style.border_color = Color.WHITE
+	style.set_border_width_all(3)
+	style.border_color = Color("#B08A5B")
+	style.content_margin_left=9
+	style.content_margin_right=9
+	style.content_margin_top=7
+	style.content_margin_bottom=7
 	btn.add_theme_stylebox_override("normal",style)
+	var hover=style.duplicate()
+	hover.bg_color=Color("#FFF0D0")
+	btn.add_theme_stylebox_override("hover",hover)
+	var pressed=style.duplicate()
+	pressed.bg_color=Color("#F5C980")
+	btn.add_theme_stylebox_override("pressed",pressed)
+	var disabled=style.duplicate()
+	disabled.bg_color=Color("#E9ECE8")
+	disabled.border_color=Color("#B4BDB5")
+	btn.add_theme_stylebox_override("disabled",disabled)
+	btn.add_theme_stylebox_override("focus",StyleBoxEmpty.new())
 	if action.is_valid():
 		btn.pressed.connect(action)
 	return btn
@@ -423,71 +456,110 @@ func _set_resident(id: String, announce: bool = true) -> void:
 		focus_resident(id)
 		voice.speak("這是%s。點一下牠，或輕輕摸摸牠。" % str(_animal(id).get("name","動物")))
 
+func _refresh_farm_stock() -> void:
+	if save_data==null:
+		return
+	var basket: Dictionary=save_data.data.get("garden_inventory",{})
+	for crop in GardenRules.CROPS:
+		var id=str(crop["id"])
+		if farm_inventory_tiles.has(id):
+			farm_inventory_tiles[id].set_count(int(basket.get(id,0)))
+
 func _build_vegetable_picker() -> void:
 	veg_popup=PopupPanel.new()
 	veg_popup.name="VegetablePicker"
 	add_child(veg_popup)
 	var panel=MarginContainer.new()
 	for side in ["left","right","top","bottom"]:
-		panel.add_theme_constant_override("margin_"+side,15)
+		panel.add_theme_constant_override("margin_"+side,12)
 	veg_popup.add_child(panel)
 	var column=VBoxContainer.new()
-	column.add_theme_constant_override("separation",10)
+	column.add_theme_constant_override("separation",9)
 	panel.add_child(column)
-	veg_notice=_label("🥕 挑一份蔬菜，讓動物開心吃點心！",21)
+	veg_notice=_label("🥕 蔬菜點心：選擇一份，餵完庫存會扣 1",21)
 	column.add_child(veg_notice)
 	var row=HBoxContainer.new()
+	row.alignment=BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation",10)
 	column.add_child(row)
 	for crop in GardenRules.CROPS:
 		var id=str(crop["id"])
-		var b=_round("",Callable(self,"feed_garden").bind(id),Vector2(154,62))
-		row.add_child(b)
-		veg_buttons[id]=b
-	column.add_child(_round("🌱 去農田種菜",Callable(self,"_open_garden_from_popup"),Vector2(210,54)))
+		var button=_round("",Callable(self,"feed_garden").bind(id),Vector2(188,132))
+		row.add_child(button)
+		veg_buttons[id]=button
+		var body=VBoxContainer.new()
+		body.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		button.add_child(body)
+		var art=CropArt.new()
+		art.setup(id,3)
+		art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		art.custom_minimum_size=Vector2(177,85)
+		art.size_flags_vertical=Control.SIZE_EXPAND_FILL
+		body.add_child(art)
+		var tag=_label("",17)
+		body.add_child(tag)
+		veg_stock_text[id]=tag
+	column.add_child(_round("🌱 沒有蔬菜？去農田種菜",Callable(self,"_open_garden_from_popup"),Vector2(265,51)))
+	_refresh_vegetable_picker()
 
 func _refresh_vegetable_picker() -> void:
-	if veg_notice==null:
+	if veg_notice==null or save_data==null:
 		return
 	if active_id.is_empty():
-		veg_notice.text="先選一隻農場裡的動物！"
+		veg_notice.text="🐾 先點一隻農場裡的動物，再選點心"
 	else:
-		veg_notice.text="💗 給%s一份健康點心" % str(_animal(active_id).get("name","動物"))
+		veg_notice.text="💗 餵 %s · 每按一次扣 1 份蔬菜" % str(_animal(active_id).get("name","動物"))
 	var basket: Dictionary=save_data.data.get("garden_inventory",{})
+	var eligible=0
 	for crop in GardenRules.CROPS:
 		var id=str(crop["id"])
+		var count=maxi(0,int(basket.get(id,0)))
+		var allowed=GardenRules.suitable(active_id,id)
 		var button: Button=veg_buttons[id]
-		button.text="%s %s ×%d" % [str(crop["emoji"]),str(crop["name"]),int(basket.get(id,0))]
-		button.disabled=busy or not save_data.garden_can_feed(active_id,id)
+		var can_feed=not busy and save_data.garden_can_feed(active_id,id)
+		button.disabled=not can_feed
+		var detail="✓ 餵 1 份" if can_feed else ("不適合吃" if not allowed else "沒有庫存")
+		veg_stock_text[id].text="%s ×%d　%s" % [str(crop["name"]),count,detail]
+		if can_feed:
+			eligible+=1
+	if eligible==0 and not active_id.is_empty():
+		veg_notice.text="🐾 %s 目前沒有能吃的蔬菜，請換一種或去收成" % str(_animal(active_id).get("name","動物"))
 
 func open_vegetable_picker() -> void:
 	if active_id.is_empty() or busy:
 		return
+	_refresh_farm_stock()
 	_refresh_vegetable_picker()
-	veg_popup.popup_centered(Vector2i(565,195))
+	veg_popup.popup_centered(Vector2i(654,255))
 
 func feed_garden(crop_id: String) -> bool:
 	if busy or active_id.is_empty() or not actors.has(active_id):
 		return false
 	if not save_data.garden_can_feed(active_id,crop_id):
 		info_label.text="這種菜不適合這位朋友，或是蔬菜籃還沒收成！"
+		_refresh_vegetable_picker()
 		return false
+	var before=int(save_data.data.get("garden_inventory",{}).get(crop_id,0))
 	var creature=actors[active_id]
 	if not creature.perform("garden_feed"):
 		return false
 	if not save_data.garden_feed(active_id,crop_id):
 		return false
+	var after=int(save_data.data.get("garden_inventory",{}).get(crop_id,0))
 	creature.effects.crop_id=crop_id
 	creature.effects.queue_redraw()
 	last_fed_crop=crop_id
 	busy=true
 	_update_command_buttons()
+	_refresh_farm_stock()
+	_refresh_vegetable_picker()
 	var crop=GardenRules.crop_for(crop_id)
-	info_label.text="💗 %s吃了%s，開心到跳起來！" % [
-		str(_animal(active_id).get("name","動物")),str(crop.get("name","蔬菜"))]
+	info_label.text="💗 %s吃了%s，開心跳跳！🧺 %d → %d" % [
+		str(_animal(active_id).get("name","動物")),str(crop.get("name","蔬菜")),before,after]
 	if is_instance_valid(veg_popup):
 		veg_popup.hide()
-	# Use bundled real recordings where available. Never invent animal sounds.
+	# Bundled natural sounds for supported animals, otherwise cheerful TTS.
 	if voice!=null:
 		voice.speak(info_label.text)
 		if voice.has_natural_sound(active_id):
@@ -629,6 +701,8 @@ func _process(delta: float) -> void:
 func _on_reaction_finished(_id: String) -> void:
 	busy = false
 	_update_command_buttons()
+	_refresh_farm_stock()
+	_refresh_vegetable_picker()
 
 func _request_race() -> void:
 	racing_requested.emit()
