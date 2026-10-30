@@ -16,8 +16,8 @@ func _screen(art: Control, world: Vector2) -> Vector2:
 func _run() -> void:
 	var contents=FileAccess.get_file_as_string("res://data/animals.json")
 	var animals=JSON.parse_string(contents)
-	if not animals is Array or animals.size()!=39:
-		_fail("39 expected animals missing")
+	if not animals is Array or animals.size()!=43:
+		_fail("43 expected animals missing")
 		return
 	var art=Art.new()
 	root.add_child(art)
