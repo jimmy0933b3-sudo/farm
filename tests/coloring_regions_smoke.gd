@@ -113,7 +113,7 @@ func _run() -> void:
 	if progress.get_coloring("deer").get("strokes_v2",[]).size()!=1:
 		_fail("Antler color stroke was filtered out of save data")
 		return
-	print("PASS: 39 animal region maps; ears, coat patches, snout, feet, crest, antlers, snake coils/neck, save")
+	print("PASS: 43 animal region maps; ears, coat patches, snout, feet, crest, antlers, snake coils/neck, save")
 	canvas.queue_free()
 	art.queue_free()
 	await process_frame
