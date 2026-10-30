@@ -73,12 +73,12 @@ func _run() -> void:
 		return
 	game.show_album()
 	await process_frame
-	if not _said(sound,"動物和昆蟲朋友"):
+	if not _said(sound,"昆蟲") or not _said(sound,"鳥兒"):
 		_fail("Shared album forgot insect friends")
 		return
 	game.show_coloring()
 	await process_frame
-	if not _said(sound,"幫昆蟲上色"):
+	if not _said(sound,"昆蟲") or not _said(sound,"怪獸"):
 		_fail("Coloring instructions omit insects")
 		return
 	game.coloring_game.select_animal("stag_beetle")
