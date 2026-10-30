@@ -1,5 +1,5 @@
 extends SceneTree
-## Eight bird species -> two habitat discovery -> album -> flight contest -> saved result.
+## Twelve birds -> four habitats -> gallery -> mountain and night race -> saved result.
 const BirdArt=preload("res://scripts/BirdArt.gd")
 const Store=preload("res://scripts/SaveData.gd")
 
@@ -12,10 +12,10 @@ func _run() -> void:
 	root.add_child(main)
 	await process_frame
 	var previous: Dictionary=main.progress.data.duplicate(true)
-	if main.birds.size()!=8:
-		_fail("Expected eight original birds")
+	if main.birds.size()!=12:
+		_fail("Expected twelve original birds after the park 2.0 expansion")
 		return
-	var expected=["鴛鴦","小水鴨","八哥","麻雀","水雉","五色鳥","夜鷺","家燕"]
+	var expected=["鴛鴦","小水鴨","八哥","麻雀","水雉","五色鳥","夜鷺","家燕","老鷹","貓頭鷹","鳳頭蒼鷹","魚鷹"]
 	var ids: Dictionary={}
 	for index in range(main.birds.size()):
 		var bird: Dictionary=main.birds[index]
@@ -30,16 +30,28 @@ func _run() -> void:
 	await process_frame
 	main._go("bird")
 	await process_frame
-	if main.screen!="bird_world" or main.bird_world.bird_buttons.size()!=4:
-		_fail("Bird World must appear from the home menu with four wetland birds")
+	if main.screen!="bird_world" or main.bird_world.bird_buttons.size()!=5:
+		_fail("Bird World must appear from the home menu with five wetland birds")
 		return
 	var world=main.bird_world
-	for habitat in ["wetland","woodland"]:
-		world.choose_area(habitat)
+	for habitat in [{"id":"wetland","count":5},{"id":"woodland","count":4},{"id":"mountain","count":2},{"id":"night","count":1}]:
+		world.choose_area(str(habitat["id"]))
 		await process_frame
-		if world.bird_buttons.size()!=4 or world.scenery.habitat!=habitat:
-			_fail("Two bird habitats must each render four species")
+		if world.bird_buttons.size()!=int(habitat["count"]) or world.scenery.habitat!=str(habitat["id"]):
+			_fail("Bird habitat has incorrect birds or scenery: "+str(habitat["id"]))
 			return
+		for card in world.bird_buttons:
+			if card.position.x < -1.0 or card.position.x+card.size.x > world.stage.size.x+2.0:
+				_fail("Bird card escapes exploration area: "+str(habitat["id"]))
+				return
+	world.choose_area("mountain")
+	world.discover("bird_eagle")
+	world.choose_area("night")
+	world.discover("bird_owl_park")
+	world.interact("ability")
+	if not world.response_label.text.contains("轉頭"):
+		_fail("Night owl must have its own interactive ability")
+		return
 	world.choose_area("wetland")
 	world.discover("bird_mandarin")
 	if not main.progress.data["bird_found"].has("bird_mandarin") or not main.progress.data["collected"].has("bird_mandarin"):
@@ -56,8 +68,8 @@ func _run() -> void:
 		return
 	main.show_bird_album()
 	await process_frame
-	if main.screen!="bird_album" or main.bird_album.birds.size()!=8:
-		_fail("Bird album must show all eight entries")
+	if main.screen!="bird_album" or main.bird_album.birds.size()!=12:
+		_fail("Bird album must show all twelve entries")
 		return
 	main.show_bird_flight_lobby()
 	await process_frame
@@ -65,18 +77,18 @@ func _run() -> void:
 		_fail("Bird race lobby did not open")
 		return
 	var lobby=main.bird_flight_lobby
-	if lobby.COURSES.size()!=2 or lobby.options.size()<1:
-		_fail("Two real flight courses or a beginner racer are missing")
+	if lobby.COURSES.size()!=4 or lobby.options.size()<1 or lobby.course_buttons.size()!=4:
+		_fail("Four selectable flight courses are required")
 		return
-	lobby.select_bird("bird_mandarin")
-	lobby.choose_course("forest")
+	lobby.select_bird("bird_eagle")
+	lobby.choose_course("mountain")
 	lobby.start()
 	await process_frame
 	if main.screen!="bird_flight_game":
 		_fail("Bird flight race did not start")
 		return
 	var race=main.bird_flight_game
-	if race.course_id!="forest" or race.rival_birds.size()!=3 or not race.my_bird is BirdArt:
+	if race.course_id!="mountain" or race.rival_birds.size()!=3 or not race.my_bird is BirdArt:
 		_fail("Sky race must render four birds and preserve chosen route")
 		return
 	# World items approach from the right: all racers must face their direction
@@ -93,7 +105,7 @@ func _run() -> void:
 	if encyclopedia_bird.facing_right or encyclopedia_bird.horizontal_draw_scale()!=1.0:
 		_fail("Bird portraits outside the race must retain their original facing")
 		return
-	if race.track.course!="forest" or race.track.lane_y(0)>=race.track.lane_y(1):
+	if race.track.course!="mountain" or race.track.lane_y(0)>=race.track.lane_y(1):
 		_fail("Three altitude lanes need distinct layout")
 		return
 	race.countdown=0.0
@@ -120,7 +132,31 @@ func _run() -> void:
 	if main.screen!="bird_flight_result":
 		_fail("Bird finish must show result screen")
 		return
-	if int(main.progress.data.get("bird_flight_totals",{}).get("races",0))!=int(previous.get("bird_flight_totals",{}).get("races",0))+1:
+	if not main.progress.data["bird_flight_records"].has("bird_eagle"):
+		_fail("New eagle must persist its own flight record")
+		return
+	main.show_bird_flight_lobby()
+	await process_frame
+	var night_lobby=main.bird_flight_lobby
+	night_lobby.select_bird("bird_owl_park")
+	night_lobby.choose_course("night")
+	night_lobby.start()
+	await process_frame
+	var night_race=main.bird_flight_game
+	if main.screen!="bird_flight_game" or night_race.course_id!="night" or night_race.track.course!="night":
+		_fail("Moonlit owl cup must launch with its night sky scene")
+		return
+	if not night_race.my_bird.facing_right:
+		_fail("Night owl must fly forward, not backward")
+		return
+	night_race.countdown=0.0
+	night_race.distance=night_race.FINISH_DISTANCE-1.0
+	night_race._process(.1)
+	await process_frame
+	if main.screen!="bird_flight_result":
+		_fail("Moonlit owl cup did not finish")
+		return
+	if int(main.progress.data.get("bird_flight_totals",{}).get("races",0))!=int(previous.get("bird_flight_totals",{}).get("races",0))+2:
 		_fail("Flight results must be recorded separately from kart races")
 		return
 	if main.progress.data["private_farm"]!=previous["private_farm"]:
@@ -133,7 +169,7 @@ func _run() -> void:
 	if main.screen!="bird_world":
 		_fail("Flight results cannot navigate back to Bird World")
 		return
-	print("PASS: 8 unique birds, two habitats, discovery, bird gallery, 4-player sky flight, controls, two courses and saved result")
+	print("PASS: 12 original bird species, 4 habitats, mountain and moonlit racing, forward direction and persistent results")
 	main.queue_free()
 	await process_frame
 	quit(0)
