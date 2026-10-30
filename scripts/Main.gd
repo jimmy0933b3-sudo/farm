@@ -964,7 +964,7 @@ func _render_game(level: Dictionary) -> void:
 		else:
 			var shown = option
 			if kind == "habitat":
-				shown = {"farm":"農場","forest":"森林","ocean":"海洋","insect":"昆蟲樂園"}.get(option,option)
+				shown = {"farm":"農場","forest":"森林","ocean":"海洋","insect":"昆蟲樂園","cola":"可樂小動物樂園","zoo":"動物園"}.get(option,option)
 			button = _picture_button(option,shown,Callable(self,"_answer").bind(option,level))
 		opts.add_child(button)
 		answer_buttons.append(button)
