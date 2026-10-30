@@ -4,7 +4,7 @@ const Rules=preload("res://scripts/RaceRules.gd")
 
 func _initialize() -> void:
 	var catalog: Array=JSON.parse_string(FileAccess.get_file_as_string("res://data/animals.json"))
-	if catalog.size()!=39:
+	if catalog.size()!=43:
 		_fail("Catalog must contain new weevil and all original species")
 		return
 	var unlocked_ids: Array=[]
@@ -17,8 +17,8 @@ func _initialize() -> void:
 		unique[id]=true
 		unlocked_ids.append(id)
 	var unlocked: Array=Rules.candidates(catalog,["cow"],unlocked_ids)
-	if unlocked.size()!=39:
-		_fail("All 39 collected animals must be selectable even with only one resident")
+	if unlocked.size()!=43:
+		_fail("All 43 collected animals must be selectable even with only one resident")
 		return
 	for target in ["weevil","seal","dolphin","cow","stag_beetle"]:
 		if not unlocked.any(func(x): return str(x.get("id",""))==target):
@@ -45,7 +45,7 @@ func _initialize() -> void:
 		if str(npc.get("id",""))=="weevil":
 			_fail("AI should not duplicate the selected player")
 			return
-	print("PASS: all 39 unlocked animals, aquatic species, 8 insects, no uncollected residents, 3 AI racers and empty-save fallback")
+	print("PASS: all 43 unlocked animals, aquatic species, 8 insects, no uncollected residents, 3 AI racers and empty-save fallback")
 	quit(0)
 
 func _fail(message: String) -> void:
