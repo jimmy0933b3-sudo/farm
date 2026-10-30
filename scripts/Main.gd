@@ -661,7 +661,7 @@ func show_bird_flight_lobby() -> void:
 	layout.add_child(bird_flight_lobby)
 
 func _start_bird_flight(chosen: Dictionary,course: String) -> void:
-	var course_title="💧 湖畔微風盃" if course=="lake" else "🌳 森林天空盃"
+	var course_title=str({"lake":"💧 湖畔微風盃","forest":"🌳 森林天空盃","mountain":"⛰️ 山谷盤旋盃","night":"🌙 月夜飛行盃"}.get(course,"🏆 鳥類飛行大賽"))
 	var layout=_switch("bird_flight_game","bird")
 	_header(layout,course_title,Callable(self,"show_bird_flight_lobby"))
 	bird_flight_game=BirdFlightGame.new()
