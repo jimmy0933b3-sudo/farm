@@ -66,5 +66,5 @@ func _refresh() -> void:
 	quantity.text="× %d" % count
 	var style=get_theme_stylebox("panel").duplicate()
 	style.bg_color=Color("#FFFFFF",0.0) if compact else (Color("#FFF9E9") if count>0 else Color("#F1F1EA"))
-	style.border_color=Color("#FFFFFF",0.0) if compact else (Color("#79A877") if count>0 else Color("#B1B9B0")
+	style.border_color=Color("#FFFFFF",0.0) if compact else (Color("#79A877") if count>0 else Color("#B1B9B0"))
 	add_theme_stylebox_override("panel",style)
