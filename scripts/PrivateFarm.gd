@@ -519,11 +519,13 @@ func _refresh_vegetable_picker() -> void:
 		var button: Button=veg_buttons[id]
 		var can_feed=not busy and save_data.garden_can_feed(active_id,id)
 		button.disabled=not can_feed
-		var detail="✓ 餵 1 份" if can_feed else ("不適合吃" if not allowed else "沒有庫存")
+		var detail="✓ 餵 1 份" if can_feed else ("不適合吃" if not allowed else ("尚未收成" if count<=0 else "吃完再餵"))
 		veg_stock_text[id].text="%s ×%d　%s" % [str(crop["name"]),count,detail]
 		if can_feed:
 			eligible+=1
-	if eligible==0 and not active_id.is_empty():
+	if busy:
+		veg_notice.text="💗 動物正在開心吃，等一下還能再餵！"
+	elif eligible==0 and not active_id.is_empty():
 		veg_notice.text="🐾 %s 目前沒有能吃的蔬菜，請換一種或去收成" % str(_animal(active_id).get("name","動物"))
 
 func open_vegetable_picker() -> void:
