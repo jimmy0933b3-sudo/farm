@@ -40,14 +40,19 @@ func _run() -> void:
 		if not garden.inventory_tiles.has(id) or not garden.inventory_tiles[id].art is CropArt:
 			_fail("Every vegetable must have a real illustrated basket counter")
 			return
-		if garden.inventory_tiles[id].count!=0:
-			_fail("Fresh garden basket must show zero, not cached stock")
+		if garden.inventory_tiles[id].count!=0 or not garden.inventory_tiles[id].compact or garden.inventory_tiles[id].caption.visible:
+			_fail("Fresh garden basket must show compact icon-only stock at zero")
 			return
 	garden.select_seed("pumpkin")
 	garden.press_plot(5)
-	if str(game.progress.data["garden_plots"][5].get("crop",""))!="pumpkin":
-		_fail("Touching empty soil must plant the selected pumpkin seed")
+	if str(game.progress.data["garden_plots"][5].get("crop",""))!="":
+		_fail("Empty soil must wait for dragging a seed rather than planting on accidental tap")
 		return
+	# The planting gesture itself is verified in garden_drag_smoke.gd.
+	if not game.progress.garden_plant(5,"pumpkin",int(Time.get_unix_time_from_system())):
+		_fail("Garden rules must accept a valid pumpkin seed")
+		return
+	garden._refresh()
 	var planted_at=int(game.progress.data["garden_plots"][5]["planted_at"])
 	garden.press_plot(5)
 	if not bool(game.progress.data["garden_plots"][5].get("watered",false)):
