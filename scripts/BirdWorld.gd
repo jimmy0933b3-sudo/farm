@@ -1,12 +1,14 @@
 extends VBoxContainer
-## Two habitats, eight birds; all touch interaction and collections are offline.
+## Twelve birds in four habitats, offline discovery and individual abilities.
 signal flying_requested
 signal album_requested
 const BirdArt=preload("res://scripts/BirdArt.gd")
 const Scenery=preload("res://scripts/BirdScenery.gd")
 const HABITATS=[
 	{"id":"wetland","name":"💧 湖畔濕地"},
-	{"id":"woodland","name":"🌳 森林樹梢"}
+	{"id":"woodland","name":"🌳 森林樹梢"},
+	{"id":"mountain","name":"⛰️ 高空山谷"},
+	{"id":"night","name":"🌙 月夜森林"}
 ]
 var birds: Array=[]
 var progress
@@ -45,11 +47,11 @@ func _ready() -> void:
 	top.add_child(_button("📖 鳥類圖鑑",Callable(self,"_open_album"),Vector2(155,54)))
 	top.add_child(_button("🏆 飛行大賽",Callable(self,"_open_flight"),Vector2(190,54)))
 	var nav=HBoxContainer.new()
-	nav.add_theme_constant_override("separation",18)
+	nav.add_theme_constant_override("separation",10)
 	nav.alignment=BoxContainer.ALIGNMENT_CENTER
 	add_child(nav)
 	for habitat in HABITATS:
-		var button=_button(str(habitat["name"]),Callable(self,"choose_area").bind(str(habitat["id"])),Vector2(210,54))
+		var button=_button(str(habitat["name"]),Callable(self,"choose_area").bind(str(habitat["id"])),Vector2(190,54))
 		nav.add_child(button)
 		area_buttons.append(button)
 	var middle=HBoxContainer.new()
@@ -89,14 +91,14 @@ func _ready() -> void:
 	response_label=_label("發現鳥兒就會收藏進圖鑑。",17)
 	response_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	right.add_child(response_label)
-	for item in [["pet","💗 摸摸牠"],["flap","🪽 飛起來"],["story","🔊 聽介紹"]]:
+	for item in [["pet","💗 摸摸牠"],["flap","🪽 飛起來"],["ability","✨ 鳥兒特技"],["story","🔊 聽介紹"]]:
 		var button=_button(str(item[1]),Callable(self,"interact").bind(str(item[0])),Vector2(245,44))
 		button.disabled=true
 		right.add_child(button)
 		interaction_buttons.append(button)
 	_refresh()
 	if narrator!=null:
-		narrator.speak("歡迎來鳥類樂園！先在湖畔或森林找到鳥兒，再帶牠參加飛行大賽！")
+		narrator.speak("歡迎來鳥類樂園！四個地方共有十二種鳥兒。一起找鳥兒、聽故事，再參加飛行大賽！")
 
 func _label(value: String,font_size: int) -> Label:
 	var label=Label.new()
@@ -199,14 +201,24 @@ func _refresh() -> void:
 		button.disabled=selected.is_empty()
 
 func _position_birds() -> void:
-	if stage==null or stage.size.x<=0.0:
+	if stage==null or stage.size.x<=0.0 or bird_buttons.is_empty():
 		return
-	for i in range(bird_buttons.size()):
-		var card: Control=bird_buttons[i]
-		var width=maxf(0.0,stage.size.x-card.size.x-8.0)
-		var x=8.0+width*float(i)/3.0
-		var y=stage.size.y*(.18+.24*float(i%2))
-		card.position=Vector2(x,y)
+	# Arrange 5 wetland birds as 3+2, center single owl and two mountain raptors.
+	var count=bird_buttons.size()
+	var columns=mini(3,count)
+	var rows=int(ceil(float(count)/float(columns)))
+	var width=bird_buttons[0].size.x
+	var height=bird_buttons[0].size.y
+	var gap_x=maxf(8.0,minf(58.0,(stage.size.x-float(columns)*width)/float(columns+1)))
+	var gap_y=maxf(6.0,(stage.size.y-float(rows)*height)/float(rows+1))
+	for i in range(count):
+		var row=int(i/columns)
+		var col=i%columns
+		var in_row=mini(columns,count-row*columns)
+		var row_width=float(in_row)*width+float(in_row-1)*gap_x
+		var x=maxf(4.0,(stage.size.x-row_width)*.5)+float(col)*(width+gap_x)
+		var y=gap_y+float(row)*(height+gap_y)
+		bird_buttons[i].position=Vector2(x,y)
 
 func discover(id: String) -> void:
 	for bird in birds:
@@ -232,6 +244,10 @@ func interact(action: String) -> void:
 		"flap":
 			response_label.text="%s展開翅膀，輕輕飛起來！" % name
 			flap_time=1.4
+			flap_clock=0.0
+		"ability":
+			response_label.text=str(selected.get("activity",str(selected.get("name","鳥兒"))+"展示了自己的飛行本領！"))
+			flap_time=1.8
 			flap_clock=0.0
 		"story":
 			response_label.text=str(selected.get("desc",""))
