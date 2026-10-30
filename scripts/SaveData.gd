@@ -189,7 +189,7 @@ func record_bird_interaction(id: String) -> void:
 func record_bird_flight(result: Dictionary) -> void:
 	var id=str(result.get("bird_id",""))
 	var route=str(result.get("course_id",""))
-	if id.is_empty() or route not in ["lake","forest"]:
+	if id.is_empty() or route not in ["lake","forest","mountain","night"]:
 		return
 	# A child can try the mandarin duck before collecting anyone.
 	if not data["bird_found"].has(id) and id!="bird_mandarin":
