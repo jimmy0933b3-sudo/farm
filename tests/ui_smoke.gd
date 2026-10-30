@@ -50,7 +50,7 @@ func _run() -> void:
 		if game.screen != "complete":
 			_fail("%s correct answer did not complete level" % id)
 			return
-	print("PASS: 39 levels render three visuals, natural sound files exist, all choices complete")
+	print("PASS: 43 levels render three visuals, natural sound files exist, all choices complete")
 	game.queue_free()
 	await process_frame
 	quit(0)
