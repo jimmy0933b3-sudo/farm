@@ -138,7 +138,11 @@ func _draw() -> void:
 	if animal_id in ["rhinoceros_beetle","stag_beetle","butterfly","ladybug","bee","mantis","dung_beetle","weevil"]:
 		_draw_insect()
 		return
-	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal"]:
+	if animal_id.begins_with("bird_") or animal_id.begins_with("monster_"):
+		_draw_special_friend()
+		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
+		return
+	if animal_id in ["clownfish","sea_turtle","dolphin","octopus","seahorse","pufferfish","seal","axolotl"]:
 		_draw_ocean_animal()
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
 		return
@@ -171,6 +175,21 @@ func _draw() -> void:
 		_oval(78, 11, 25, 42, tint.lightened(0.18))
 	# Distinctive silhouettes.
 	match animal_id:
+		"golden_hamster":
+			_oval(-64,-68,30,35,tint)
+			_oval(64,-68,30,35,tint)
+			_oval(-66,-69,15,19,Color("#F2ADB7"))
+			_oval(66,-69,15,19,Color("#F2ADB7"))
+		"dog":
+			_oval(-76,-49,29,62,tint.darkened(.25))
+			_oval(76,-49,29,62,tint.darkened(.25))
+			_oval(67,25,34,49,tint.lightened(.10))
+		"cat":
+			_poly([Vector2(-69,-53),Vector2(-70,-126),Vector2(-8,-78)],tint)
+			_poly([Vector2(69,-53),Vector2(70,-126),Vector2(8,-78)],tint)
+			_poly([Vector2(-58,-82),Vector2(-60,-108),Vector2(-34,-86)],Color("#F1B3B9"))
+			_poly([Vector2(58,-82),Vector2(60,-108),Vector2(34,-86)],Color("#F1B3B9"))
+			_oval(75,48,22,39,tint.darkened(.2))
 		"rabbit":
 			_oval(-34, -98, 21, 63, tint)
 			_oval(34, -98, 21, 63, tint)
@@ -201,6 +220,17 @@ func _draw() -> void:
 		_oval(-74,-40,20,25,tint.darkened(0.12))
 		_oval(74,-40,20,25,tint.darkened(0.12))
 		_oval(0,-8,34,24,Color("#F2D6B2"))
+	if animal_id == "golden_hamster":
+		_oval(-48,-4,29,32,Color("#F9E4C6"))
+		_oval(48,-4,29,32,Color("#F9E4C6"))
+		_oval(0,36,43,34,Color("#FFF2D8"))
+	if animal_id == "dog":
+		_oval(33,-53,29,36,tint.darkened(.18))
+		_oval(0,12,33,22,Color("#F4E5CB"))
+	if animal_id == "cat":
+		for side in [-1.0,1.0]:
+			for n in range(3):
+				draw_line(Vector2(side*21,-2+float(n)*7),Vector2(side*86,-17+float(n)*14),COLOR_INK,2.5,true)
 	if animal_id == "guinea_pig":
 		_oval(-60,-59,25,28,Color("#E7B99F"))
 		_oval(60,-59,25,28,Color("#E7B99F"))
@@ -361,6 +391,26 @@ func _draw_ocean_animal() -> void:
 	var dark=COLOR_INK if coloring_mode else tint.darkened(0.22)
 	var belly=Color.WHITE if coloring_mode else tint.lightened(0.36)
 	match animal_id:
+		"axolotl":
+			# Freshwater axolotl: six external gills, broad smiling head,
+			# little legs, long tail. These pieces are all separately colorable.
+			_poly([Vector2(48,28),Vector2(116,1),Vector2(122,56),Vector2(47,62)],tint.darkened(.18))
+			_oval(0,38,74,47,tint)
+			_oval(-45,65,23,27,belly)
+			_oval(46,65,23,27,belly)
+			for side in [-1.0,1.0]:
+				for j in range(3):
+					var p=Vector2(side*(54+float(j%2)*8),-48+float(j)*24)
+					_poly([p+Vector2(-7,-4),p+Vector2(side*49,-22),p+Vector2(side*34,17)],Color("#E784A7"))
+					_oval(p.x+side*29,p.y-3,12,12,Color("#F4A3C4"))
+			_oval(0,-18,76,61,tint)
+			_oval(-29,-25,11,13,Color.WHITE)
+			_oval(29,-25,11,13,Color.WHITE)
+			_oval(-29,-26,6,8,COLOR_INK)
+			_oval(29,-26,6,8,COLOR_INK)
+			_oval(-50,0,13,8,Color("#EF94AD"))
+			_oval(50,0,13,8,Color("#EF94AD"))
+			draw_arc(Vector2(0,0),22,0.15,PI-0.15,18,COLOR_INK,3,true)
 		"clownfish":
 			_poly([Vector2(-60,5),Vector2(-113,-47),Vector2(-111,56)],dark)
 			_oval(0,10,91,53,tint)
@@ -832,3 +882,139 @@ func _draw_insect() -> void:
 	if mood in ["happy","play","surprised"] and animal_id!="mantis":
 		draw_arc(Vector2(0,-20),12,0.1,PI-.1,13,ink,2.8,true)
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+
+func _draw_special_friend() -> void:
+	# Bird and monster stickers are first-class coloring pages. The same
+	# _oval/_poly primitives expose non-overlapping region masks for drag paint.
+	var dark=COLOR_INK if coloring_mode else tint.darkened(.28)
+	var light=Color.WHITE if coloring_mode else tint.lightened(.30)
+	var ink=COLOR_INK
+	_oval(0,90,72,9,Color("#334A4A",.12))
+	if animal_id.begins_with("bird_"):
+		# Bird shapes are recognizable even with color removed.
+		if animal_id=="bird_owl_park":
+			_poly([Vector2(-68,-56),Vector2(-89,-112),Vector2(-20,-78)],dark)
+			_poly([Vector2(68,-56),Vector2(89,-112),Vector2(20,-78)],dark)
+			_oval(0,12,70,80,tint)
+			_oval(-36,-33,39,44,light)
+			_oval(36,-33,39,44,light)
+			for x in [-35.0,35.0]:
+				_oval(x,-35,20,22,Color("#F5D28A"))
+				_oval(x,-35,10,13,ink)
+				_oval(x-4,-40,3,4,Color.WHITE)
+			_poly([Vector2(-12,-9),Vector2(12,-9),Vector2(0,13)],Color("#DFA957"))
+			_oval(-23,70,18,21,dark)
+			_oval(23,70,18,21,dark)
+			return
+		# Long tail for swallows, fine legs for jacana, big wings for raptors.
+		if animal_id=="bird_swallow":
+			_poly([Vector2(52,13),Vector2(126,58),Vector2(76,36),Vector2(111,103),Vector2(25,45)],dark)
+		elif animal_id=="bird_jacana":
+			for x in [-13.0,22.0]:
+				_colorable_line(Vector2(x,28),Vector2(x-8,108),4,dark)
+				_colorable_line(Vector2(x-8,108),Vector2(x+37,114),3,dark)
+		else:
+			_poly([Vector2(45,-2),Vector2(120,45),Vector2(67,54)],dark)
+		if animal_id in ["bird_eagle","bird_crested_goshawk","bird_osprey"]:
+			_poly([Vector2(-10,8),Vector2(82,-93),Vector2(63,23)],dark)
+		else:
+			_poly([Vector2(-7,6),Vector2(42,-58),Vector2(65,22)],dark)
+		_oval(9,18,75,47,tint)
+		_oval(-10,31,47,27,light)
+		_oval(-49,-38,37,39,tint)
+		if animal_id in ["bird_mandarin","bird_teal"]:
+			_oval(-53,-45,27,22,Color("#428B79"))
+		elif animal_id=="bird_barbet":
+			_oval(-51,-42,28,22,Color("#3474B2"))
+			_oval(-44,-21,21,14,Color("#E8CD60"))
+			_oval(-40,-3,14,11,Color("#E56B62"))
+		elif animal_id=="bird_heron":
+			_oval(-53,-53,33,16,Color("#394A5B"))
+		elif animal_id=="bird_osprey":
+			_oval(-53,-39,32,30,light)
+			_poly([Vector2(-79,-49),Vector2(-19,-35),Vector2(-27,-23)],dark)
+		elif animal_id=="bird_myna":
+			_poly([Vector2(-60,-61),Vector2(-56,-105),Vector2(-30,-65)],dark)
+			_oval(21,16,34,15,light)
+		elif animal_id=="bird_crested_goshawk":
+			_poly([Vector2(-56,-57),Vector2(-41,-105),Vector2(-26,-57)],dark)
+			for n in range(4):
+				_colorable_line(Vector2(-30,18+float(n)*9),Vector2(31,24+float(n)*9),3,dark)
+		elif animal_id=="bird_sparrow":
+			_oval(-46,-32,28,20,Color("#CEAB88"))
+		elif animal_id=="bird_eagle":
+			_oval(-25,4,35,31,Color("#9C815F"))
+		_poly([Vector2(-78,-25),Vector2(-117,-15),Vector2(-78,-7)],Color("#D9B56F"))
+		_oval(-57,-43,9,10,Color.WHITE)
+		_oval(-58,-44,5,6,ink)
+		for x in [-4.0,29.0]:
+			_colorable_line(Vector2(x,57),Vector2(x-4,82),5,Color("#BB9966"))
+		return
+	# Each monster has distinct anatomy rather than an identical recolor.
+	match animal_id:
+		"monster_fire":
+			_poly([Vector2(-61,35),Vector2(-60,-39),Vector2(-28,-9),Vector2(-8,-107),Vector2(23,-48),Vector2(48,-94),Vector2(43,-20),Vector2(69,19),Vector2(46,73)],dark)
+			_oval(0,27,57,58,tint)
+		"monster_water":
+			_poly([Vector2(0,-111),Vector2(-69,1),Vector2(-64,59),Vector2(-29,86),Vector2(30,86),Vector2(64,59),Vector2(69,1)],tint)
+			_oval(-20,18,24,46,light)
+		"monster_sprout":
+			_oval(0,26,68,65,tint)
+			_oval(-32,-76,35,19,Color("#65B76F"))
+			_oval(32,-77,35,19,Color("#B1DF6E"))
+			_colorable_line(Vector2(0,-96),Vector2(0,-42),5,dark)
+		"monster_bubble":
+			for x in [-47.0,47.0]:
+				_oval(x,-38,36,34,light)
+				_oval(x,25,35,34,tint)
+			_oval(0,22,59,59,Color("#BBA6E9"))
+		"monster_stone":
+			_poly([Vector2(-76,-63),Vector2(-42,-87),Vector2(42,-87),Vector2(75,-59),Vector2(73,61),Vector2(49,83),Vector2(-54,83),Vector2(-76,59)],dark)
+			_oval(0,13,57,63,tint)
+		"monster_jelly":
+			_oval(0,14,75,74,tint)
+			_oval(-35,0,19,43,light)
+		"monster_spark":
+			_poly([Vector2(12,-110),Vector2(-47,-25),Vector2(1,-25),Vector2(-44,70),Vector2(68,-39),Vector2(19,-39)],dark)
+			_oval(0,20,46,46,tint)
+		"monster_cloud":
+			for x in [-55.0,-24.0,24.0,55.0]:
+				_oval(x,-8+absf(x)*.25,39,42,tint)
+			_oval(0,28,75,48,light)
+		"monster_star":
+			var vertices=[]
+			for n in range(10):
+				var a=-PI/2.0+float(n)*PI/5.0
+				var r=89.0 if n%2==0 else 52.0
+				vertices.append(Vector2(cos(a)*r,sin(a)*r))
+			_poly(vertices,dark)
+			_oval(0,15,56,57,tint)
+		"monster_three_eyes":
+			_oval(0,12,73,79,tint)
+			_oval(-56,-55,18,33,dark)
+			_oval(56,-55,18,33,dark)
+		"monster_wing":
+			_oval(-68,-15,45,66,light)
+			_oval(68,-15,45,66,light)
+			_oval(0,16,56,65,tint)
+			_oval(-29,-67,19,34,tint)
+			_oval(29,-67,19,34,tint)
+		"monster_rainbow":
+			for i in range(6):
+				_oval(-63+float(i)*25,30+sin(float(i)*.7)*22,34,42,
+					[Color("#EF8BA4"),Color("#F3BF7F"),Color("#E9DF87"),
+					Color("#9AD8A5"),Color("#90C8EA"),Color("#B8A7E4")][i])
+			_oval(-55,-25,53,55,tint)
+		_:
+			_oval(0,20,69,68,tint)
+	# Five or more paintable parts for every monster, including eyes and feet.
+	for x in [-48.0,48.0]:
+		_oval(x,74,22,17,dark)
+	var eye_x=[-28.0,0.0,28.0] if animal_id=="monster_three_eyes" else [-27.0,27.0]
+	for x in eye_x:
+		_oval(x,-18,13,16,light)
+		_oval(x+2,-17,6,9,ink)
+	draw_arc(Vector2(0,24),19,.12,PI-.12,18,ink,3,true)
+	if mood in ["happy","play","garden_happy"]:
+		_oval(-54,13,12,8,Color("#EEA3B7"))
+		_oval(54,13,12,8,Color("#EEA3B7"))
