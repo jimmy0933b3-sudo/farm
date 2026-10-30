@@ -397,5 +397,45 @@
     "desc": "象鼻蟲有長長彎彎的口吻，頭上的觸角像兩根小天線，六隻腳抓緊葉子爬行。",
     "care": false,
     "flies": false
+  },
+  {
+    "id": "axolotl",
+    "name": "娃娃魚",
+    "zone": "ocean",
+    "color": "#F1B1C8",
+    "food": "水中小型無脊椎動物",
+    "sound": "水聲",
+    "desc": "娃娃魚（美西螈）是生活在淡水的兩棲動物，頭旁有像花朵的外鰓。來海底樂園的淡水角落找牠吧！",
+    "care": false
+  },
+  {
+    "id": "dog",
+    "name": "狗狗",
+    "zone": "cola",
+    "color": "#C89462",
+    "food": "狗狗專用飼料",
+    "sound": "汪汪",
+    "desc": "狗狗喜歡散步、聞聞新氣味，也愛跟朋友玩遊戲。",
+    "care": true
+  },
+  {
+    "id": "cat",
+    "name": "貓咪",
+    "zone": "cola",
+    "color": "#D4B2A2",
+    "food": "貓咪專用飼料",
+    "sound": "喵喵",
+    "desc": "貓咪有敏感的鬍鬚和柔軟的腳掌，喜歡安靜又溫暖的地方。",
+    "care": true
+  },
+  {
+    "id": "golden_hamster",
+    "name": "黃金鼠",
+    "zone": "cola",
+    "color": "#EFC78F",
+    "food": "倉鼠專用主食",
+    "sound": "吱吱",
+    "desc": "黃金鼠臉頰有小頰囊，喜歡在夜晚活動、挖洞和藏食物。",
+    "care": true
   }
 ]
