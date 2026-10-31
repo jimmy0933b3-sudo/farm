@@ -223,7 +223,7 @@ func _ready() -> void:
 	food_preview.modulate=Color(1,1,1,.90)
 	food_preview.hide()
 	drag_layer.add_child(food_preview)
-	voice.speak("歡迎來私人農場！從上方菜籃拖曳蔬菜餵動物，左右滑動可以逛農場。點動物圖片，就能邀請牠來玩！")
+	voice.speak("歡迎來私人農場！從上方菜籃拖曳蔬菜餵動物，左右滑動逛地圖。會飛的昆蟲在天空，螳螂、糞金龜和象鼻蟲在草地上爬行，右邊有大水池。點動物圖片就能邀請牠來玩！")
 
 func _panel_skin(fill: Color,edge: Color,padding_value: int) -> StyleBoxFlat:
 	var style=StyleBoxFlat.new()
