@@ -92,19 +92,32 @@ static func translate_label(source: String,language: String) -> String:
 		return source.replace(" 秒","s")
 	return source
 
-static func apply_to(root: Node,language: String) -> void:
-	if root is Button:
-		var button: Button=root
-		if not button.text.is_empty():
-			var previous=str(button.get_meta("ui_last_display",""))
-			var original=str(button.get_meta("ui_original_label",button.text))
-			# Dynamic buttons can update their text during racing or drawing.
-			if not previous.is_empty() and button.text!=previous:
-				original=button.text
-			var localized=translate_label(original,language)
-			button.set_meta("ui_original_label",original)
-			button.set_meta("ui_last_display",localized)
-			if button.text!=localized:
-				button.text=localized
+static func _translate_control(node: Control,language: String) -> void:
+	var current=""
+	if node is Button:
+		current=node.text
+	elif node is Label:
+		current=node.text
+	if current.is_empty():
+		return
+	var previous=str(node.get_meta("ui_last_display",""))
+	var original=str(node.get_meta("ui_original_label",current))
+	if not previous.is_empty() and current!=previous:
+		original=current
+	var localized=translate_label(original,language)
+	node.set_meta("ui_original_label",original)
+	node.set_meta("ui_last_display",localized)
+	if current!=localized:
+		if node is Button:
+			node.text=localized
+		elif node is Label:
+			node.text=localized
+
+static func apply_to(root: Node,language: String,in_button: bool=false) -> void:
+	# Many buttons render their label as a nested Label beside a picture.
+	# Translate those too, without changing ordinary text, TTS or subtitles.
+	if root is Button or (in_button and root is Label):
+		_translate_control(root,language)
+	var inside=in_button or root is Button
 	for child in root.get_children():
-		apply_to(child,language)
+		apply_to(child,language,inside)
