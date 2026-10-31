@@ -1,126 +1,124 @@
 extends SceneTree
-## Verify a full 32-resident private farm with a scrollable four-column card
-## grid. The seventeenth collected species must say FULL, never LOCKED.
+## One top scroll strip for ALL 67 species: no separate resident/available rows.
+## A tap places; a second tap returns the creature to the same exact card.
 const Landscape=preload("res://scripts/PrivateFarmLandscape.gd")
 
 func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	root.size=Vector2i(1280,720)
 	var game=load("res://scenes/Main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	var saved=game.progress.data.duplicate(true)
+	game.progress.data["private_farm"]=[]
+	game.progress.save()
 	game.show_private_farm()
 	await process_frame
 	await process_frame
 	var farm=game.private_farm_game
-	var existing: Array=game.progress.data["private_farm"].duplicate()
-	var collected: Array=game.progress.data["collected"].duplicate()
-	for resident in existing:
-		game.progress.private_farm_remove(str(resident))
-	var ids: Array=[]
-	for animal in game.animals:
-		if ids.size()<33:
-			ids.append(str(animal["id"]))
-	for id in ids:
-		game.progress.unlock(str(id))
-	farm._sync_residents()
-	farm._rebuild_cards()
-	if farm.CAPACITY!=32:
-		_fail("Private Farm still uses an eight-resident cap")
+	var ids: Array=game._all_friends().map(func(info): return str(info["id"]))
+	if ids.size()!=67 or farm.animals.size()!=67 or farm.CAPACITY!=67:
+		_fail("Private farm must include all 67 animals, birds and monsters")
 		return
-	if not is_instance_valid(farm.resident_scroll):
-		_fail("Thirty-two residents require a vertical list")
+	if not farm.resident_list is HBoxContainer or farm.resident_list.get_child_count()!=67:
+		_fail("Exactly one permanent, horizontal top roster with 67 cards is required")
 		return
-	if farm.resident_scroll.horizontal_scroll_mode!=ScrollContainer.SCROLL_MODE_DISABLED:
-		_fail("Residents should scroll up and down, not sideways")
+	if farm.available_list!=null or farm.available_scroll!=null:
+		_fail("Old two-part resident/available lists must be removed")
 		return
-	if farm.resident_list.columns!=4:
-		_fail("Resident selection must have four columns")
+	if farm.resident_scroll.vertical_scroll_mode!=ScrollContainer.SCROLL_MODE_DISABLED or farm.resident_scroll.horizontal_scroll_mode!=ScrollContainer.SCROLL_MODE_AUTO:
+		_fail("Top list must only scroll sideways")
 		return
-	for i in range(32):
-		var outcome=game.progress.private_farm_add_status(str(ids[i]))
-		if outcome!="added":
-			_fail("Collected resident %d was refused: %s" % [i+1,outcome])
+	if farm.resident_scroll.get_global_rect().position.y>=farm.farm_view.get_global_rect().position.y:
+		_fail("Animal roster must be ABOVE the farm playground")
+		return
+	if farm.resident_scroll.get_h_scroll_bar().max_value<=farm.resident_scroll.size.x+300:
+		_fail("Entire roster must be genuinely swipeable with a finger")
+		return
+	# Even uncollected birds and monsters belong to the selectable roster.
+	for id in ["bird_mandarin","bird_owl_park","bird_eagle","bird_osprey","monster_fire","monster_rainbow"]:
+		if not ids.has(id):
+			_fail("Cross-park species missing: "+id)
 			return
-	if game.progress.private_farm_add_status(str(ids[32]))!="full":
-		_fail("Collected thirty-third resident should report FULL")
+		if game.progress.private_farm_add_status(id)!="added":
+			_fail("All catalogue species must be placeable without collection gating")
+			return
+	# Remove initial residents and fill the full farm with every species.
+	game.progress.data["private_farm"]=[]
+	for id in ids:
+		var result=game.progress.private_farm_add_status(id)
+		if result!="added":
+			_fail("Cannot place full roster species "+id+": "+result)
+			return
+	if game.progress.private_farm_add_status("unknown_new_species")!="locked":
+		_fail("Only 67 known IDs are allowed in the resident list")
 		return
 	farm._sync_residents()
 	farm._rebuild_cards()
 	await process_frame
 	await process_frame
-	if farm.actors.size()!=32 or farm.resident_list.get_child_count()!=32:
-		_fail("All thirty-two residents must be shown and moving")
+	if farm.actors.size()!=67 or farm.resident_list.get_child_count()!=67:
+		_fail("All 67 species must roam and keep their top list cards")
 		return
-	var first=farm.resident_list.get_child(0)
-	var last=farm.resident_list.get_child(31)
-	if last.get_global_rect().position.y<=first.get_global_rect().position.y+first.size.y*6:
-		_fail("Eight resident rows are not present")
+	for id in ids:
+		if not farm.actors.has(id):
+			_fail("Resident missing actor sprite "+id)
+			return
+	if not farm.actors["bird_eagle"].is_flying:
+		_fail("Bird species should fly rather than crawl in private farm")
 		return
-	if farm.resident_scroll.get_v_scroll_bar().max_value<=farm.resident_scroll.size.y+30:
-		_fail("Last resident rows cannot be scrolled into view")
+	var first_card=farm.resident_list.get_child(0)
+	var last_card=farm.resident_list.get_child(66)
+	if last_card.get_global_rect().position.x<=first_card.get_global_rect().position.x+3000:
+		_fail("Single roster must span horizontally instead of creating rows")
 		return
-	farm.resident_scroll.scroll_vertical=10000
+	farm.resident_scroll.scroll_horizontal=999999
 	await process_frame
-	if farm.resident_scroll.scroll_vertical<70:
-		_fail("Finger scroll cannot reach the last resident row")
+	if farm.resident_scroll.scroll_horizontal<=300:
+		_fail("Cannot swipe to last species")
 		return
-	if last.get_global_rect().end.x>farm.resident_scroll.get_global_rect().end.x+2.0:
-		_fail("The thirty-second resident card is clipped horizontally")
+	var offset=farm.resident_scroll.scroll_horizontal
+	var removed_id=str(ids[66])
+	# Tapping a resident tile returns that animal, but keeps its tile in place.
+	last_card.pressed.emit()
+	await process_frame
+	await process_frame
+	if game.progress.data["private_farm"].has(removed_id) or farm.actors.has(removed_id):
+		_fail("Tap on resident picture must return that animal")
 		return
-	last.pressed.emit()
-	if farm.active_id!=str(ids[31]):
-		_fail("The thirty-second resident cannot be selected from the card")
+	if farm.resident_list.get_child_count()!=67 or farm.resident_scroll.scroll_horizontal<offset-100:
+		_fail("Returned animal must stay in its original top card without scroll reset")
 		return
-	if farm.remove_button.disabled:
-		_fail("Remove button disabled for thirty-second resident")
+	# Clicking the same tile again immediately places the animal back.
+	farm.resident_list.get_child(66).pressed.emit()
+	await process_frame
+	if not game.progress.data["private_farm"].has(removed_id) or farm.resident_list.get_child_count()!=67:
+		_fail("Returned creature must remain accessible for immediate re-placement")
 		return
-	farm.place_animal(str(ids[32]))
-	if not farm.info_label.text.contains("32") or not farm.info_label.text.contains("住滿"):
-		_fail("Capacity feedback still says eight animals or incorrectly says locked")
+	if game.progress.data["private_farm"].size()!=67:
+		_fail("All 67 residents should be placeable simultaneously")
 		return
-	farm.remove_current()
-	if game.progress.data["private_farm"].has(str(ids[31])):
-		_fail("The thirty-second resident did not return to album")
-		return
-	farm.place_animal(str(ids[32]))
-	if not game.progress.data["private_farm"].has(str(ids[32])):
-		_fail("The thirty-third species cannot occupy a newly emptied slot")
-		return
-	var n_land=0
-	for key in farm.actors.keys():
+	for key in farm.actors:
 		var animal=farm.actors[key]
 		if animal.position.x<0.0 or animal.position.x+animal.size.x>farm.world_width+2.0:
-			_fail("A resident is outside the large farm")
+			_fail("One or more of 67 residents escaped the extended farm")
 			return
-		if str(farm._animal(str(key)).get("zone",""))!="ocean":
-			n_land+=1
-			if animal.roaming_bounds.position.x>farm.world_width*0.6:
-				_fail("Land animal incorrectly placed in water")
-				return
-	if n_land<20:
-		_fail("Insufficient land residents for crowded meadow stress test")
-		return
 	var bg_count=0
 	for item in farm.habitat.get_children():
 		if item.get_script()==Landscape:
 			bg_count+=1
 	if bg_count!=1:
-		_fail("Illustrated large farm landscape missing")
+		_fail("Expanded farm must retain one original landscape")
 		return
-	# The test must not change the player's original collected or farm data.
-	for id in game.progress.data["private_farm"].duplicate():
-		game.progress.private_farm_remove(str(id))
-	for id in existing:
-		game.progress.private_farm_add(str(id))
-	game.progress.data["collected"]=collected
+	game.progress.data=saved
 	game.progress.save()
-	print("PASS: thirty-two farm residents, 4x8 vertically scrollable cards, #33 full, slot replacement and grass bounds")
+	print("PASS: all 67 species in one thumb-scrollable top roster, 67 simultaneous actors, last card remove/re-add without disappearing or losing scroll, birds fly")
 	game.queue_free()
 	await process_frame
 	quit(0)
 
 func _fail(message: String) -> void:
-	push_error("FARM 32 RESIDENT TEST FAILED: "+message)
+	push_error("PRIVATE FARM ALL SPECIES FAILED: "+message)
 	quit(1)
