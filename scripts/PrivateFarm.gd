@@ -99,7 +99,6 @@ func _ready() -> void:
 	resident_scroll.size_flags_vertical=Control.SIZE_SHRINK_BEGIN
 	resident_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
 	resident_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	resident_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
 	left.add_child(resident_scroll)
 	resident_list=HBoxContainer.new()
 	resident_list.add_theme_constant_override("separation",7)
@@ -231,8 +230,8 @@ func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Bu
 	var tile=_round("",Callable(),Vector2(100,104))
 	resident_scroll.wire_button(tile,Callable(self,"_toggle_resident").bind(id))
 	var panel=StyleBoxFlat.new()
-	panel.bg_color=Color("#DCF6DA") if is_member else (Color("#FCF4DF") if unlocked else Color("#E9EAE9"))
-	panel.border_color=Color("#52B579") if is_member else (Color("#D2AB64") if unlocked else Color("#A6B1B4"))
+	panel.bg_color=Color("#DCF6DA") if is_member else Color("#FCF4DF"
+	panel.border_color=Color("#52B579") if is_member else Color("#D2AB64"
 	panel.set_border_width_all(3 if selected or is_member else 2)
 	panel.set_corner_radius_all(16)
 	tile.add_theme_stylebox_override("normal",panel)
@@ -250,11 +249,11 @@ func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Bu
 	pic.custom_minimum_size=Vector2(84,64)
 	pic.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	pic.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	pic.modulate=Color.WHITE if unlocked else Color("#A2A8AC")
+	pic.modulate=Color.WHITE
 	contents.add_child(pic)
-	var badge="✓ " if is_member else ("＋ " if unlocked else "🔒 ")
+	var badge="✓ " if is_member else "＋ "
 	contents.add_child(_label(badge+str(info.get("name","朋友")),14))
-	tile.tooltip_text=("收回農場清單" if is_member else ("點一下放到農場" if unlocked else "先去樂園認識這位朋友"))
+	tile.tooltip_text="點一下收回（仍留在上方清單）" if is_member else "點一下放到農場"
 	return tile
 
 func _toggle_resident(id: String) -> void:
@@ -283,7 +282,7 @@ func _rebuild_cards() -> void:
 	for info in animals:
 		var id=str(info["id"])
 		var in_farm=members.has(id)
-		var unlocked=save_data.data["collected"].has(id)
+		var unlocked=true
 		resident_list.add_child(_card(info,id==active_id,in_farm,unlocked))
 	call_deferred("_restore_roster_scroll",previous)
 
