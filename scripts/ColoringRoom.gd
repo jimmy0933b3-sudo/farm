@@ -5,13 +5,18 @@ const Canvas = preload("res://scripts/ColoringCanvas.gd")
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const TouchAnimalScroll = preload("res://scripts/TouchAnimalScroll.gd")
 
-# Thirty crayons, including every color from earlier versions.
+# Sixty crayons. Keep the first thirty hues stable for saved artwork.
 const PALETTE = [
 	"#F26A72","#F49E50","#FFD95B","#81CA78","#3FBBAD","#67C8F3","#7189ED",
 	"#AD7BE3","#EF98C9","#F1C7A3","#99684D","#747A83","#333F4B","#FFFFFF",
 	"#C63F53","#FFB2A6","#E57C2D","#FFE8A2","#C4EA5F","#47984B","#A4E4C1",
 	"#157E87","#3164B2","#253C8B","#BCE7FF","#D8BEFA","#793EA4","#D9589D",
-	"#BE935E","#182432"
+	"#BE935E","#182432",
+	"#F7B8BD","#FF6B50","#E94D32","#B12B39","#A52D74","#E644B4",
+	"#F7C5D9","#FBC97E","#D88745","#8C4C28","#5A3829","#D7B093",
+	"#FDF2CE","#D2CF88","#A2BA2E","#627A27","#294A29","#C1E8B3",
+	"#49DB94","#08735C","#A6F3E7","#2AA8CD","#0677C9","#152E74",
+	"#A0B1F4","#6636BA","#CA9AEA","#704676","#9CAAB5","#111A24"
 ]
 
 var animals: Array=[]
@@ -72,17 +77,17 @@ func _ready() -> void:
 	tools.add_child(undo_button)
 	tools.add_child(_button("全部重畫",Callable(self,"reset_coloring"),Vector2(154,47)))
 	tools.add_child(_button("聽玩法",Callable(self,"repeat_guide"),Vector2(132,47)))
-	left.add_child(_label("彩色筆 · 30 種顏色",17))
+	left.add_child(_label("彩色筆 · 60 種顏色",17))
 	var colors=GridContainer.new()
-	# 10x3 grid keeps the drawing paper large on landscape tablets.
+	# A 10x6 grid uses small swatches to keep the canvas large.
 	colors.columns=10
 	colors.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
-	colors.add_theme_constant_override("h_separation",5)
-	colors.add_theme_constant_override("v_separation",5)
+	colors.add_theme_constant_override("h_separation",4)
+	colors.add_theme_constant_override("v_separation",3)
 	left.add_child(colors)
 	for hex in PALETTE:
 		var button=Button.new()
-		button.custom_minimum_size=Vector2(43,36)
+		button.custom_minimum_size=Vector2(35,24)
 		button.tooltip_text="彩色筆 %d" % [palette_buttons.size()+1]
 		var style=StyleBoxFlat.new()
 		style.bg_color=Color(hex)
@@ -130,7 +135,7 @@ func _ready() -> void:
 	else:
 		canvas.visible=false
 		guide.text="所有樂園的角色都在右邊！先去樂園找到朋友，再回來幫牠上色。"
-	voice.speak("歡迎動物著色屋！所有樂園的動物、鳥類、昆蟲和怪獸都在這裡。找到新朋友就能幫牠上色，有三十種顏色喔！")
+	voice.speak("歡迎動物著色屋！所有樂園的動物、鳥類、昆蟲和怪獸都在這裡。找到新朋友就能幫牠上色，有六十種顏色喔！")
 
 func _collected_ids() -> Array:
 	var result: Array=[]
