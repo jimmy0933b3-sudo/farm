@@ -71,7 +71,16 @@ const EN={
 	"星角亮亮":"Star","三眼豆豆":"Three Eyes",
 	"小翼飛飛":"Little Wing","彩虹長長":"Rainbow",
 	"胡蘿蔔":"Carrot","小白菜":"Cabbage","南瓜":"Pumpkin",
-	"吃人花":"Chomper Flower"
+	"吃人花":"Chomper Flower",
+	"農場":"Farm","森林":"Forest","海洋":"Ocean",
+	"飼料":"Feed","巧克力":"Chocolate","糖果":"Candy",
+	"穀粒":"Grains","洋蔥":"Onion","牧草":"Hay",
+	"果實":"Fruit","汽水":"Soda","根莖":"Roots",
+	"香蕉":"Banana","昆蟲":"Insects","海草":"Seaweed",
+	"小型甲殼類":"Tiny Crustaceans","肉":"Meat","魚":"Fish",
+	"青草":"Fresh Grass","蛋糕":"Cake","花蜜":"Nectar",
+	"乾草":"Dried Hay","蚜蟲":"Aphids","動物糞便":"Dung",
+	"葉子":"Leaves"
 }
 const SPECIAL_ZH={
 	"🌱 Garden":"🌱 農田","🏎️ Racing":"🏎️ 賽車場",
