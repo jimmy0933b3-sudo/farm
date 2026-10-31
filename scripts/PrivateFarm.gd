@@ -94,7 +94,7 @@ func _ready() -> void:
 	remove_button=_round("Remove",Callable(self,"remove_current"),Vector2(98,41))
 	roster_header.add_child(remove_button)
 	resident_scroll=TouchAnimalScroll.new()
-	resident_scroll.custom_minimum_size=Vector2(0,112)
+	resident_scroll.custom_minimum_size=Vector2(0,97)
 	resident_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	resident_scroll.size_flags_vertical=Control.SIZE_SHRINK_BEGIN
 	resident_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
@@ -120,7 +120,7 @@ func _ready() -> void:
 	_refresh_farm_stock()
 	# Wider-than-the-screen scenery under a fixed, clipped viewport.
 	farm_view=Control.new()
-	farm_view.custom_minimum_size=Vector2(555,310)
+	farm_view.custom_minimum_size=Vector2(555,245)
 	farm_view.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	farm_view.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	farm_view.clip_contents=true
@@ -227,7 +227,7 @@ func _animal(id: String) -> Dictionary:
 
 func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Button:
 	var id=str(info.get("id",""))
-	var tile=_round("",Callable(),Vector2(100,104))
+	var tile=_round("",Callable(),Vector2(98,90))
 	resident_scroll.wire_button(tile,Callable(self,"_toggle_resident").bind(id))
 	var panel=StyleBoxFlat.new()
 	panel.bg_color=Color("#DCF6DA") if is_member else Color("#FCF4DF")
@@ -246,7 +246,7 @@ func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Bu
 	tile.add_child(contents)
 	var pic=AnimalArt.new()
 	pic.setup(info)
-	pic.custom_minimum_size=Vector2(84,64)
+	pic.custom_minimum_size=Vector2(82,55)
 	pic.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	pic.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	pic.modulate=Color.WHITE
