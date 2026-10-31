@@ -64,11 +64,11 @@ func _ready() -> void:
 	# Pick a pictured crop by dragging it. No written tutorial occupies the top.
 	var seeds=HBoxContainer.new()
 	seeds.alignment=BoxContainer.ALIGNMENT_CENTER
-	seeds.add_theme_constant_override("separation",14)
+	seeds.add_theme_constant_override("separation",11)
 	add_child(seeds)
 	for crop in Rules.CROPS:
 		var id=str(crop["id"])
-		var b=_button("",Callable(self,"select_seed").bind(id),Vector2(112,70))
+		var b=_button("",Callable(self,"select_seed").bind(id),Vector2(104,65))
 		b.tooltip_text="按住並拖曳%s到田地" % str(crop["name"])
 		seeds.add_child(b)
 		seed_buttons.append(b)
@@ -95,12 +95,12 @@ func _ready() -> void:
 	meadow.add_theme_stylebox_override("panel",meadow_style)
 	content.add_child(meadow)
 	var grid=GridContainer.new()
-	grid.columns=3
-	grid.add_theme_constant_override("h_separation",12)
+	grid.columns=5
+	grid.add_theme_constant_override("h_separation",8)
 	grid.add_theme_constant_override("v_separation",9)
 	meadow.add_child(grid)
-	for i in range(6):
-		var card=_button("",Callable(self,"press_plot").bind(i),Vector2(156,116))
+	for i in range(10):
+		var card=_button("",Callable(self,"press_plot").bind(i),Vector2(142,112))
 		# The illustrated soil itself is the visual button, without a flat card.
 		card.add_theme_stylebox_override("normal",StyleBoxEmpty.new())
 		card.add_theme_stylebox_override("disabled",StyleBoxEmpty.new())
@@ -119,7 +119,7 @@ func _ready() -> void:
 		card.add_child(body)
 		var art_space=Control.new()
 		art_space.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		art_space.custom_minimum_size=Vector2(150,89)
+		art_space.custom_minimum_size=Vector2(136,85)
 		art_space.size_flags_vertical=Control.SIZE_EXPAND_FILL
 		body.add_child(art_space)
 		var soil=GardenBedArt.new()
