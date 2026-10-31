@@ -108,7 +108,7 @@ jobs:
         run: godot --headless --path . --script tests/flying_insects_smoke.gd
       - name: Test larger private farm sideways panning and direct petting
         run: godot --headless --path . --script tests/private_farm_pan_smoke.gd
-      - name: Test expanded farm capacity and 32-slot resident selector
+      - name: Test all 67 species in one scrollable private-farm roster and instant return
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd
