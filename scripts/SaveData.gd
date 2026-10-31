@@ -36,9 +36,13 @@ func _fresh() -> Dictionary:
 			{"crop":"","planted_at":0,"ready_at":0},
 			{"crop":"","planted_at":0,"ready_at":0},
 			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
 			{"crop":"","planted_at":0,"ready_at":0}
 		],
-		"garden_inventory": {"carrot":0,"cabbage":0,"pumpkin":0},
+		"garden_inventory": {"carrot":0,"cabbage":0,"pumpkin":0,"carnivorous_flower":0},
 		"garden_harvests": 0,
 		"garden_feeds": {},
 		"monster_found": [],
@@ -52,7 +56,7 @@ func _fresh() -> Dictionary:
 		"coloring_pages": {},
 		"drawing_lessons": {},
 		"care": {},
-		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false},
+		"settings": {"music": true, "sound": true, "speech": true, "reduce_motion": false,"ui_language":"zh"},
 		"last_screen": "home"
 	}
 
@@ -68,6 +72,23 @@ func load_save() -> void:
 			data[key] = result[key]
 	if int(data.get("schema_version", 0)) != 1:
 		data["schema_version"] = 1
+	# Non-destructive upgrades: keep six older crops and append four new plots.
+	var plots: Array=data.get("garden_plots",[])
+	while plots.size()<10:
+		plots.append(GardenRules.empty_plot())
+	data["garden_plots"]=plots
+	var basket: Dictionary=data.get("garden_inventory",{})
+	for crop in GardenRules.CROPS:
+		var id=str(crop["id"])
+		if not basket.has(id):
+			basket[id]=0
+	data["garden_inventory"]=basket
+	var settings: Dictionary=data.get("settings",{})
+	if str(settings.get("ui_language","zh")) not in ["zh","en"]:
+		settings["ui_language"]="zh"
+	if not settings.has("ui_language"):
+		settings["ui_language"]="zh"
+	data["settings"]=settings
 
 func _read(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
