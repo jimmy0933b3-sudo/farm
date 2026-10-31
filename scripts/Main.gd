@@ -30,6 +30,7 @@ const CareStage = preload("res://scripts/CareStage.gd")
 const ChoiceArt = preload("res://scripts/ChoiceArt.gd")
 const Backdrop = preload("res://scripts/Backdrop.gd")
 const Synth = preload("res://scripts/Synth.gd")
+const UiLanguage = preload("res://scripts/UiLanguage.gd")
 
 var animals: Array = []
 var monsters: Array = []
@@ -71,6 +72,7 @@ var settings_scroll: ScrollContainer
 var parent_scroll_y: int=0
 # Speak the homepage tour at most once per app launch, never on back navigation.
 var home_intro_spoken: bool=false
+var ui_locale_clock: float=0.0
 
 func _all_friends() -> Array:
 	return animals+birds+monsters
@@ -135,6 +137,18 @@ func _ready() -> void:
 			show_ocean_search()
 		_:
 			show_home()
+
+func _ui_language() -> String:
+	return str(progress.data.get("settings",{}).get("ui_language","zh")) if progress!=null else "zh"
+
+func _apply_ui_language() -> void:
+	UiLanguage.apply_to(self,_ui_language())
+
+func _process(delta: float) -> void:
+	ui_locale_clock+=minf(delta,0.5)
+	if ui_locale_clock>=0.13:
+		ui_locale_clock=0.0
+		_apply_ui_language()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and progress != null:
@@ -1185,6 +1199,23 @@ func show_settings() -> void:
 	content.add_theme_constant_override("separation",13)
 	scroll.add_child(content)
 	var settings: Dictionary = progress.data["settings"]
+	var locale_panel=_panel()
+	content.add_child(locale_panel)
+	var locale_row=HBoxContainer.new()
+	locale_row.add_theme_constant_override("separation",12)
+	locale_panel.add_child(locale_row)
+	var locale_text=VBoxContainer.new()
+	locale_text.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	locale_row.add_child(locale_text)
+	locale_text.add_child(_label("🌍 按鈕語言 / Button Language",24,HORIZONTAL_ALIGNMENT_LEFT))
+	locale_text.add_child(_label("切換全部樂園的按鈕文字；中文語音保持不變",17,HORIZONTAL_ALIGNMENT_LEFT,Color("#637A83")))
+	for value in ["zh","en"]:
+		var selected=str(settings.get("ui_language","zh"))==value
+		var lang_btn=_button(("✓ " if selected else "")+("中文" if value=="zh" else "English"),
+			Callable(),Color("#D6EEDF") if selected else Color("#EAEFF4"),Vector2(136,58))
+		scroll.wire_button(lang_btn,Callable(self,"_set_ui_language").bind(value))
+		locale_row.add_child(lang_btn)
+	call_deferred("_apply_ui_language")
 	content.add_child(_section_title("遊戲體驗","🔊"))
 	for item in [
 		["sound","動物音效","播放動物的聲音與遊戲鼓勵音效"],
@@ -1232,6 +1263,16 @@ func _section_title(message: String, symbol: String) -> HBoxContainer:
 	row.add_child(_label(symbol,29,HORIZONTAL_ALIGNMENT_LEFT,Color("#E89A64")))
 	row.add_child(_label(message,28,HORIZONTAL_ALIGNMENT_LEFT,Color("#344658")))
 	return row
+
+func _set_ui_language(value: String) -> void:
+	if value not in ["zh","en"] or progress==null:
+		return
+	if is_instance_valid(settings_scroll):
+		parent_scroll_y=settings_scroll.scroll_vertical
+	progress.data["settings"]["ui_language"]=value
+	progress.save()
+	show_settings()
+	_apply_ui_language()
 
 func _toggle(key: String) -> void:
 	if is_instance_valid(settings_scroll):
