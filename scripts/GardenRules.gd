@@ -21,7 +21,7 @@ static func suitable(animal_id: String,crop_id: String) -> bool:
 	return str(animal_id) in ALLOWED.get(crop_id,[])
 
 static func empty_plot() -> Dictionary:
-	return {"crop":"","planted_at":0,"ready_at":0,"watered":false}
+	return {"crop":"","planted_at":0,"ready_at":0}
 
 static func stage(plot: Dictionary,now: int) -> int:
 	if str(plot.get("crop","")).is_empty():
