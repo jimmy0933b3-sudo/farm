@@ -25,7 +25,7 @@ func _run() -> void:
 	if not farm.resident_list is HBoxContainer or farm.resident_list.get_child_count()!=67:
 		_fail("Exactly one permanent, horizontal top roster with 67 cards is required")
 		return
-	if farm.available_list!=null or farm.available_scroll!=null:
+	if farm.get_child_count()!=2:
 		_fail("Old two-part resident/available lists must be removed")
 		return
 	if farm.resident_scroll.vertical_scroll_mode!=ScrollContainer.SCROLL_MODE_DISABLED or farm.resident_scroll.horizontal_scroll_mode!=ScrollContainer.SCROLL_MODE_AUTO:
