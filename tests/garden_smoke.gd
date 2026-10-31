@@ -119,8 +119,8 @@ func _run() -> void:
 	game.show_private_farm()
 	await process_frame
 	var farm=game.private_farm_game
-	if not farm.actors.has("cow") or not farm.veg_buttons.has("carrot"):
-		_fail("Private farm should show the chosen cow and vegetable picker")
+	if not farm.actors.has("cow") or not farm.farm_inventory_tiles.has("carrot"):
+		_fail("Private farm should show cow and visible draggable illustrated vegetable basket")
 		return
 	farm._set_resident("cow",false)
 	var before: Dictionary=game.progress.care_stats("cow").duplicate()
@@ -150,8 +150,8 @@ func _run() -> void:
 	if farm.farm_inventory_tiles["carrot"].count!=3 or farm.farm_inventory_tiles["carrot"].quantity.text!="× 3":
 		_fail("Farm basket must visibly decrease immediately after vegetable feeding")
 		return
-	if not farm.info_label.text.contains("4 → 3") or not farm.veg_stock_text["carrot"].text.contains("×3"):
-		_fail("Feeding confirmation and picker must show exactly one stock deduction")
+	if not farm.info_label.text.contains("4 → 3") or farm.farm_inventory_tiles["carrot"].quantity.text!="× 3":
+		_fail("Feeding confirmation and directly draggable basket must show one deduction")
 		return
 	if int(game.progress.care_stats("cow")["happy"])<int(before["happy"]) or int(game.progress.care_stats("cow")["food"])<int(before["food"]):
 		_fail("Vegetable feeding must improve fullness and happiness")
@@ -160,9 +160,8 @@ func _run() -> void:
 		_fail("Repeated taps during the eating animation cannot double-charge stock")
 		return
 	farm._on_reaction_finished("cow")
-	farm._refresh_vegetable_picker()
-	if farm.veg_buttons["carrot"].disabled:
-		_fail("Crop remains disabled after animal finishes its bite")
+	if farm.busy:
+		_fail("After eating, farm must accept another vegetable drag")
 		return
 	if not farm.feed_garden("carrot"):
 		_fail("A second separate feeding should be allowed after the previous one finishes")
