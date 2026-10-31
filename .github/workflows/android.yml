@@ -146,7 +146,7 @@ jobs:
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/monster_smoke.gd
       - name: Test Bird World, bird album, flight controls and persistent sky races
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/bird_smoke.gd
-      - name: Test vegetable garden, watering, harvest saves and happy animal feeding
+      - name: Test timed vegetable garden without watering, saved harvest and happy animal feeding
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/garden_smoke.gd
       - name: Test crop drag and multi-plot planting by touch and mouse
         run: timeout --signal=TERM 75s godot --headless --path . --script tests/garden_drag_smoke.gd
