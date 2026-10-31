@@ -53,6 +53,14 @@ func _run() -> void:
 	if farm.commands.get_child_count()!=4:
 		_fail("Only wash, play, sleep and sound care actions should remain")
 		return
+	var expected_buttons=["Bath","Play","Rest","Sound"]
+	for i in range(expected_buttons.size()):
+		if farm.commands.get_child(i).text!=expected_buttons[i]:
+			_fail("Private farm action buttons must have English labels")
+			return
+	if not farm.remove_button.text=="Remove":
+		_fail("Remove button must be labeled in English")
+		return
 	for button in farm.commands.get_children():
 		if "餵" in button.text or "食" in button.text:
 			_fail("General feeding and vegetable feeding buttons must both be gone")
