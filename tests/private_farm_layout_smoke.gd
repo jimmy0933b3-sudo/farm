@@ -1,5 +1,5 @@
 extends SceneTree
-## Verify a full 16-resident private farm with a scrollable four-column card
+## Verify a full 32-resident private farm with a scrollable four-column card
 ## grid. The seventeenth collected species must say FULL, never LOCKED.
 const Landscape=preload("res://scripts/PrivateFarmLandscape.gd")
 
@@ -20,17 +20,17 @@ func _run() -> void:
 		game.progress.private_farm_remove(str(resident))
 	var ids: Array=[]
 	for animal in game.animals:
-		if ids.size()<17:
+		if ids.size()<33:
 			ids.append(str(animal["id"]))
 	for id in ids:
 		game.progress.unlock(str(id))
 	farm._sync_residents()
 	farm._rebuild_cards()
-	if farm.CAPACITY!=16:
+	if farm.CAPACITY!=32:
 		_fail("Private Farm still uses an eight-resident cap")
 		return
 	if not is_instance_valid(farm.resident_scroll):
-		_fail("Sixteen residents require a vertical list")
+		_fail("Thirty-two residents require a vertical list")
 		return
 	if farm.resident_scroll.horizontal_scroll_mode!=ScrollContainer.SCROLL_MODE_DISABLED:
 		_fail("Residents should scroll up and down, not sideways")
@@ -38,25 +38,25 @@ func _run() -> void:
 	if farm.resident_list.columns!=4:
 		_fail("Resident selection must have four columns")
 		return
-	for i in range(16):
+	for i in range(32):
 		var outcome=game.progress.private_farm_add_status(str(ids[i]))
 		if outcome!="added":
 			_fail("Collected resident %d was refused: %s" % [i+1,outcome])
 			return
-	if game.progress.private_farm_add_status(str(ids[16]))!="full":
-		_fail("Collected seventeenth resident should report FULL")
+	if game.progress.private_farm_add_status(str(ids[32]))!="full":
+		_fail("Collected thirty-third resident should report FULL")
 		return
 	farm._sync_residents()
 	farm._rebuild_cards()
 	await process_frame
 	await process_frame
-	if farm.actors.size()!=16 or farm.resident_list.get_child_count()!=16:
-		_fail("All sixteen residents must be shown and moving")
+	if farm.actors.size()!=32 or farm.resident_list.get_child_count()!=32:
+		_fail("All thirty-two residents must be shown and moving")
 		return
 	var first=farm.resident_list.get_child(0)
-	var last=farm.resident_list.get_child(15)
-	if last.get_global_rect().position.y<=first.get_global_rect().position.y+first.size.y*2:
-		_fail("Four resident rows are not present")
+	var last=farm.resident_list.get_child(31)
+	if last.get_global_rect().position.y<=first.get_global_rect().position.y+first.size.y*6:
+		_fail("Eight resident rows are not present")
 		return
 	if farm.resident_scroll.get_v_scroll_bar().max_value<=farm.resident_scroll.size.y+30:
 		_fail("Last resident rows cannot be scrolled into view")
@@ -67,26 +67,26 @@ func _run() -> void:
 		_fail("Finger scroll cannot reach the last resident row")
 		return
 	if last.get_global_rect().end.x>farm.resident_scroll.get_global_rect().end.x+2.0:
-		_fail("The sixteenth resident card is clipped horizontally")
+		_fail("The thirty-second resident card is clipped horizontally")
 		return
 	last.pressed.emit()
-	if farm.active_id!=str(ids[15]):
-		_fail("The sixteenth resident cannot be selected from the card")
+	if farm.active_id!=str(ids[31]):
+		_fail("The thirty-second resident cannot be selected from the card")
 		return
 	if farm.remove_button.disabled:
-		_fail("Remove button disabled for sixteenth resident")
+		_fail("Remove button disabled for thirty-second resident")
 		return
-	farm.place_animal(str(ids[16]))
-	if not farm.info_label.text.contains("16") or not farm.info_label.text.contains("住滿"):
+	farm.place_animal(str(ids[32]))
+	if not farm.info_label.text.contains("32") or not farm.info_label.text.contains("住滿"):
 		_fail("Capacity feedback still says eight animals or incorrectly says locked")
 		return
 	farm.remove_current()
-	if game.progress.data["private_farm"].has(str(ids[15])):
-		_fail("The sixteenth resident did not return to album")
+	if game.progress.data["private_farm"].has(str(ids[31])):
+		_fail("The thirty-second resident did not return to album")
 		return
-	farm.place_animal(str(ids[16]))
-	if not game.progress.data["private_farm"].has(str(ids[16])):
-		_fail("The seventeenth species cannot occupy a newly emptied slot")
+	farm.place_animal(str(ids[32]))
+	if not game.progress.data["private_farm"].has(str(ids[32])):
+		_fail("The thirty-third species cannot occupy a newly emptied slot")
 		return
 	var n_land=0
 	for key in farm.actors.keys():
@@ -99,7 +99,7 @@ func _run() -> void:
 			if animal.roaming_bounds.position.x>farm.world_width*0.6:
 				_fail("Land animal incorrectly placed in water")
 				return
-	if n_land<13:
+	if n_land<20:
 		_fail("Insufficient land residents for crowded meadow stress test")
 		return
 	var bg_count=0
@@ -116,11 +116,11 @@ func _run() -> void:
 		game.progress.private_farm_add(str(id))
 	game.progress.data["collected"]=collected
 	game.progress.save()
-	print("PASS: sixteen farm residents, 4x4 vertically scrollable cards, #17 full, slot replacement and grass bounds")
+	print("PASS: thirty-two farm residents, 4x8 vertically scrollable cards, #33 full, slot replacement and grass bounds")
 	game.queue_free()
 	await process_frame
 	quit(0)
 
 func _fail(message: String) -> void:
-	push_error("FARM 16 RESIDENT TEST FAILED: "+message)
+	push_error("FARM 32 RESIDENT TEST FAILED: "+message)
 	quit(1)
