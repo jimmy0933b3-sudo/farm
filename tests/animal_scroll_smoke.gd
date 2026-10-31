@@ -140,15 +140,24 @@ func _run() -> void:
 	print("TRACE scroll: farm")
 	game.show_private_farm()
 	await process_frame
-	if not is_instance_valid(game.private_farm_game.available_scroll):
-		_fail("Private Farm available animal list is not touch scrollable")
+	var farm=game.private_farm_game
+	if not is_instance_valid(farm.resident_scroll):
+		_fail("Private Farm horizontal animal roster is missing")
 		return
-	var farm_scroll=game.private_farm_game.available_scroll
-	if farm_scroll.get_child(0).get_child_count()<19:
-		_fail("Private Farm lost animal choices")
+	var farm_scroll=farm.resident_scroll
+	if farm.resident_list.get_child_count()!=game._all_friends().size():
+		_fail("Private Farm lost animal choices from its single roster")
 		return
-	if farm_scroll.get_v_scroll_bar().max_value<=farm_scroll.size.y+50:
-		_fail("Private farm catalog cannot scroll over many animal cards")
+	if farm_scroll.horizontal_scroll_mode!=ScrollContainer.SCROLL_MODE_AUTO or farm_scroll.vertical_scroll_mode!=ScrollContainer.SCROLL_MODE_DISABLED:
+		_fail("Private Farm animal roster must scroll horizontally, not vertically")
+		return
+	if farm_scroll.get_h_scroll_bar().max_value<=farm_scroll.size.x+50:
+		_fail("Private Farm horizontal roster cannot reach later animal cards")
+		return
+	farm_scroll.scroll_horizontal=999999
+	await process_frame
+	if farm_scroll.scroll_horizontal<=300:
+		_fail("Private Farm cannot scroll to its last animal cards")
 		return
 	game.show_home()
 	await process_frame

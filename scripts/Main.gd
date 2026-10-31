@@ -72,7 +72,6 @@ var settings_scroll: ScrollContainer
 var parent_scroll_y: int=0
 # Speak the homepage tour at most once per app launch, never on back navigation.
 var home_intro_spoken: bool=false
-var ui_locale_clock: float=0.0
 
 func _all_friends() -> Array:
 	return animals+birds+monsters
@@ -144,12 +143,6 @@ func _ui_language() -> String:
 func _apply_ui_language() -> void:
 	UiLanguage.apply_to(self,_ui_language())
 
-func _process(delta: float) -> void:
-	ui_locale_clock+=minf(delta,0.5)
-	if ui_locale_clock>=0.13:
-		ui_locale_clock=0.0
-		_apply_ui_language()
-
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and progress != null:
 		progress.save()
@@ -214,6 +207,8 @@ func _switch(name: String, bg: String = "home") -> VBoxContainer:
 	var layout = VBoxContainer.new()
 	layout.add_theme_constant_override("separation", 12)
 	margin.add_child(layout)
+	# Apply translations after the new screen has added its controls.
+	call_deferred("_apply_ui_language")
 	return layout
 
 func _label(value: String, font_size: int = 28, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER, color: Color = Color("#344658")) -> Label:
