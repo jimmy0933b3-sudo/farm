@@ -44,7 +44,8 @@ func _run() -> void:
 	game.progress.unlock("cow")
 	game.progress.unlock("snake")
 	game.progress.data["private_farm"]=["cow","snake"]
-	game.progress.data["garden_inventory"]={"carrot":3,"cabbage":2,"pumpkin":1}
+	game.progress.data["garden_inventory"]={"carrot":3,"cabbage":2,"pumpkin":1,"carnivorous_flower":1}
+	game.progress.data["settings"]["ui_language"]="en"
 	game.progress.save()
 	game.show_private_farm()
 	await process_frame
@@ -71,9 +72,9 @@ func _run() -> void:
 	if farm.stock_strip.get_index()>=farm.farm_view.get_index():
 		_fail("Drag basket needs to sit above the animals")
 		return
-	for id in ["carrot","cabbage","pumpkin"]:
+	for id in ["carrot","cabbage","pumpkin","carnivorous_flower"]:
 		if not farm.farm_inventory_tiles.has(id):
-			_fail("All three crops must have stock illustration directly draggable")
+			_fail("All four crops must have stock illustration directly draggable")
 			return
 		if farm.farm_inventory_tiles[id].art.crop_id!=id:
 			_fail("Stock illustrations are swapped for "+id)
@@ -138,7 +139,7 @@ func _run() -> void:
 		_fail("Food pointer must reset after valid feed")
 		return
 	farm._on_reaction_finished("cow")
-	# Wrong food to snake: no charge, no eating animation.
+	# Every creature, including the snake, enjoys every game crop.
 	farm.focus_resident("snake")
 	await process_frame
 	var snake_point=_animal_point(farm,"snake")
@@ -147,12 +148,14 @@ func _run() -> void:
 	_touch(farm,cabbage_start,true,4)
 	_drag(farm,snake_point,4)
 	_touch(farm,snake_point,false,4)
-	if int(game.progress.data["garden_inventory"]["cabbage"])!=cabbage_before or farm.busy:
-		_fail("Incompatible food must not be charged to the basket")
+	if int(game.progress.data["garden_inventory"]["cabbage"])!=cabbage_before-1 or not farm.busy:
+		_fail("Snake must happily eat cabbage and deduct exactly one crop")
 		return
-	if not farm.info_label.text.contains("不會扣除"):
-		_fail("Wrong-food feedback must explain inventory remains unchanged")
+	if farm.actors["snake"].avatar.mood!="garden_happy" or farm.actors["snake"].heart_time<2.0:
+		_fail("Every animal must smile and show hearts after being fed")
 		return
+	farm._on_reaction_finished("snake")
+	cabbage_before=int(game.progress.data["garden_inventory"]["cabbage"])
 	# Dropping outside the animal's world should not consume.
 	_touch(farm,cabbage_start,true,5)
 	_drag(farm,Vector2(3,3),5)
@@ -160,6 +163,18 @@ func _run() -> void:
 	if int(game.progress.data["garden_inventory"]["cabbage"])!=cabbage_before:
 		_fail("Dropping outside an animal must not consume crops")
 		return
+	# The imaginary carnivorous flower is a fourth illustrated game treat.
+	var flower_start=farm.farm_inventory_tiles["carnivorous_flower"].get_global_rect().get_center()
+	_touch(farm,flower_start,true,6)
+	_drag(farm,snake_point,6)
+	_touch(farm,snake_point,false,6)
+	if int(game.progress.data["garden_inventory"]["carnivorous_flower"])!=0:
+		_fail("Fantasy flower must be edible by any pet and deduct one from stock")
+		return
+	if not farm.busy or farm.actors["snake"].avatar.mood!="garden_happy":
+		_fail("Fantasy flower should trigger an extra-happy face")
+		return
+	farm._on_reaction_finished("snake")
 	# Mouse dragging is also supported: cow can eat another carrot.
 	farm.focus_resident("cow")
 	await process_frame
@@ -190,7 +205,7 @@ func _run() -> void:
 		return
 	game.progress.data=backup
 	game.progress.save()
-	print("PASS: drag directly from illustrated basket to roaming animal, exact -1, no general/popup feeding, touch & mouse, no wrong-food charges, empty basket, happy reaction and save")
+	print("PASS: drag directly from illustrated basket to roaming animal, exact -1, no general/popup feeding, touch & mouse, all-animals-eat, no off-target charges, empty basket, happy reaction and save")
 	game.queue_free()
 	await process_frame
 	quit(0)
