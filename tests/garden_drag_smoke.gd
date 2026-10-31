@@ -62,6 +62,19 @@ func _run() -> void:
 	if garden.inventory_tiles["carrot"].count!=0:
 		_fail("Starting basket count must remain zero")
 		return
+	if garden.has_method("water_all") or game.progress.has_method("garden_water"):
+		_fail("No watering button or watering action must remain")
+		return
+	for i in range(6):
+		if garden.plot_buttons[i].custom_minimum_size.x>=180.0 or garden.plot_buttons[i].custom_minimum_size.y>=136.0:
+			_fail("Raised soil plots must be smaller than old flat cards")
+			return
+		if not garden.plot_beds[i] is Control or garden.plot_images[i].show_soil:
+			_fail("Each plot needs separate isometric raised soil and a soil-free plant overlay")
+			return
+	if not garden.seed_buttons.all(func(btn): return btn.text.is_empty()):
+		_fail("Seed buttons must use drawings alone, not instructional text")
+		return
 	var carrot=garden.seed_buttons[0].get_global_rect().get_center()
 	var p0=garden.plot_buttons[0].get_global_rect().get_center()
 	var p2=garden.plot_buttons[2].get_global_rect().get_center()
@@ -142,8 +155,8 @@ func _run() -> void:
 	if int(game.progress.data["garden_inventory"]["pumpkin"])!=before:
 		_fail("Planting does not consume harvested inventory")
 		return
-	if not garden.hint_label.text.contains("1 塊"):
-		_fail("One-field drag should give one clear planting confirmation")
+	if not garden.hint_label.text.contains("× 1"):
+		_fail("One-field drag should show a compact icon and quantity")
 		return
 	var loaded=game.progress.data["garden_plots"].duplicate(true)
 	game.progress.save()
@@ -157,7 +170,7 @@ func _run() -> void:
 		return
 	game.progress.data=original
 	game.progress.save()
-	print("PASS: slim image+number inventory, touch multi-plot drag, sampled fast swipes, overwrite prevention, mouse drag and saved crop state")
+	print("PASS: raised smaller beds, icon-only seeds, no watering, slim stock, touch multi-plot and mouse drags and saved crop state")
 	game.queue_free()
 	await process_frame
 	quit(0)
