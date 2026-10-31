@@ -41,15 +41,15 @@ func _run() -> void:
 	await process_frame
 	var original: Dictionary=game.progress.data.duplicate(true)
 	game.progress.data["garden_plots"]=[]
-	for i in range(6):
+	for i in range(10):
 		game.progress.data["garden_plots"].append(Rules.empty_plot())
-	game.progress.data["garden_inventory"]={"carrot":0,"cabbage":0,"pumpkin":0}
+	game.progress.data["garden_inventory"]={"carrot":0,"cabbage":0,"pumpkin":0,"carnivorous_flower":0}
 	game.progress.save()
 	game.show_garden()
 	await process_frame
 	var garden=game.garden_game
-	if garden.seed_buttons.size()!=3 or garden.plot_buttons.size()!=6:
-		_fail("All three draggable seed images and six target plots required")
+	if garden.seed_buttons.size()!=4 or garden.plot_buttons.size()!=10:
+		_fail("All four draggable plant images and ten raised plots required")
 		return
 	for crop in Rules.CROPS:
 		var tile=garden.inventory_tiles[str(crop["id"])]
@@ -65,7 +65,7 @@ func _run() -> void:
 	if garden.has_method("water_all") or game.progress.has_method("garden_water"):
 		_fail("No watering button or watering action must remain")
 		return
-	for i in range(6):
+	for i in range(10):
 		if garden.plot_buttons[i].custom_minimum_size.x>=180.0 or garden.plot_buttons[i].custom_minimum_size.y>=136.0:
 			_fail("Raised soil plots must be smaller than old flat cards")
 			return
@@ -77,7 +77,7 @@ func _run() -> void:
 		return
 	var carrot=garden.seed_buttons[0].get_global_rect().get_center()
 	var p0=garden.plot_buttons[0].get_global_rect().get_center()
-	var p2=garden.plot_buttons[2].get_global_rect().get_center()
+	var p2=garden.plot_buttons[4].get_global_rect().get_center()
 	if p0.distance_to(p2)<60:
 		_fail("Plots must have room for dragging")
 		return
@@ -98,30 +98,30 @@ func _run() -> void:
 		return
 	_move(garden,p2)
 	_touch(garden,p2,false)
-	for i in range(3):
+	for i in range(5):
 		if _plot(game,i)!="carrot":
 			_fail("One fast continuous swipe must plant all top-row plots, including the crossed middle plot")
 			return
-	if garden.pointer_id!=-1 or garden.drag_preview.visible or garden.drag_planted_count!=3:
+	if garden.pointer_id!=-1 or garden.drag_preview.visible or garden.drag_planted_count!=5:
 		_fail("Swipe should finish cleanly and plant each encountered plot exactly once")
 		return
 	# A second seed gesture plants bottom row, never replacing the first.
 	var pumpkin=garden.seed_buttons[2].get_global_rect().get_center()
-	var p3=garden.plot_buttons[3].get_global_rect().get_center()
-	var p5=garden.plot_buttons[5].get_global_rect().get_center()
+	var p3=garden.plot_buttons[5].get_global_rect().get_center()
+	var p5=garden.plot_buttons[9].get_global_rect().get_center()
 	_touch(garden,pumpkin,true,9)
 	_move(garden,p3,9)
 	_move(garden,p5,9)
 	_touch(garden,p5,false,9)
-	for i in range(3,6):
+	for i in range(5,10):
 		if _plot(game,i)!="pumpkin":
 			_fail("Dragging pumpkin across multiple other fields should plant each empty field")
 			return
-	for i in range(3):
+	for i in range(5):
 		if _plot(game,i)!="carrot":
 			_fail("Planting another vegetable must never overwrite previous crops")
 			return
-	if garden.drag_planted_count!=3:
+	if garden.drag_planted_count!=5:
 		_fail("Only new plots should count toward planted fields")
 		return
 	# Another attempt over full fields cannot double-seed or spend stock.
@@ -133,15 +133,15 @@ func _run() -> void:
 	if garden.drag_planted_count!=0:
 		_fail("Swipe across occupied fields should not plant or replace anything")
 		return
-	for id in ["carrot","cabbage","pumpkin"]:
+	for id in ["carrot","cabbage","pumpkin","carnivorous_flower"]:
 		if int(game.progress.data["garden_inventory"].get(id,-1))!=0:
 			_fail("Sowing unlimited free seeds must not consume harvested produce")
 			return
 	# Desktop mouse drag works identically. Free plot 3 via ordinary harvest.
-	var plot: Dictionary=game.progress.data["garden_plots"][3]
+	var plot: Dictionary=game.progress.data["garden_plots"][5]
 	plot["ready_at"]=int(Time.get_unix_time_from_system())-1
-	game.progress.data["garden_plots"][3]=plot
-	if not game.progress.garden_harvest(3,int(Time.get_unix_time_from_system())):
+	game.progress.data["garden_plots"][5]=plot
+	if not game.progress.garden_harvest(5,int(Time.get_unix_time_from_system())):
 		_fail("A ready crop must still be harvestable")
 		return
 	var before=int(game.progress.data["garden_inventory"]["pumpkin"])
@@ -149,7 +149,7 @@ func _run() -> void:
 	_mouse(garden,seed,true)
 	_mouse_move(garden,p3)
 	_mouse(garden,p3,false)
-	if _plot(game,3)!="cabbage" or garden.pointer_id!=-1:
+	if _plot(game,5)!="cabbage" or garden.pointer_id!=-1:
 		_fail("Desktop mouse drag must plant crop and release pointer")
 		return
 	if int(game.progress.data["garden_inventory"]["pumpkin"])!=before:
@@ -162,11 +162,25 @@ func _run() -> void:
 	game.progress.save()
 	var store=load("res://scripts/SaveData.gd").new()
 	store.load_save()
-	if str(store.data["garden_plots"][1]["crop"])!="carrot" or str(store.data["garden_plots"][3]["crop"])!="cabbage":
+	if str(store.data["garden_plots"][1]["crop"])!="carrot" or str(store.data["garden_plots"][5]["crop"])!="cabbage":
 		_fail("Plots planted with swipes must survive application reload")
 		return
-	if loaded.size()!=6:
+	if loaded.size()!=10:
 		_fail("Saved field count cannot change after dragging")
+		return
+	# Fourth flower participates in the same drag-to-plant gesture.
+	var flower_start=garden.seed_buttons[3].get_global_rect().get_center()
+	var plot_to_free: Dictionary=game.progress.data["garden_plots"][9]
+	plot_to_free["ready_at"]=int(Time.get_unix_time_from_system())-1
+	game.progress.data["garden_plots"][9]=plot_to_free
+	if not game.progress.garden_harvest(9,int(Time.get_unix_time_from_system())):
+		_fail("A ripe crop should clear its bed for the fourth new plant")
+		return
+	_touch(garden,flower_start,true,11)
+	_move(garden,p5,11)
+	_touch(garden,p5,false,11)
+	if _plot(game,9)!="carnivorous_flower":
+		_fail("Carnivorous flower should plant by dragging on any of ten beds")
 		return
 	game.progress.data=original
 	game.progress.save()
