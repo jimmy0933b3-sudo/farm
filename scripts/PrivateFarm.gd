@@ -80,8 +80,8 @@ func _ready() -> void:
 	info_label = _label("左右滑動逛農場，摸摸動物吧！",19)
 	info_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	farm_header.add_child(info_label)
-	farm_header.add_child(_round("🌱 去農田",Callable(self,"_request_garden"),Vector2(125,51)))
-	farm_header.add_child(_round("🏎️ 賽車場",
+	farm_header.add_child(_round("🌱 Garden",Callable(self,"_request_garden"),Vector2(125,51)))
+	farm_header.add_child(_round("🏎️ Racing",
 		Callable(self,"_request_race"),Vector2(144,51)))
 	# Permanently visible, illustrated basket directly ABOVE the animals.
 	# One direct drag to a roaming animal consumes one crop; no feeding menu.
@@ -130,7 +130,7 @@ func _ready() -> void:
 	commands.alignment = BoxContainer.ALIGNMENT_CENTER
 	commands.add_theme_constant_override("separation",6)
 	left.add_child(commands)
-	for data in [["wash","洗澡"],["play","玩耍"],["sleep","休息"],["sound","聽聲音"]]:
+	for data in [["wash","Bath"],["play","Play"],["sleep","Rest"],["sound","Sound"]]:
 		var btn=_round(str(data[1]),Callable(self,"interact").bind(str(data[0])),Vector2(114,52))
 		btn.disabled=true
 		commands.add_child(btn)
@@ -148,7 +148,7 @@ func _ready() -> void:
 	counter = _label("農場裡",20)
 	counter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	resident_header.add_child(counter)
-	remove_button = _round("移回圖鑑",Callable(self,"remove_current"),Vector2(102,46))
+	remove_button = _round("Remove",Callable(self,"remove_current"),Vector2(102,46))
 	resident_header.add_child(remove_button)
 
 	# Sixteen residents across four rows. The selector shows two rows at
