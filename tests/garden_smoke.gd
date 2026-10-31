@@ -232,10 +232,26 @@ func _run() -> void:
 		var plot: Dictionary=game.progress.data["garden_plots"][index]
 		plot["ready_at"]=current-1
 		game.progress.data["garden_plots"][index]=plot
+	game.sound.last_spoken_text="no-harvest-voice"
 	game.garden_game.harvest_all()
+	if game.sound.last_spoken_text!="no-harvest-voice":
+		_fail("One-tap harvest-all must never narrate or speak")
+		return
 	if game.garden_game.inventory_tiles["carrot"].count!=4 or game.garden_game.inventory_tiles["cabbage"].count!=5:
 		_fail("Harvest-all must update the same persisted inventory counters")
 		return
+	# Single ripe-plot collection is also silent but changes stock.
+	if not game.progress.garden_plant(8,"pumpkin",current-120):
+		_fail("Additional plots must be available for a harvest")
+		return
+	game.garden_game._refresh()
+	game.sound.last_spoken_text="single-harvest-must-stay-silent"
+	game.garden_game.press_plot(8)
+	if game.sound.last_spoken_text!="single-harvest-must-stay-silent":
+		_fail("Tapping mature crops must not play harvest speech")
+		return
+	if game.garden_game.inventory_tiles["pumpkin"].count!=4:
+		_fail("Silent single harvest must still increase stock")
 	game.progress.data=backup
 	game.progress.save()
 	game.show_home()
