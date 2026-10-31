@@ -55,8 +55,9 @@ func _run() -> void:
 		if farm.commands.get_child(i).text!=expected[i]:
 			_fail("Care action labels must be English: "+expected[i])
 			return
-	if farm.remove_button.text!="Remove":
-		_fail("Private Farm remove button should use the English label")
+	var farm_toolbar=farm.get_parent().get_child(0)
+	if farm_toolbar.get_child(1).text!="🌱 Garden" or farm_toolbar.get_child(2).text!="🏎️ Racing":
+		_fail("Farm top bar must localize Garden and Racing without a large title")
 		return
 	game.show_home()
 	await process_frame
@@ -78,8 +79,9 @@ func _run() -> void:
 	if game.private_farm_game.commands.get_child(0).text!="洗澡":
 		_fail("Mandarin mode must restore Chinese care labels")
 		return
-	if game.private_farm_game.remove_button.text!="移回圖鑑":
-		_fail("Mandarin mode must restore Chinese remove label")
+	var chinese_toolbar=game.private_farm_game.get_parent().get_child(0)
+	if chinese_toolbar.get_child(1).text!="🌱 農田" or chinese_toolbar.get_child(2).text!="🏎️ 賽車場":
+		_fail("Mandarin mode must restore farm top navigation labels")
 		return
 	game.progress.data["settings"]["ui_language"]="en"
 	game.progress.save()

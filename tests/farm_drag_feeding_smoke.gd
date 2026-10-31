@@ -59,8 +59,14 @@ func _run() -> void:
 		if farm.commands.get_child(i).text!=expected_buttons[i]:
 			_fail("Private farm action buttons must have English labels")
 			return
-	if not farm.remove_button.text=="Remove":
-		_fail("Remove button must be labeled in English")
+	# The redundant Remove-to-Album control is intentionally gone.
+	# Tap the same animal card to add or return it without a separate button.
+	if farm.resident_scroll.get_parent().get_child_count()!=4:
+		_fail("Farm roster should contain counter, arrows and scroll only")
+		return
+	var toolbar=farm.get_parent().get_child(0)
+	if toolbar.get_child(1).text!="🌱 Garden" or toolbar.get_child(2).text!="🏎️ Racing":
+		_fail("Garden and Racing should be in the compact translated top row")
 		return
 	for button in farm.commands.get_children():
 		if "餵" in button.text or "食" in button.text:
