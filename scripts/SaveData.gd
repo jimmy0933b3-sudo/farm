@@ -5,6 +5,9 @@ const PATH = "user://animal_island_save.json"
 const BAK = "user://animal_island_save.bak"
 const TEMP = "user://animal_island_save.tmp"
 const GardenRules=preload("res://scripts/GardenRules.gd")
+const GameData=preload("res://scripts/GameData.gd")
+var known_farm_species: Dictionary={}
+
 
 var data: Dictionary = {}
 
@@ -288,8 +291,17 @@ func get_forest_explore_session(order: Array) -> Dictionary:
 		save()
 	return session
 
+func _farm_species_is_known(animal_id: String) -> bool:
+	if known_farm_species.is_empty():
+		for source in ["res://data/animals.json","res://data/birds.json","res://data/monsters.json"]:
+			for creature in GameData.read_array(source):
+				known_farm_species[str(creature.get("id",""))]=true
+	return known_farm_species.has(animal_id)
+
 func private_farm_add_status(animal_id: String, capacity: int = 67) -> String:
-	if not data["collected"].has(animal_id):
+	# The complete roster is usable from day one, independently of album
+	# collection progress. Unknown IDs must never create invisible residents.
+	if not _farm_species_is_known(animal_id):
 		return "locked"
 	var residents: Array = data["private_farm"]
 	if residents.has(animal_id):
