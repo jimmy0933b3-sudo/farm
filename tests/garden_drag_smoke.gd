@@ -96,6 +96,9 @@ func _run() -> void:
 	if not garden.drag_active or not garden.drag_preview.visible:
 		_fail("Moving a crop icon must show its floating preview")
 		return
+	if game.progress.save_batch_depth!=1:
+		_fail("Continuous planting should open exactly one save batch")
+		return
 	_move(garden,p2)
 	_touch(garden,p2,false)
 	for i in range(5):
@@ -104,6 +107,9 @@ func _run() -> void:
 			return
 	if garden.pointer_id!=-1 or garden.drag_preview.visible or garden.drag_planted_count!=5:
 		_fail("Swipe should finish cleanly and plant each encountered plot exactly once")
+		return
+	if game.progress.save_batch_depth!=0 or game.progress.save_batch_pending:
+		_fail("Finishing a drag must flush the batch to disk")
 		return
 	# A second seed gesture plants bottom row, never replacing the first.
 	var pumpkin=garden.seed_buttons[2].get_global_rect().get_center()

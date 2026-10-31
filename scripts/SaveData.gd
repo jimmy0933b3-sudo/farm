@@ -10,6 +10,8 @@ var known_farm_species: Dictionary={}
 
 
 var data: Dictionary = {}
+var save_batch_depth: int = 0
+var save_batch_pending: bool = false
 
 func _fresh() -> Dictionary:
 	return {
@@ -105,7 +107,24 @@ func _read(path: String) -> Dictionary:
 		return {}
 	return parsed
 
+func begin_save_batch() -> void:
+	save_batch_depth+=1
+
+func end_save_batch() -> void:
+	if save_batch_depth<=0:
+		return
+	save_batch_depth-=1
+	if save_batch_depth==0 and save_batch_pending:
+		save_batch_pending=false
+		_persist_save()
+
 func save() -> void:
+	if save_batch_depth>0:
+		save_batch_pending=true
+		return
+	_persist_save()
+
+func _persist_save() -> void:
 	var file = FileAccess.open(TEMP, FileAccess.WRITE)
 	if file == null:
 		push_error("Unable to open temporary save file")

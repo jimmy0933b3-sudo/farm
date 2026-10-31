@@ -271,6 +271,7 @@ func _move_seed_pointer(position: Vector2) -> void:
 		if drag_origin.distance_to(position)<DRAG_THRESHOLD:
 			return
 		drag_active=true
+		store.begin_save_batch()
 		drag_preview.setup(drag_crop,3)
 		drag_preview.show()
 	drag_preview.position=position-drag_preview.size*.5
@@ -313,6 +314,7 @@ func _end_seed_pointer(position: Vector2) -> void:
 		if narrator!=null:
 			narrator.speak("種好%d塊%s了！" % [drag_planted_count,name] if drag_planted_count>0 else "請拖到空田種植")
 		get_viewport().set_input_as_handled()
+		store.end_save_batch()
 	drag_preview.hide()
 	pointer_id=-1
 	pointer_is_touch=false
@@ -325,11 +327,13 @@ func harvest_all() -> void:
 	var count=0
 	var gained=0
 	var snapshot: Array=store.data.get("garden_plots",[]).duplicate(true)
+	store.begin_save_batch()
 	for i in range(snapshot.size()):
 		var crop=Rules.crop_for(str(snapshot[i].get("crop","")))
 		if store.garden_harvest(i,now):
 			count+=1
 			gained+=int(crop.get("harvest",0))
+	store.end_save_batch()
 	hint_label.text="🧺 +%d" % gained if count>0 else "⏳"
 	_refresh()
 	# Harvest-all is silent, including when no crops are ready.
@@ -373,6 +377,12 @@ func _process(delta: float) -> void:
 	if elapsed>=1.0:
 		elapsed=0.0
 		_refresh()
+
+func _exit_tree() -> void:
+	# A navigation while dragging must never leave an in-memory save batch open.
+	if drag_active and store!=null:
+		store.end_save_batch()
+		drag_active=false
 
 func _go_farm() -> void:
 	farm_requested.emit()

@@ -1,40 +1,29 @@
 # 動物探險島 Animal Adventure Island
 
-適合 3～5 歲孩子的繁體中文、離線 Android 動物探索與簡易照護遊戲。
+適合兒童的繁體中文、離線 Android 動物探索與照護遊戲，採 Godot 4.5.2 開發。無廣告、無需帳號。
 
-## 首版已實作
+## 現行主要功能
 
-- 農場和森林，各 6 種動物，共 12 隻由 Godot 程式繪製的原創向量造型
-- 動物觸碰、開心表情、各種離線合成音效
-- 12 個關卡，包含聲音辨識、食物配對、棲地配對
-- 六隻可照護動物的餵食、洗澡、玩耍、休息
-- 圖鑑剪影與收集功能
-- 本地 JSON 版本化存檔、備份、損壞存檔安全處理
-- 家長簡單算術門檻與音效設定
-- Android 橫向畫面與 GitHub Actions APK 自動匯出
+- 八個探索樂園，以及私人農場、10 塊田的農田、動物之家、圖鑑、著色與畫畫學堂。
+- 67 位動物、昆蟲、鳥類與怪獸朋友：私人農場為單一可左右滑動的 67 張角色清單，可放入或收回；不再使用舊版上下雙清單。
+- 四種作物可直接拖曳種植到多塊田，成熟後採收，再從菜籃拖曳到農場動物身上餵食。
+- 賽車和鳥類飛行大賽，已收集角色可參加對應遊戲。
+- 中英文按鈕切換（故事／語音仍以中文為主），圖鑑、進度與作品保存在本機。
+- 原始碼附 Godot headless Smoke Tests，包含觸控操作、存檔、繪圖邊界與賽車。
 
-## 尚待後續改進（誠實揭露）
+## 開發與 Android 發布
 
-- 目前的音效是離線合成音符，並非真實動物錄音；中文語音朗讀尚未製作。
-- 美術為程式直接繪製的 Q 版動物草圖，未含完整逐格動畫。
-- 三種關卡目前使用點選操作，未提供拖曳食物動畫。
-- 背景音樂、家長使用時間提醒、裝飾玩法仍未實作。
-- 此 Repository 尚未提供正式 release 簽章密鑰，CI 產出的 debug APK 僅供安裝測試，不可視為具固定簽章的正式上架版；不同 runner 產生的測試金鑰可能不同。
-
-## 開發
-
-使用 Godot **4.5.2** 開啟根目錄的 `project.godot`，執行主場景。
-
-從專案根目錄執行：
+安裝 Godot 4.5.2，從專案根目錄執行：
 
 ```bash
 godot --headless --editor --path . --import --quit
 godot --headless --path . --script tests/validate.gd
+godot --headless --path . --script tests/animal_scroll_smoke.gd
 ```
 
-`.github/workflows/android.yml` 在每次推送 main 時自動檢查資料並嘗試匯出可安裝 debug APK。下載路徑：GitHub → Actions → Android APK → 選擇成功執行 → Artifacts。
+推送 `main` 會執行 `.github/workflows/android.yml` 的全部檢查，成功後使用 GitHub Actions secrets（`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`）的固定金鑰產生已簽章 APK，保留最新版 Release 與最新的已簽章 APK Artifact。失敗時保留上一個可用 Release。請勿提交金鑰到 Repository。
 
-目前以 Android Debug 簽章方便先行測試。若需要**更新安裝不重灌**，必須另外配置受保護的固定正式金鑰與對應 release export；請不要將正式 keystore 提交到公開 Repository。
+最新版 APK： https://github.com/jimmy0933b3-sudo/farm/releases/latest
 
 ## 資料與隱私
 

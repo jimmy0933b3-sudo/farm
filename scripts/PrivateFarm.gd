@@ -10,6 +10,7 @@ const PrivateFarmLandscape = preload("res://scripts/PrivateFarmLandscape.gd")
 const GardenRules = preload("res://scripts/GardenRules.gd")
 const CropArt = preload("res://scripts/CropArt.gd")
 const StockTile = preload("res://scripts/CropStockTile.gd")
+const UiLanguage = preload("res://scripts/UiLanguage.gd")
 
 signal racing_requested
 signal garden_requested
@@ -23,6 +24,8 @@ var active_id: String = ""
 var actors: Dictionary = {}
 var resident_list: HBoxContainer
 var resident_scroll: ScrollContainer
+var resident_cards: Dictionary = {}
+var card_visual_states: Dictionary = {}
 var remove_button: Button
 var habitat: Control
 var farm_view: Control
@@ -277,24 +280,55 @@ func _restore_roster_scroll(previous: int) -> void:
 	if is_instance_valid(resident_scroll):
 		resident_scroll.scroll_horizontal=previous
 
+func _refresh_card(info: Dictionary) -> void:
+	var id: String=str(info.get("id",""))
+	if not resident_cards.has(id):
+		return
+	var tile: Button=resident_cards[id]
+	if not is_instance_valid(tile):
+		return
+	var in_farm: bool=save_data.data["private_farm"].has(id)
+	var selected: bool=id==active_id
+	var language: String=str(save_data.data.get("settings",{}).get("ui_language","zh"))
+	var visual_state: String="%s:%s:%s" % [str(in_farm),str(selected),language]
+	if str(card_visual_states.get(id,""))==visual_state:
+		return
+	card_visual_states[id]=visual_state
+	var style: StyleBoxFlat=tile.get_theme_stylebox("normal").duplicate()
+	style.bg_color=Color("#DCF6DA") if in_farm else Color("#FCF4DF")
+	style.border_color=Color("#52B579") if in_farm else Color("#D2AB64")
+	style.set_border_width_all(3 if selected or in_farm else 2)
+	tile.add_theme_stylebox_override("normal",style)
+	var caption: Label=tile.get_child(0).get_child(1)
+	var original: String=("✓ " if in_farm else "＋ ")+str(info.get("name","朋友"))
+	var translated: String=UiLanguage.translate_label(original,language)
+	caption.text=translated
+	caption.set_meta("ui_original_label",original)
+	caption.set_meta("ui_last_display",translated)
+	tile.tooltip_text="點一下收回（仍留在上方清單）" if in_farm else "點一下放到農場"
+
 func _rebuild_cards() -> void:
 	if not is_instance_valid(resident_list):
 		return
-	var previous=resident_scroll.scroll_horizontal
-	for child in resident_list.get_children():
-		resident_list.remove_child(child)
-		child.queue_free()
 	var members: Array=save_data.data["private_farm"]
 	counter.text="🌿 %d / %d     👆 ✓ / ＋" % [members.size(),CAPACITY]
 	remove_button.disabled=active_id.is_empty()
-	# Stable original catalogue order is essential. Released animals stay in
-	# place on the strip, turning from a green check to a yellow plus.
+	# Create 67 cards only once; later selections update the affected visuals.
+	if resident_cards.size()!=animals.size() or resident_list.get_child_count()!=animals.size():
+		var previous: int=resident_scroll.scroll_horizontal
+		for child in resident_list.get_children():
+			resident_list.remove_child(child)
+			child.queue_free()
+		resident_cards.clear()
+		card_visual_states.clear()
+		for info in animals:
+			var id: String=str(info["id"])
+			var tile: Button=_card(info,id==active_id,members.has(id),true)
+			resident_list.add_child(tile)
+			resident_cards[id]=tile
+		call_deferred("_restore_roster_scroll",previous)
 	for info in animals:
-		var id=str(info["id"])
-		var in_farm=members.has(id)
-		var unlocked=true
-		resident_list.add_child(_card(info,id==active_id,in_farm,unlocked))
-	call_deferred("_restore_roster_scroll",previous)
+		_refresh_card(info)
 
 func _sync_residents() -> void:
 	var members: Array = save_data.data["private_farm"]
