@@ -1,9 +1,10 @@
 extends RefCounted
-## Small offline vegetable-garden rules shared by the screen, save and farm.
+## Four original plant species; the fictional carnivorous flower is collectible, not pet food.
 const CROPS=[
 	{"id":"carrot","name":"胡蘿蔔","emoji":"🥕","seconds":30,"harvest":2,"color":"#F3A85D"},
 	{"id":"cabbage","name":"小白菜","emoji":"🥬","seconds":45,"harvest":2,"color":"#8BC48A"},
-	{"id":"pumpkin","name":"南瓜","emoji":"🎃","seconds":60,"harvest":2,"color":"#EFA45D"}
+	{"id":"pumpkin","name":"南瓜","emoji":"🎃","seconds":60,"harvest":2,"color":"#EFA45D"},
+	{"id":"carnivorous_flower","name":"吃人花","emoji":"🌺","seconds":90,"harvest":1,"color":"#D35F8B"}
 ]
 const ALLOWED={
 	"carrot":["cow","pig","sheep","chicken","duck","horse","guinea_pig","rabbit","deer","camel","elephant"],
