@@ -135,6 +135,7 @@ jobs:
           godot --headless --path . --check-only --script scripts/GardenRules.gd
           godot --headless --path . --check-only --script scripts/CropArt.gd
           godot --headless --path . --check-only --script scripts/GardenWorld.gd
+          godot --headless --path . --check-only --script scripts/GardenBedArt.gd
       - name: Test every collected animal and insect is eligible to race
         run: timeout --signal=TERM 30s godot --headless --path . --script tests/race_roster_smoke.gd
       - name: Audit unique vector drawings of all eight old and new insects
