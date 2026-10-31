@@ -38,6 +38,15 @@ func _run() -> void:
 	if not is_instance_valid(room) or room.get_script()!=Studio or room.drawing.get_script()!=Canvas:
 		_fail("Drawing academy did not open correctly")
 		return
+	if Canvas.PAINTS.size()!=24 or room.color_buttons.size()!=24:
+		_fail("Drawing academy must offer twenty-four distinct pen colors")
+		return
+	var paint_uniques={}
+	for hex in Canvas.PAINTS:
+		if paint_uniques.has(hex) or not Color.html_is_valid(str(hex)):
+			_fail("Drawing pen colors must be valid and unique")
+			return
+		paint_uniques[hex]=true
 	room.select_animal("fox",false)
 	await process_frame
 	await process_frame
