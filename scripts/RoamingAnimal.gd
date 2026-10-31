@@ -38,7 +38,7 @@ func setup(info: Dictionary, gentle_motion: bool = false) -> void:
 	animal_info = info
 	animal_id = str(info.get("id", ""))
 	reduce_motion = gentle_motion
-	is_flying = bool(info.get("flies",false))
+	is_flying = bool(info.get("flies",false)) or str(info.get("zone",""))=="bird"
 	pushes_dung = bool(info.get("pushes_dung",false))
 	rng.seed = abs(animal_id.hash()) + 93
 	walk_speed = 62.0 if is_flying else (33.0 if animal_id in ["rabbit", "squirrel", "guinea_pig"] else 23.0)
