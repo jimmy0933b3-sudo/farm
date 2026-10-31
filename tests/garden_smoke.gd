@@ -59,7 +59,7 @@ func _run() -> void:
 	if game.progress.has_method("garden_water") or int(game.progress.data["garden_plots"][5]["ready_at"])!=original_ready:
 		_fail("Watering must be removed; tapping a growing crop cannot shorten its countdown")
 		return
-	if not garden.plot_beds[5] is Control or not garden.plot_images[5].show_soil==false:
+	if not garden.plot_beds[5] is Control or garden.plot_images[5].show_soil:
 		_fail("Plots must display separate 3D raised beds without oval soil overlays")
 		return
 	var now=10000000
