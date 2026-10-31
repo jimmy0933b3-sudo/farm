@@ -63,9 +63,8 @@ func _run() -> void:
 	game._apply_ui_language()
 	var english_name_found=false
 	for button in _buttons(game):
-		for child in button.get_children():
-			if child is Label and child.text=="My Farm":
-				english_name_found=true
+		if _has_label(button,"My Farm"):
+			english_name_found=true
 	if not english_name_found:
 		_fail("Picture-first home card captions must also translate to English")
 		return
@@ -103,6 +102,14 @@ func _run() -> void:
 	game.queue_free()
 	await process_frame
 	quit(0)
+
+func _has_label(node: Node,label: String) -> bool:
+	if node is Label and node.text==label:
+		return true
+	for child in node.get_children():
+		if _has_label(child,label):
+			return true
+	return false
 
 func _buttons(node: Node) -> Array:
 	var result=[]
