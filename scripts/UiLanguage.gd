@@ -10,7 +10,7 @@ const EN={
 	"回怪獸樂園":"Monster Park","👾 回怪獸樂園":"👾 Monster Park",
 	"🌳 回私人農場":"🌳 My Farm","昆蟲樂園":"Insect Park",
 	"海底樂園":"Ocean Park",
-	"🏠 首頁":"🏠 Home","🌱 農田":"🌱 Garden",
+	"🏠 首頁":"🏠 Home","🌱 農田":"🌱 Garden","🏎️ 賽車場":"🏎️ Racing",
 	"動物之家":"Animal Home","去動物之家照顧牠":"Care for Animal",
 	"摸摸牠":"Pet","一起玩小遊戲":"Play Game",
 	"聽昆蟲聲音":"Insect Sound","聽動物叫聲":"Animal Sound",

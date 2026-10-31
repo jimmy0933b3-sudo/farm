@@ -26,7 +26,6 @@ var resident_list: HBoxContainer
 var resident_scroll: ScrollContainer
 var resident_cards: Dictionary = {}
 var card_visual_states: Dictionary = {}
-var remove_button: Button
 var habitat: Control
 var farm_view: Control
 var camera_x: float = 0.0
@@ -76,46 +75,20 @@ func _ready() -> void:
 	left.add_theme_constant_override("separation",6)
 	add_child(left)
 
-	var navigation=HBoxContainer.new()
-	navigation.custom_minimum_size.y=42
-	navigation.add_theme_constant_override("separation",9)
-	left.add_child(navigation)
-	info_label=_label("🐾 摸摸動物，左右滑動探索農場",17)
-	info_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	info_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-	info_label.autowrap_mode=TextServer.AUTOWRAP_OFF
-	info_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	navigation.add_child(info_label)
-	navigation.add_child(_round("🌱 農田",Callable(self,"_request_garden"),Vector2(112,42)))
-	navigation.add_child(_round("🏎️ 賽車場",Callable(self,"_request_race"),Vector2(126,42)))
-
 	var roster_panel=PanelContainer.new()
 	roster_panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	roster_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#FFF7E6"),Color("#DFBF8A"),12))
+	roster_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#FFF7E6"),Color("#DFBF8A"),7))
 	left.add_child(roster_panel)
 	var roster_area=VBoxContainer.new()
 	roster_area.add_theme_constant_override("separation",3)
 	roster_panel.add_child(roster_area)
-	var roster_header=HBoxContainer.new()
-	roster_header.custom_minimum_size.y=29
-	roster_header.add_theme_constant_override("separation",7)
-	roster_area.add_child(roster_header)
-	counter=_label("🐾 動物夥伴 0 / 67",19)
-	counter.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-	counter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	roster_header.add_child(counter)
-	# Group jump shortcuts remain accessible, but no giant second toolbar.
-	for group in [["🏡","farm"],["🌲","forest"],["🐟","ocean"],["🦋","insect"],["🐦","bird"],["👾","monster"]]:
-		var jump=_round(str(group[0]),Callable(self,"_roster_jump").bind(str(group[1])),Vector2(38,30))
-		jump.add_theme_font_size_override("font_size",17)
-		jump.tooltip_text="跳到%s夥伴" % str(group[1])
-		roster_header.add_child(jump)
-	remove_button=_round("Remove",Callable(self,"remove_current"),Vector2(91,31))
-	remove_button.add_theme_font_size_override("font_size",16)
-	roster_header.add_child(remove_button)
 	var roster_row=HBoxContainer.new()
 	roster_row.add_theme_constant_override("separation",6)
 	roster_area.add_child(roster_row)
+	counter=_label("🐾 動物夥伴\n0 / 67",16)
+	counter.custom_minimum_size.x=110
+	counter.autowrap_mode=TextServer.AUTOWRAP_OFF
+	roster_row.add_child(counter)
 	var previous=_round("‹",Callable(self,"_roster_step").bind(-1),Vector2(38,84))
 	previous.add_theme_font_size_override("font_size",30)
 	roster_row.add_child(previous)
@@ -189,6 +162,21 @@ func _ready() -> void:
 	frame_skin.set_corner_radius_all(17)
 	frame.add_theme_stylebox_override("panel",frame_skin)
 	farm_view.add_child(frame)
+
+	var info_panel=PanelContainer.new()
+	info_panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	info_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	info_panel.offset_left=10
+	info_panel.offset_right=-10
+	info_panel.offset_top=8
+	info_panel.offset_bottom=44
+	info_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#FFF9E9",0.86),Color("#FFFFFF",0.40),3))
+	farm_view.add_child(info_panel)
+	info_label=_label("🐾 摸摸動物，左右滑動探索農場",16)
+	info_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
+	info_label.autowrap_mode=TextServer.AUTOWRAP_OFF
+	info_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_panel.add_child(info_label)
 
 	var actions_panel=PanelContainer.new()
 	actions_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#EBCB9A"),Color("#B6875E"),5))
@@ -392,9 +380,18 @@ func _refresh_card(info: Dictionary) -> void:
 	card_visual_states[id]=visual_state
 	var style: StyleBoxFlat=tile.get_theme_stylebox("normal").duplicate()
 	style.bg_color=Color("#DCF6DA") if in_farm else Color("#FCF4DF")
-	style.border_color=Color("#52B579") if in_farm else Color("#D2AB64")
+	style.border_color=Color("#328D53") if selected and in_farm else (Color("#52B579") if in_farm else Color("#D2AB64"))
 	style.set_border_width_all(3 if selected or in_farm else 2)
-	tile.add_theme_stylebox_override("normal",style)
+	# Godot uses hover/pressed skins independently of normal. The old yellow
+	# button hover skin made some placed animals appear unselected after taps.
+	# Assign explicit state skins for every card so all 67 stay green.
+	for state in ["normal","hover","pressed","hover_pressed","disabled"]:
+		var state_style: StyleBoxFlat=style.duplicate()
+		if state=="hover" or state=="hover_pressed":
+			state_style.bg_color=style.bg_color.lightened(0.035)
+		elif state=="pressed":
+			state_style.bg_color=style.bg_color.darkened(0.035)
+		tile.add_theme_stylebox_override(state,state_style)
 	var caption: Label=tile.get_child(0).get_child(1)
 	var original: String=("✓ " if in_farm else "＋ ")+str(info.get("name","朋友"))
 	var translated: String=UiLanguage.translate_label(original,language)
@@ -407,8 +404,7 @@ func _rebuild_cards() -> void:
 	if not is_instance_valid(resident_list):
 		return
 	var members: Array=save_data.data["private_farm"]
-	counter.text="🐾 動物夥伴    %d / %d" % [members.size(),CAPACITY]
-	remove_button.disabled=active_id.is_empty()
+	counter.text="🐾 動物夥伴\n%d / %d" % [members.size(),CAPACITY]
 	# Create 67 cards only once; later selections update the affected visuals.
 	if resident_cards.size()!=animals.size() or resident_list.get_child_count()!=animals.size():
 		var previous: int=resident_scroll.scroll_horizontal

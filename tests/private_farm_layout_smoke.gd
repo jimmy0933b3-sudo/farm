@@ -28,6 +28,18 @@ func _run() -> void:
 	if farm.get_child_count()!=2:
 		_fail("Old two-part resident/available lists must be removed")
 		return
+	# The single roster row includes its counter, arrows, and the cards.
+	# No secondary category/remove toolbar may steal room from the map.
+	if farm.resident_scroll.get_parent().get_child_count()!=4:
+		_fail("Farm roster should not have a separate remove-to-album toolbar")
+		return
+	var top_toolbar=farm.get_parent().get_child(0)
+	if top_toolbar.get_child_count()!=5 or top_toolbar.get_child(1).text!="🌱 農田" or top_toolbar.get_child(2).text!="🏎️ 賽車場":
+		_fail("Farm Garden/Racing buttons must be in the top toolbar without the title")
+		return
+	if farm.farm_view.is_ancestor_of(farm.info_label)==false:
+		_fail("Farm feedback must overlay the world instead of taking a separate row")
+		return
 	if farm.resident_scroll.vertical_scroll_mode!=ScrollContainer.SCROLL_MODE_DISABLED or farm.resident_scroll.horizontal_scroll_mode!=ScrollContainer.SCROLL_MODE_AUTO:
 		_fail("Top list must only scroll sideways")
 		return
@@ -47,7 +59,7 @@ func _run() -> void:
 	if map_rect.end.y>action_rect.position.y+2.0:
 		_fail("Farm scenery overlaps the bottom care controls")
 		return
-	if map_rect.size.y<140.0:
+	if map_rect.size.y<190.0:
 		_fail("Farm scenery became too short after stacking controls")
 		return
 	if action_rect.end.y>root.size.y+1.0:
@@ -85,6 +97,18 @@ func _run() -> void:
 	farm._rebuild_cards()
 	await process_frame
 	await process_frame
+	# Every resident must be visibly green, including pressed and hover states.
+	# This catches the mixed green/yellow cards seen on the Android device.
+	for id in ids:
+		var card=farm.resident_cards[id]
+		for state in ["normal","hover","pressed","hover_pressed"]:
+			if not card.has_theme_stylebox_override(state):
+				_fail("Resident card lacks explicit visual state: "+id+" / "+state)
+				return
+			var skin=card.get_theme_stylebox(state)
+			if not skin is StyleBoxFlat or skin.bg_color.g<=skin.bg_color.r:
+				_fail("Placed animal does not remain green: "+id+" / "+state)
+				return
 	if farm.actors.size()!=67 or farm.resident_list.get_child_count()!=67:
 		_fail("All 67 species must roam and keep their top list cards")
 		return
@@ -114,6 +138,12 @@ func _run() -> void:
 	if game.progress.data["private_farm"].has(removed_id) or farm.actors.has(removed_id):
 		_fail("Tap on resident picture must return that animal")
 		return
+	var former_card=farm.resident_cards[removed_id]
+	for state in ["normal","hover","pressed","hover_pressed"]:
+		var old_skin=former_card.get_theme_stylebox(state)
+		if not old_skin is StyleBoxFlat or old_skin.bg_color.g>=old_skin.bg_color.r:
+			_fail("Returned animal card must switch back to beige: "+state)
+			return
 	if farm.resident_list.get_child_count()!=67 or farm.resident_scroll.scroll_horizontal<offset-100:
 		_fail("Returned animal must stay in its original top card without scroll reset")
 		return
@@ -123,6 +153,11 @@ func _run() -> void:
 	if not game.progress.data["private_farm"].has(removed_id) or farm.resident_list.get_child_count()!=67:
 		_fail("Returned creature must remain accessible for immediate re-placement")
 		return
+	for state in ["normal","hover","pressed","hover_pressed"]:
+		var green_skin=farm.resident_cards[removed_id].get_theme_stylebox(state)
+		if not green_skin is StyleBoxFlat or green_skin.bg_color.g<=green_skin.bg_color.r:
+			_fail("Re-placed animal did not turn green again: "+state)
+			return
 	if game.progress.data["private_farm"].size()!=67:
 		_fail("All 67 residents should be placeable simultaneously")
 		return
