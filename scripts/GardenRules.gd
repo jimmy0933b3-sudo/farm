@@ -6,12 +6,6 @@ const CROPS=[
 	{"id":"pumpkin","name":"南瓜","emoji":"🎃","seconds":60,"harvest":2,"color":"#EFA45D"},
 	{"id":"carnivorous_flower","name":"吃人花","emoji":"🌺","seconds":90,"harvest":1,"color":"#D35F8B"}
 ]
-const ALLOWED={
-	"carrot":["cow","pig","sheep","chicken","duck","horse","guinea_pig","rabbit","deer","camel","elephant"],
-	"cabbage":["cow","pig","sheep","chicken","duck","guinea_pig","rabbit","elephant"],
-	"pumpkin":["cow","pig","sheep","chicken","duck","horse","guinea_pig","rabbit","deer","camel","elephant","hippo","boar"]
-}
-
 static func crop_for(id: String) -> Dictionary:
 	for crop in CROPS:
 		if str(crop["id"])==id:
@@ -19,7 +13,7 @@ static func crop_for(id: String) -> Dictionary:
 	return {}
 
 static func suitable(animal_id: String,crop_id: String) -> bool:
-	return str(animal_id) in ALLOWED.get(crop_id,[])
+	return not animal_id.is_empty() and not crop_for(crop_id).is_empty()
 
 static func empty_plot() -> Dictionary:
 	return {"crop":"","planted_at":0,"ready_at":0}
