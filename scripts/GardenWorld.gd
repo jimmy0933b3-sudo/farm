@@ -4,6 +4,7 @@ signal farm_requested
 const Rules=preload("res://scripts/GardenRules.gd")
 const CropArt=preload("res://scripts/CropArt.gd")
 const StockTile=preload("res://scripts/CropStockTile.gd")
+const GardenBedArt=preload("res://scripts/GardenBedArt.gd")
 
 var store
 var narrator
@@ -11,10 +12,10 @@ var selected_crop: String="carrot"
 var seed_buttons: Array=[]
 var plot_buttons: Array=[]
 var plot_images: Array=[]
+var plot_beds: Array=[]
 var plot_texts: Array=[]
 var inventory_tiles: Dictionary={}
 var basket_label: Label
-var selected_hint: Label
 var hint_label: Label
 var elapsed: float=0.0
 var drag_preview: Control
@@ -37,10 +38,13 @@ func _ready() -> void:
 	size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation",6)
+	# A narrow top toolbar with icons only. Real illustrated crop stock stays
+	# visible without dedicating a row of large inventory cards to it.
 	var top=HBoxContainer.new()
-	top.add_theme_constant_override("separation",14)
+	top.alignment=BoxContainer.ALIGNMENT_CENTER
+	top.add_theme_constant_override("separation",9)
 	add_child(top)
-	basket_label=_label("🧺",23)
+	basket_label=_label("🧺",25)
 	top.add_child(basket_label)
 	for crop in Rules.CROPS:
 		var tile=StockTile.new()
@@ -51,86 +55,102 @@ func _ready() -> void:
 	var spacer=Control.new()
 	spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	top.add_child(spacer)
-	top.add_child(_button("🐾 去餵動物",Callable(self,"_go_farm"),Vector2(174,46)))
+	var collect=_button("🌾",Callable(self,"harvest_all"),Vector2(52,48))
+	collect.tooltip_text="收成所有成熟蔬菜"
+	top.add_child(collect)
+	var feed=_button("🐾",Callable(self,"_go_farm"),Vector2(52,48))
+	feed.tooltip_text="帶蔬菜去餵動物"
+	top.add_child(feed)
+	# Pick a pictured crop by dragging it. No written tutorial occupies the top.
 	var seeds=HBoxContainer.new()
 	seeds.alignment=BoxContainer.ALIGNMENT_CENTER
-	seeds.add_theme_constant_override("separation",10)
+	seeds.add_theme_constant_override("separation",14)
 	add_child(seeds)
 	for crop in Rules.CROPS:
 		var id=str(crop["id"])
-		var b=_button("",Callable(self,"select_seed").bind(id),Vector2(183,66))
+		var b=_button("",Callable(self,"select_seed").bind(id),Vector2(112,70))
+		b.tooltip_text="按住並拖曳%s到田地" % str(crop["name"])
 		seeds.add_child(b)
 		seed_buttons.append(b)
-		var body=HBoxContainer.new()
-		body.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		b.add_child(body)
 		var illustration=CropArt.new()
 		illustration.setup(id,3)
 		illustration.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		illustration.custom_minimum_size=Vector2(68,57)
-		body.add_child(illustration)
-		body.add_child(_label("種 "+str(crop["name"]),20))
-	selected_hint=_label("",17)
-	selected_hint.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	seeds.add_child(selected_hint)
-	var content=HBoxContainer.new()
+		illustration.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		b.add_child(illustration)
+	# Raised beds arranged compactly on green ground, surrounded by paths.
+	var content=CenterContainer.new()
+	content.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	content.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation",14)
 	add_child(content)
+	var meadow=PanelContainer.new()
+	var meadow_style=StyleBoxFlat.new()
+	meadow_style.bg_color=Color("#BFDCA0")
+	meadow_style.border_color=Color("#8DB76D")
+	meadow_style.set_border_width_all(3)
+	meadow_style.set_corner_radius_all(23)
+	meadow_style.content_margin_left=20
+	meadow_style.content_margin_right=20
+	meadow_style.content_margin_top=14
+	meadow_style.content_margin_bottom=14
+	meadow.add_theme_stylebox_override("panel",meadow_style)
+	content.add_child(meadow)
 	var grid=GridContainer.new()
 	grid.columns=3
-	grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	grid.size_flags_vertical=Control.SIZE_SHRINK_CENTER
-	grid.add_theme_constant_override("h_separation",10)
-	grid.add_theme_constant_override("v_separation",10)
-	content.add_child(grid)
+	grid.add_theme_constant_override("h_separation",12)
+	grid.add_theme_constant_override("v_separation",9)
+	meadow.add_child(grid)
 	for i in range(6):
-		var card=_button("",Callable(self,"press_plot").bind(i),Vector2(180,136))
+		var card=_button("",Callable(self,"press_plot").bind(i),Vector2(156,116))
+		# The illustrated soil itself is the visual button, without a flat card.
+		card.add_theme_stylebox_override("normal",StyleBoxEmpty.new())
+		card.add_theme_stylebox_override("disabled",StyleBoxEmpty.new())
+		card.add_theme_stylebox_override("focus",StyleBoxEmpty.new())
+		card.tooltip_text="田地 %d：拖菜種植，成熟後點一下收成" % (i+1)
 		grid.add_child(card)
 		plot_buttons.append(card)
 		var body=VBoxContainer.new()
 		body.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		body.offset_left=4
-		body.offset_right=-4
+		body.offset_left=2
+		body.offset_right=-2
 		body.offset_top=1
-		body.offset_bottom=-3
+		body.offset_bottom=-2
+		body.add_theme_constant_override("separation",0)
 		card.add_child(body)
-		var illustration=CropArt.new()
-		illustration.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		illustration.custom_minimum_size=Vector2(158,98)
-		illustration.size_flags_vertical=Control.SIZE_EXPAND_FILL
-		body.add_child(illustration)
-		plot_images.append(illustration)
-		var tag=_label("",17)
-		body.add_child(tag)
-		plot_texts.append(tag)
-	var guide=VBoxContainer.new()
-	guide.custom_minimum_size=Vector2(222,0)
-	guide.add_theme_constant_override("separation",9)
-	content.add_child(guide)
-	guide.add_child(_label("🌻 拖曳種菜",22))
-	guide.add_child(_label("👆 按住上方蔬菜\n拖到空田就種下！\n👉 不放開繼續滑\n可以一次種好多田！\n💧 點幼苗澆水\n🧺 點成熟蔬菜收成",18))
-	guide.add_child(_button("💧 全部澆水",Callable(self,"water_all"),Vector2(208,51)))
-	guide.add_child(_button("🧺 全部收成",Callable(self,"harvest_all"),Vector2(208,51)))
-	guide.add_child(_label("種子免費，不會枯死！\n收成後就能餵動物 💗",17))
-	hint_label=_label("👆 拖住上方蔬菜圖案，滑過空田就能連續種菜！",19)
+		var art_space=Control.new()
+		art_space.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		art_space.custom_minimum_size=Vector2(150,89)
+		art_space.size_flags_vertical=Control.SIZE_EXPAND_FILL
+		body.add_child(art_space)
+		var soil=GardenBedArt.new()
+		soil.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		soil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art_space.add_child(soil)
+		plot_beds.append(soil)
+		var plant=CropArt.new()
+		plant.show_soil=false
+		plant.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		plant.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art_space.add_child(plant)
+		plot_images.append(plant)
+		var caption=_label("",16)
+		body.add_child(caption)
+		plot_texts.append(caption)
+	# Feedback appears only after an action. No persistent instruction text.
+	hint_label=_label("",17)
 	add_child(hint_label)
-	# A separate canvas layer keeps the dragged vegetable above cards, and
-	# never changes the layout or steals child touch events.
 	var overlay=CanvasLayer.new()
 	overlay.layer=8
 	add_child(overlay)
 	drag_preview=CropArt.new()
 	drag_preview.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	drag_preview.size=Vector2(96,82)
-	drag_preview.modulate=Color(1,1,1,.90)
+	drag_preview.size=Vector2(88,75)
+	drag_preview.modulate=Color(1,1,1,.92)
 	drag_preview.hide()
 	overlay.add_child(drag_preview)
 	_refresh()
 	if narrator!=null:
-		narrator.speak("歡迎來開心農田！按住上方蔬菜圖案，拖到空田就會種下。繼續拖過其他空田，可以一次種好多田！")
+		narrator.speak("歡迎來開心農田！拖曳上方的蔬菜圖案到小田地，就能種植。等待倒數結束，點成熟的蔬菜就能收成。")
 
 func _label(value: String,font_size: int) -> Label:
 	var l=Label.new()
@@ -175,10 +195,10 @@ func select_seed(id: String) -> void:
 	if Rules.crop_for(id).is_empty():
 		return
 	selected_crop=id
-	hint_label.text="👆 按住%s拖到空田，還能連續拖過好幾塊田！" % str(Rules.crop_for(id)["name"])
+	hint_label.text=""
 	_refresh()
 	if narrator!=null:
-		narrator.speak(hint_label.text)
+		narrator.speak(str(Rules.crop_for(id)["name"]))
 
 func press_plot(index: int) -> void:
 	var now=int(Time.get_unix_time_from_system())
@@ -189,16 +209,15 @@ func press_plot(index: int) -> void:
 	var id=str(plot.get("crop",""))
 	var msg: String=""
 	if id.is_empty():
-		msg="👆 請從上方拖一株蔬菜到空田，滑過多塊田也可以喔！"
+		msg="🌱 ⬇️"
 	elif now>=int(plot.get("ready_at",0)):
 		if store.garden_harvest(index,now):
 			var crop=Rules.crop_for(id)
-			msg="🧺 收成%s +%d份！菜籃庫存已增加。" % [str(crop["name"]),int(crop["harvest"])]
-	elif not bool(plot.get("watered",false)):
-		if store.garden_water(index,now):
-			msg="💧 澆水成功，蔬菜長得更快囉！"
+			msg="🧺 +%d" % int(crop["harvest"])
 	else:
-		msg="🌿 正在長大，再等%s就能收成！" % Rules.wait_text(int(plot["ready_at"])-now)
+		# No watering, tapping or acceleration during growth. Countdown
+		# runs from the saved planting time even while the app is closed.
+		msg="⏳ %s" % Rules.wait_text(int(plot["ready_at"])-now)
 	if not msg.is_empty():
 		hint_label.text=msg
 		if narrator!=null:
@@ -287,11 +306,11 @@ func _end_seed_pointer(position: Vector2) -> void:
 		_plant_along_segment(drag_previous,position)
 		var name=str(Rules.crop_for(drag_crop).get("name","蔬菜"))
 		if drag_planted_count>0:
-			hint_label.text="🌱 成功種下 %d 塊%s！繼續拖就能種更多！" % [drag_planted_count,name]
+			hint_label.text="🌱 × %d" % drag_planted_count
 		else:
-			hint_label.text="🌱 沒有空田可以種，請拖到空田喔！"
+			hint_label.text="🌱 ⬇️"
 		if narrator!=null:
-			narrator.speak(hint_label.text)
+			narrator.speak("種好%d塊%s了！" % [drag_planted_count,name] if drag_planted_count>0 else "請拖到空田種植")
 		get_viewport().set_input_as_handled()
 	drag_preview.hide()
 	pointer_id=-1
@@ -299,17 +318,6 @@ func _end_seed_pointer(position: Vector2) -> void:
 	drag_crop=""
 	drag_active=false
 	planted_in_drag.clear()
-
-func water_all() -> void:
-	var now=int(Time.get_unix_time_from_system())
-	var count=0
-	for i in range(store.data.get("garden_plots",[]).size()):
-		if store.garden_water(i,now):
-			count+=1
-	hint_label.text="💧 已幫 %d 塊田澆水！" % count if count>0 else "💧 目前沒有需要澆水的田地"
-	_refresh()
-	if narrator!=null:
-		narrator.speak(hint_label.text)
 
 func harvest_all() -> void:
 	var now=int(Time.get_unix_time_from_system())
@@ -321,10 +329,10 @@ func harvest_all() -> void:
 		if store.garden_harvest(i,now):
 			count+=1
 			gained+=int(crop.get("harvest",0))
-	hint_label.text="🧺 收成 %d 塊田，共 %d 份蔬菜放進菜籃！" % [count,gained] if count>0 else "🌱 還沒有成熟蔬菜，等一下再來！"
+	hint_label.text="🧺 +%d" % gained if count>0 else "⏳"
 	_refresh()
 	if narrator!=null:
-		narrator.speak(hint_label.text)
+		narrator.speak("收成%d塊田，得到%d份蔬菜！" % [count,gained] if count>0 else "還沒有成熟的蔬菜")
 
 func _refresh() -> void:
 	if store==null or plot_buttons.is_empty():
@@ -340,7 +348,7 @@ func _refresh() -> void:
 				style.bg_color=Color("#D5EDBC") if active else Color("#FFF1CE")
 				style.border_color=Color("#437F5C") if active else Color("#9F794B")
 				seed_buttons[i].add_theme_stylebox_override("normal",style)
-	selected_hint.text="👆 按住蔬菜往下拖，可連種多田"
+	
 	var now=int(Time.get_unix_time_from_system())
 	var plots: Array=store.data.get("garden_plots",[])
 	for i in range(plot_buttons.size()):
@@ -351,20 +359,14 @@ func _refresh() -> void:
 		var crop=Rules.crop_for(id)
 		var stage=Rules.stage(plot,now)
 		plot_images[i].setup(id,stage)
-		var label="%d 號田 · 🌱 拖菜來種" % (i+1)
+		plot_beds[i].set_ripe(stage==3)
+		var label="＋"
 		if not crop.is_empty():
-			var name=str(crop["name"])
 			if stage==3:
-				label="🧺 收成%s +%d" % [name,int(crop["harvest"])]
-			elif not bool(plot.get("watered",false)):
-				label="💧 幫%s澆水" % name
+				label="🧺 +%d" % int(crop["harvest"])
 			else:
-				label="🌿 %s · 剩%s" % [name,Rules.wait_text(int(plot.get("ready_at",now))-now)]
+				label="⏳ %s" % Rules.wait_text(int(plot.get("ready_at",now))-now)
 		plot_texts[i].text=label
-		var style=plot_buttons[i].get_theme_stylebox("normal").duplicate()
-		style.bg_color=Color("#E0F3CE") if stage==3 else (Color("#EAF5E2") if stage>0 else Color("#F9EAD4"))
-		style.border_color=Color("#478D60") if stage==3 else Color("#B2906B")
-		plot_buttons[i].add_theme_stylebox_override("normal",style)
 
 func _process(delta: float) -> void:
 	elapsed+=minf(delta,.5)
