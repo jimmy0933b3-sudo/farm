@@ -31,12 +31,12 @@ func _fresh() -> Dictionary:
 		"insect_found": [],
 		"private_farm": [],
 		"garden_plots": [
-			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
-			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
-			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
-			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
-			{"crop":"","planted_at":0,"ready_at":0,"watered":false},
-			{"crop":"","planted_at":0,"ready_at":0,"watered":false}
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0},
+			{"crop":"","planted_at":0,"ready_at":0}
 		],
 		"garden_inventory": {"carrot":0,"cabbage":0,"pumpkin":0},
 		"garden_harvests": 0,
@@ -100,7 +100,7 @@ func save() -> void:
 	if err != OK:
 		push_error("Could not commit save: " + str(err))
 
-## Every planting/watering/harvesting/feeding change is saved as a whole.
+## Every planting/harvesting/feeding change is saved as a whole.
 ## Optional timestamps allow deterministic game-lifecycle tests.
 func garden_plant(index: int,id: String,epoch: int=-1) -> bool:
 	var crop: Dictionary=GardenRules.crop_for(id)
@@ -110,25 +110,7 @@ func garden_plant(index: int,id: String,epoch: int=-1) -> bool:
 	if not str(plots[index].get("crop","")).is_empty():
 		return false
 	var now=int(Time.get_unix_time_from_system()) if epoch<0 else epoch
-	plots[index]={"crop":id,"planted_at":now,"ready_at":now+int(crop["seconds"]),"watered":false}
-	data["garden_plots"]=plots
-	save()
-	return true
-
-func garden_water(index: int,epoch: int=-1) -> bool:
-	var plots: Array=data.get("garden_plots",[])
-	if index<0 or index>=plots.size():
-		return false
-	var slot: Dictionary=plots[index]
-	if GardenRules.crop_for(str(slot.get("crop",""))).is_empty() or bool(slot.get("watered",false)):
-		return false
-	var now=int(Time.get_unix_time_from_system()) if epoch<0 else epoch
-	if now>=int(slot.get("ready_at",0)):
-		return false
-	var remaining=maxi(1,int(slot["ready_at"])-now)
-	slot["ready_at"]=now+maxi(3,int(ceil(float(remaining)*.65)))
-	slot["watered"]=true
-	plots[index]=slot
+	plots[index]={"crop":id,"planted_at":now,"ready_at":now+int(crop["seconds"])}
 	data["garden_plots"]=plots
 	save()
 	return true
