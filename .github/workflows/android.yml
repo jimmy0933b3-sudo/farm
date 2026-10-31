@@ -70,6 +70,8 @@ jobs:
         run: godot --headless --path . --script tests/interaction_smoke.gd
       - name: Test homepage narration plays only on first entry per app launch
         run: godot --headless --path . --script tests/home_narration_smoke.gd
+      - name: Test Mandarin English button language switching and saved preference
+        run: timeout --signal=TERM 75s godot --headless --path . --script tests/ui_language_smoke.gd
       - name: Test parental settings vertical scrolling and retained position
         run: godot --headless --path . --script tests/parent_scroll_smoke.gd
       - name: Test multiple animal expressions and playful care animation
@@ -106,7 +108,7 @@ jobs:
         run: godot --headless --path . --script tests/flying_insects_smoke.gd
       - name: Test larger private farm sideways panning and direct petting
         run: godot --headless --path . --script tests/private_farm_pan_smoke.gd
-      - name: Test expanded farm capacity and 16-slot resident selector
+      - name: Test expanded farm capacity and 32-slot resident selector
         run: godot --headless --path . --script tests/private_farm_layout_smoke.gd
       - name: Test private farm placement, petting, care and saved residents
         run: godot --headless --path . --script tests/private_farm_smoke.gd
@@ -251,7 +253,7 @@ jobs:
             "build/SIGNING-INFO.txt" \
             --target "$GITHUB_SHA" \
             --title "動物探險島 ${tag}｜最新版 APK" \
-            --notes "含八種昆蟲（新增象鼻蟲）、昆蟲大探險、全部已收集角色皆可賽車、動物園找動物、16 隻私人農場與 30 色手指著色。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
+            --notes "含八種昆蟲（新增象鼻蟲）、昆蟲大探險、全部已收集角色皆可賽車、動物園找動物、32 隻私人農場、10 塊田、吃人花、中英文按鈕、60 色著色與 24 色畫畫。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
             --latest
           # Cleanup only AFTER release creation succeeds.
           while IFS= read -r old; do
