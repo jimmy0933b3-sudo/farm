@@ -60,6 +60,26 @@ func _draw() -> void:
 		_oval(0,16,33*factor,35*factor,Color("#BEEA91"))
 		for n in range(4):
 			draw_arc(Vector2(float(n-2)*10*factor,23),23*factor,PI,TAU,20,Color("#6EA76C"),2,true)
+	elif crop_id=="carnivorous_flower":
+		# Friendly fantasy flytrap: striped open jaws, six teeth, glossy stem.
+		draw_line(Vector2(0,42),Vector2(0,-4-32*factor),Color("#397A53"),9*factor,true)
+		_oval(-23*factor,17,27*factor,10*factor,Color("#5BAC71"))
+		_oval(25*factor,8,27*factor,11*factor,Color("#72C58C"))
+		var mouth=Vector2(0,-23-25*factor)
+		_oval(mouth.x,mouth.y,43*factor,34*factor,Color("#408C64"))
+		_oval(mouth.x+5*factor,mouth.y-8*factor,39*factor,20*factor,Color("#EF80A7"))
+		_oval(mouth.x+7*factor,mouth.y+14*factor,34*factor,13*factor,Color("#9D426F"))
+		_oval(mouth.x+5*factor,mouth.y+2*factor,30*factor,8*factor,Color("#5A294A"))
+		for n in range(5):
+			var x=(-26+float(n)*13)*factor
+			_poly([Vector2(x,mouth.y+3*factor),Vector2(x+6*factor,mouth.y+14*factor),
+				Vector2(x+10*factor,mouth.y+2*factor)],Color("#FFF3D9"))
+		_oval(mouth.x-18*factor,mouth.y-21*factor,8*factor,10*factor,Color("#FFF9E9"))
+		_oval(mouth.x-17*factor,mouth.y-22*factor,3*factor,5*factor,Color("#243E36"))
+		_oval(mouth.x+26*factor,mouth.y-20*factor,8*factor,10*factor,Color("#FFF9E9"))
+		_oval(mouth.x+26*factor,mouth.y-21*factor,3*factor,5*factor,Color("#243E36"))
+		for side in [-1.0,1.0]:
+			_oval(side*37*factor,mouth.y-6*factor,8*factor,16*factor,Color("#79C59D"))
 	else:
 		for n in range(5):
 			var x=float(n-2)*19*factor
