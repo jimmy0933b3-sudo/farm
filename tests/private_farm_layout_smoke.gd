@@ -37,6 +37,16 @@ func _run() -> void:
 	if farm.resident_scroll.get_h_scroll_bar().max_value<=farm.resident_scroll.size.x+300:
 		_fail("Entire roster must be genuinely swipeable with a finger")
 		return
+	farm._roster_jump("bird")
+	await process_frame
+	if farm.resident_scroll.scroll_horizontal<1000:
+		_fail("Bird shortcut must jump forward inside the same animal roster")
+		return
+	farm._roster_jump("farm")
+	await process_frame
+	if farm.resident_scroll.scroll_horizontal>50:
+		_fail("Farm shortcut must return to beginning of top roster")
+		return
 	# Even uncollected birds and monsters belong to the selectable roster.
 	for id in ["bird_mandarin","bird_owl_park","bird_eagle","bird_osprey","monster_fire","monster_rainbow"]:
 		if not ids.has(id):
