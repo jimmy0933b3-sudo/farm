@@ -8,7 +8,9 @@ const MAX_POINTS=3000
 const TRACE_RADIUS=27.0
 const REQUIRED_COVERAGE=0.57
 const PAINTS=["#F36F78","#F6A85F","#F2D25A","#72BC7C","#48B6AD","#62B8E8",
-	"#6989DA","#A884D8","#E78CC0","#825B42","#36495D","#FFFFFF"]
+	"#6989DA","#A884D8","#E78CC0","#825B42","#36495D","#FFFFFF",
+	"#C33D62","#F7A6A9","#E77C2D","#F5DF99","#A7CE42","#247947",
+	"#A7E6BE","#127F95","#294BA2","#24316B","#7A4EBC","#C757A5"]
 var artist: Control
 var animal_id: String=""
 var page: Dictionary={}
