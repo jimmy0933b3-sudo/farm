@@ -1,5 +1,5 @@
 extends SceneTree
-## End-to-end: six plots -> planting -> watering -> harvest -> save -> farm feeding.
+## End-to-end: six raised 3D beds, timed growth without watering, harvest and animal feeding.
 const Rules=preload("res://scripts/GardenRules.gd")
 const Store=preload("res://scripts/SaveData.gd")
 const CropArt=preload("res://scripts/CropArt.gd")
@@ -54,9 +54,13 @@ func _run() -> void:
 		return
 	garden._refresh()
 	var planted_at=int(game.progress.data["garden_plots"][5]["planted_at"])
+	var original_ready=int(game.progress.data["garden_plots"][5]["ready_at"])
 	garden.press_plot(5)
-	if not bool(game.progress.data["garden_plots"][5].get("watered",false)):
-		_fail("Touching a growing crop should water it")
+	if game.progress.has_method("garden_water") or int(game.progress.data["garden_plots"][5]["ready_at"])!=original_ready:
+		_fail("Watering must be removed; tapping a growing crop cannot shorten its countdown")
+		return
+	if not garden.plot_beds[5] is Control or not garden.plot_images[5].show_soil==false:
+		_fail("Plots must display separate 3D raised beds without oval soil overlays")
 		return
 	var now=10000000
 	if game.progress.garden_plant(0,"fake",now):
@@ -76,14 +80,11 @@ func _run() -> void:
 	if game.progress.garden_harvest(0,now+4):
 		_fail("Plants cannot be harvested before they are ripe")
 		return
-	if not game.progress.garden_water(0,now+4):
-		_fail("Watering should accelerate growth once")
+	if int(game.progress.data["garden_plots"][0]["ready_at"])!=now+int(Rules.CROPS[0]["seconds"]):
+		_fail("Planting must start the complete countdown immediately without watering")
 		return
-	if game.progress.garden_water(0,now+5):
-		_fail("A plot cannot be watered twice")
-		return
-	if int(game.progress.data["garden_plots"][0]["ready_at"])>=now+int(Rules.CROPS[0]["seconds"]):
-		_fail("Watering must shorten the remaining growth time")
+	if Rules.stage(game.progress.data["garden_plots"][0],now+120)!=3:
+		_fail("Vegetables must ripen automatically at the end of the countdown")
 		return
 	for i in range(5):
 		if not game.progress.garden_harvest(i,now+120):
@@ -191,7 +192,7 @@ func _run() -> void:
 	if game.garden_game.inventory_tiles["carrot"].count!=2:
 		_fail("Garden stock must agree with farm stock after two consumed treats")
 		return
-	# Validate the convenient one-tap all-water and all-harvest actions.
+	# Validate one-tap collection and automatic growth without watering.
 	var current=int(Time.get_unix_time_from_system())
 	if not game.progress.garden_plant(0,"carrot",current):
 		_fail("Freshly harvested plot should accept a new seed")
@@ -199,9 +200,11 @@ func _run() -> void:
 	if not game.progress.garden_plant(1,"cabbage",current):
 		_fail("Freshly harvested second plot should accept a seed")
 		return
-	game.garden_game.water_all()
-	if not bool(game.progress.data["garden_plots"][0].get("watered",false)):
-		_fail("Water-all should accelerate every growing plot")
+	if game.garden_game.has_method("water_all"):
+		_fail("The garden must not offer watering controls")
+		return
+	if int(game.progress.data["garden_plots"][0]["ready_at"])!=current+int(Rules.CROPS[0]["seconds"]):
+		_fail("New crop must start its unmodified timer automatically")
 		return
 	for index in [0,1]:
 		var plot: Dictionary=game.progress.data["garden_plots"][index]
@@ -215,7 +218,7 @@ func _run() -> void:
 	game.progress.save()
 	game.show_home()
 	await process_frame
-	print("PASS: 3 original vegetables, 6 plots, water, growth, one-time harvest, offline stock, safe feed, cheerful face/voice and durable save")
+	print("PASS: 6 isometric beds, 3 timed vegetables, no watering, one-time harvest, stock, happy feed and durable save")
 	game.queue_free()
 	await process_frame
 	quit(0)
