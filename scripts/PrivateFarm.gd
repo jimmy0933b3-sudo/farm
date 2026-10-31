@@ -14,7 +14,7 @@ const StockTile = preload("res://scripts/CropStockTile.gd")
 signal racing_requested
 signal garden_requested
 
-const CAPACITY: int = 16
+const CAPACITY: int = 32
 
 var animals: Array = []
 var save_data
@@ -29,7 +29,7 @@ var remove_button: Button
 var habitat: Control
 var farm_view: Control
 var camera_x: float = 0.0
-var world_width: float = 1680.0
+var world_width: float = 4200.0
 var pointer_last: Vector2 = Vector2.ZERO
 var pan_start: Vector2 = Vector2.ZERO
 var pan_distance: float = 0.0
@@ -151,8 +151,8 @@ func _ready() -> void:
 	remove_button = _round("Remove",Callable(self,"remove_current"),Vector2(102,46))
 	resident_header.add_child(remove_button)
 
-	# Sixteen residents across four rows. The selector shows two rows at
-	# a time; fingers can smoothly scroll down to select/remove slots 9-16.
+	# Thirty-two residents across eight scrollable rows (four columns).
+	# Children can select and remove the final resident without tiny cards.
 	resident_scroll = TouchAnimalScroll.new()
 	resident_scroll.custom_minimum_size = Vector2(268,176)
 	resident_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -340,7 +340,7 @@ func _resize_world() -> void:
 		return
 	if farm_view.size.x<100.0 or farm_view.size.y<100.0:
 		return
-	world_width=maxf(2350.0,farm_view.size.x*2.6)
+	world_width=maxf(4200.0,farm_view.size.x*5.5)
 	habitat.size=Vector2(world_width,farm_view.size.y)
 	_set_camera(camera_x)
 	_layout_residents()
@@ -387,11 +387,11 @@ func _layout_residents() -> void:
 			continue
 		var creature=actors[name]
 		if str(_animal(name).get("zone",""))=="ocean":
-			# All seven marine species fit into their wide pond in one row.
+			# All eight aquatic species fit in a wide pond without stacking.
 			# Prevent stacked sea animals at the bottom of the old 3x2 grid.
-			var col=sea_slot%7
+			var col=sea_slot%8
 			var pos=Vector2(
-				pond.position.x+pond.size.x*(float(col)+0.5)/7.0-creature.size.x*0.5,
+				pond.position.x+pond.size.x*(float(col)+0.5)/8.0-creature.size.x*0.5,
 				pond.position.y+pond.size.y*0.50-creature.size.y*0.5
 			)
 			creature.set_bounds(pond,pos)
@@ -407,13 +407,13 @@ func _layout_residents() -> void:
 			creature.set_bounds(sky,pos)
 			air_slot+=1
 		else:
-			# Up to 16 land species: two staggered rows of eight. Each row
-			# has room for a full-sized touchable animal in the long meadow.
-			var col=land_slot%8
-			var row=int(land_slot/8)
+			 # Up to 32 land species: two staggered rows of sixteen along
+			# a longer meadow, preserving roomy individual touch targets.
+			var col=land_slot%16
+			var row=int(land_slot/16)
 			var lane=float(col)+(0.28 if row==0 else 0.72)
 			var pos=Vector2(
-				grass.position.x+grass.size.x*lane/8.0-creature.size.x*0.5,
+				grass.position.x+grass.size.x*lane/16.0-creature.size.x*0.5,
 				grass.position.y+grass.size.y*(0.25 if row==0 else 0.75)-creature.size.y*0.5
 			)
 			creature.set_bounds(grass,pos)
@@ -427,8 +427,8 @@ func place_animal(id: String) -> void:
 			voice.speak("還沒收集到這位朋友，先去樂園找找看！")
 			return
 		"full":
-			info_label.text = "農場已住滿 16 隻！先選一隻移回圖鑑。"
-			voice.speak("農場已經住滿十六位朋友了！先選一位，按移回圖鑑，就能換新朋友進來。")
+			info_label.text = "農場已住滿 32 隻！先選一隻移回圖鑑。"
+			voice.speak("農場已經住滿三十二位朋友了！先選一位，按移回圖鑑，就能換新朋友進來。")
 			return
 		"already":
 			_set_resident(id,false)
