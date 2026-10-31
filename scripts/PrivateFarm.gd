@@ -65,68 +65,99 @@ func setup(info: Array, store, narrator) -> void:
 	reduce_motion = bool(store.data["settings"].get("reduce_motion",false))
 
 func _ready() -> void:
-	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	size_flags_vertical = Control.SIZE_EXPAND_FILL
-	add_theme_constant_override("separation",12)
-
-	var left = VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	size_flags_vertical=Control.SIZE_EXPAND_FILL
+	add_theme_constant_override("separation",0)
+	# Only one column of stacked, independently measured areas. The farm map
+	# receives all remaining height rather than being covered by floating UI.
+	var left=VBoxContainer.new()
+	left.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	left.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	left.add_theme_constant_override("separation",6)
 	add_child(left)
 
-	var farm_header=HBoxContainer.new()
-	farm_header.add_theme_constant_override("separation",8)
-	left.add_child(farm_header)
-	info_label = _label("左右滑動逛農場，摸摸動物吧！",19)
+	var navigation=HBoxContainer.new()
+	navigation.custom_minimum_size.y=42
+	navigation.add_theme_constant_override("separation",9)
+	left.add_child(navigation)
+	info_label=_label("🐾 摸摸動物，左右滑動探索農場",17)
 	info_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	farm_header.add_child(info_label)
-	farm_header.add_child(_round("🌱 Garden",Callable(self,"_request_garden"),Vector2(125,51)))
-	farm_header.add_child(_round("🏎️ Racing",
-		Callable(self,"_request_race"),Vector2(144,51)))
-	# ONE horizontal, thumb-friendly strip. Every species has one permanent
-	# tile, regardless of whether it is currently outside or inside the farm.
-	# No second "available animals" section. Swiping never activates a tile.
+	info_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
+	info_label.autowrap_mode=TextServer.AUTOWRAP_OFF
+	info_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	navigation.add_child(info_label)
+	navigation.add_child(_round("🌱 農田",Callable(self,"_request_garden"),Vector2(112,42)))
+	navigation.add_child(_round("🏎️ 賽車場",Callable(self,"_request_race"),Vector2(126,42)))
+
+	var roster_panel=PanelContainer.new()
+	roster_panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	roster_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#FFF7E6"),Color("#DFBF8A"),12))
+	left.add_child(roster_panel)
+	var roster_area=VBoxContainer.new()
+	roster_area.add_theme_constant_override("separation",3)
+	roster_panel.add_child(roster_area)
 	var roster_header=HBoxContainer.new()
-	roster_header.add_theme_constant_override("separation",12)
-	left.add_child(roster_header)
-	counter=_label("🌿 0 / 67",19)
+	roster_header.custom_minimum_size.y=29
+	roster_header.add_theme_constant_override("separation",7)
+	roster_area.add_child(roster_header)
+	counter=_label("🐾 動物夥伴 0 / 67",19)
+	counter.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
 	counter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	roster_header.add_child(counter)
-	for group in [["🏡","farm"],["🐟","ocean"],["🦋","insect"],["🐦","bird"],["👾","monster"]]:
-		var jump=_round(str(group[0]),Callable(self,"_roster_jump").bind(str(group[1])),Vector2(49,41))
-		jump.tooltip_text="跳到%s生物清單" % str(group[1])
+	# Group jump shortcuts remain accessible, but no giant second toolbar.
+	for group in [["🏡","farm"],["🌲","forest"],["🐟","ocean"],["🦋","insect"],["🐦","bird"],["👾","monster"]]:
+		var jump=_round(str(group[0]),Callable(self,"_roster_jump").bind(str(group[1])),Vector2(38,30))
+		jump.add_theme_font_size_override("font_size",17)
+		jump.tooltip_text="跳到%s夥伴" % str(group[1])
 		roster_header.add_child(jump)
-	remove_button=_round("Remove",Callable(self,"remove_current"),Vector2(98,41))
+	remove_button=_round("Remove",Callable(self,"remove_current"),Vector2(91,31))
+	remove_button.add_theme_font_size_override("font_size",16)
 	roster_header.add_child(remove_button)
+	var roster_row=HBoxContainer.new()
+	roster_row.add_theme_constant_override("separation",6)
+	roster_area.add_child(roster_row)
+	var previous=_round("‹",Callable(self,"_roster_step").bind(-1),Vector2(38,84))
+	previous.add_theme_font_size_override("font_size",30)
+	roster_row.add_child(previous)
 	resident_scroll=TouchAnimalScroll.new()
-	resident_scroll.custom_minimum_size=Vector2(0,97)
+	resident_scroll.custom_minimum_size=Vector2(0,88)
 	resident_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	resident_scroll.size_flags_vertical=Control.SIZE_SHRINK_BEGIN
 	resident_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO
 	resident_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	left.add_child(resident_scroll)
+	roster_row.add_child(resident_scroll)
 	resident_list=HBoxContainer.new()
 	resident_list.add_theme_constant_override("separation",7)
 	resident_scroll.add_child(resident_list)
+	var following=_round("›",Callable(self,"_roster_step").bind(1),Vector2(38,84))
+	following.add_theme_font_size_override("font_size",30)
+	roster_row.add_child(following)
 
-	# Permanently visible, illustrated basket directly ABOVE the animals.
-	# One direct drag to a roaming animal consumes one crop; no feeding menu.
+	# The drag targets are live panels with original crop illustrations, not a
+	# flattened decoration. They sit in a separate stable inventory ribbon.
+	var stock_panel=PanelContainer.new()
+	stock_panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	stock_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#FFF9E9"),Color("#DDC7A0"),6))
+	left.add_child(stock_panel)
 	stock_strip=HBoxContainer.new()
 	stock_strip.alignment=BoxContainer.ALIGNMENT_CENTER
-	stock_strip.add_theme_constant_override("separation",12)
-	left.add_child(stock_strip)
-	stock_strip.add_child(_label("🧺",25))
+	stock_strip.add_theme_constant_override("separation",10)
+	stock_panel.add_child(stock_strip)
+	var stock_title=_label("🌿 作物庫存",19)
+	stock_title.custom_minimum_size.x=129
+	stock_strip.add_child(stock_title)
 	for crop in GardenRules.CROPS:
 		var tile=StockTile.new()
 		tile.setup(str(crop["id"]))
-		tile.tooltip_text="按住%s拖到動物身上（每次扣 1）" % str(crop["name"])
+		tile.tooltip_text="拖曳%s到動物身上餵食" % str(crop["name"])
 		stock_strip.add_child(tile)
 		farm_inventory_tiles[str(crop["id"])]=tile
 	_refresh_farm_stock()
-	# Wider-than-the-screen scenery under a fixed, clipped viewport.
+
+	# One clipped world viewport. World props have fixed proportions and all
+	# 67 live actors remain independent of its paint layer.
 	farm_view=Control.new()
-	farm_view.custom_minimum_size=Vector2(555,245)
+	farm_view.custom_minimum_size=Vector2(0,140)
 	farm_view.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	farm_view.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	farm_view.clip_contents=true
@@ -140,35 +171,48 @@ func _ready() -> void:
 	farm_view.resized.connect(_resize_world)
 	farm_view.gui_input.connect(_on_habitat_input)
 	call_deferred("_resize_world")
-
-	var bg = PrivateFarmLandscape.new()
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bg=PrivateFarmLandscape.new()
+	bg.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	habitat.add_child(bg)
-
-	hand = TouchHand.new()
-	hand.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hand=TouchHand.new()
+	hand.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	hand.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	hand.show_hand = false
+	hand.show_hand=false
 	habitat.add_child(hand)
 	habitat.resized.connect(_layout_residents)
+	var frame=Panel.new()
+	frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var frame_skin=_panel_skin(Color("#FFFFFF",0.0),Color("#FFFAE7"),0)
+	frame_skin.set_border_width_all(4)
+	frame_skin.set_corner_radius_all(17)
+	frame.add_theme_stylebox_override("panel",frame_skin)
+	farm_view.add_child(frame)
 
-	commands = HBoxContainer.new()
-	commands.alignment = BoxContainer.ALIGNMENT_CENTER
-	commands.add_theme_constant_override("separation",6)
-	left.add_child(commands)
-	for data in [["wash","Bath"],["play","Play"],["sleep","Rest"],["sound","Sound"]]:
-		var btn=_round(str(data[1]),Callable(self,"interact").bind(str(data[0])),Vector2(114,52))
+	var actions_panel=PanelContainer.new()
+	actions_panel.add_theme_stylebox_override("panel",_panel_skin(Color("#EBCB9A"),Color("#B6875E"),5))
+	left.add_child(actions_panel)
+	commands=HBoxContainer.new()
+	commands.alignment=BoxContainer.ALIGNMENT_CENTER
+	commands.add_theme_constant_override("separation",12)
+	actions_panel.add_child(commands)
+	for action in [
+		["wash","Bath","🫧",Color("#5EB6F1")],
+		["play","Play","⚽",Color("#F27C89")],
+		["sleep","Rest","💤",Color("#F4C15A")],
+		["sound","Sound","♫",Color("#AE88F2")]
+	]:
+		var btn=_action_button(str(action[1]),str(action[2]),action[3],
+			Callable(self,"interact").bind(str(action[0])))
 		btn.disabled=true
 		commands.add_child(btn)
 
-
 	if not save_data.data["private_farm"].is_empty():
-		active_id = str(save_data.data["private_farm"][0])
+		active_id=str(save_data.data["private_farm"][0])
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	# Above all page content, without taking touches away from animal petting.
 	var drag_layer=CanvasLayer.new()
 	drag_layer.layer=9
 	add_child(drag_layer)
@@ -176,10 +220,56 @@ func _ready() -> void:
 	food_preview.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	food_preview.size=Vector2(100,92)
 	food_preview.show_soil=false
-	food_preview.modulate=Color(1,1,1,.9)
+	food_preview.modulate=Color(1,1,1,.90)
 	food_preview.hide()
 	drag_layer.add_child(food_preview)
-	voice.speak("歡迎來到大大的私人農場！從菜籃拖曳蔬菜到動物身上就能餵食。手指左右滑動逛地圖，會飛的昆蟲在天空，螳螂、糞金龜和象鼻蟲在草地上爬行，右邊有大水池喔！也可以玩賽車！")
+	voice.speak("歡迎來私人農場！從上方菜籃拖曳蔬菜餵動物，左右滑動可以逛農場。點動物圖片，就能邀請牠來玩！")
+
+func _panel_skin(fill: Color,edge: Color,padding_value: int) -> StyleBoxFlat:
+	var style=StyleBoxFlat.new()
+	style.bg_color=fill
+	style.border_color=edge
+	style.set_corner_radius_all(18)
+	style.set_border_width_all(2)
+	style.content_margin_left=padding_value
+	style.content_margin_right=padding_value
+	style.content_margin_top=padding_value
+	style.content_margin_bottom=padding_value
+	style.shadow_color=Color("#5D815A",0.12)
+	style.shadow_size=3
+	return style
+
+func _action_button(title: String,symbol: String,tint: Color,callback: Callable) -> Button:
+	var button=_round(title,callback,Vector2(164,56))
+	button.add_theme_font_size_override("font_size",23)
+	button.alignment=HORIZONTAL_ALIGNMENT_RIGHT
+	var base=_panel_skin(tint,tint.darkened(0.30),0)
+	base.set_corner_radius_all(19)
+	base.set_border_width_all(3)
+	base.content_margin_left=52
+	base.content_margin_right=23
+	base.shadow_color=Color("#654F43",0.23)
+	base.shadow_size=4
+	button.add_theme_stylebox_override("normal",base)
+	var hover=base.duplicate()
+	hover.bg_color=tint.lightened(.12)
+	button.add_theme_stylebox_override("hover",hover)
+	var pressed=base.duplicate()
+	pressed.bg_color=tint.darkened(.08)
+	button.add_theme_stylebox_override("pressed",pressed)
+	var inactive=base.duplicate()
+	inactive.bg_color=tint.darkened(.16)
+	inactive.border_color=tint.darkened(.24)
+	button.add_theme_stylebox_override("disabled",inactive)
+	for state in ["font_color","font_hover_color","font_pressed_color","font_disabled_color"]:
+		button.add_theme_color_override(state,Color("#FFFFFF"))
+	var art=_label(symbol,27)
+	art.custom_minimum_size=Vector2(45,44)
+	art.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
+	art.position=Vector2(8,6)
+	art.add_theme_color_override("font_color",Color("#FFFFFF"))
+	button.add_child(art)
+	return button
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -233,7 +323,7 @@ func _animal(id: String) -> Dictionary:
 
 func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Button:
 	var id=str(info.get("id",""))
-	var tile=_round("",Callable(),Vector2(98,90))
+	var tile=_round("",Callable(),Vector2(92,84))
 	resident_scroll.wire_button(tile,Callable(self,"_toggle_resident").bind(id))
 	var panel=StyleBoxFlat.new()
 	panel.bg_color=Color("#DCF6DA") if is_member else Color("#FCF4DF")
@@ -252,7 +342,7 @@ func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Bu
 	tile.add_child(contents)
 	var pic=AnimalArt.new()
 	pic.setup(info)
-	pic.custom_minimum_size=Vector2(82,55)
+	pic.custom_minimum_size=Vector2(79,50)
 	pic.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	pic.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	pic.modulate=Color.WHITE
@@ -268,6 +358,12 @@ func _toggle_resident(id: String) -> void:
 		remove_current()
 	else:
 		place_animal(id)
+
+func _roster_step(direction: int) -> void:
+	if not is_instance_valid(resident_scroll):
+		return
+	var amount=maxi(150,int(resident_scroll.size.x*.70))
+	resident_scroll.scroll_horizontal=maxi(0,resident_scroll.scroll_horizontal+direction*amount)
 
 func _roster_jump(zone: String) -> void:
 	# Shortcuts skip long repeated swipes without splitting the roster.
@@ -311,7 +407,7 @@ func _rebuild_cards() -> void:
 	if not is_instance_valid(resident_list):
 		return
 	var members: Array=save_data.data["private_farm"]
-	counter.text="🌿 %d / %d     👆 ✓ / ＋" % [members.size(),CAPACITY]
+	counter.text="🐾 動物夥伴    %d / %d" % [members.size(),CAPACITY]
 	remove_button.disabled=active_id.is_empty()
 	# Create 67 cards only once; later selections update the affected visuals.
 	if resident_cards.size()!=animals.size() or resident_list.get_child_count()!=animals.size():

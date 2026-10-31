@@ -253,7 +253,7 @@ jobs:
             "build/SIGNING-INFO.txt" \
             --target "$GITHUB_SHA" \
             --title "動物探險島 ${tag}｜最新版 APK" \
-            --notes "含八種昆蟲（新增象鼻蟲）、昆蟲大探險、全部已收集角色皆可賽車、動物園找動物、67 隻私人農場、10 塊田、吃人花、中英文按鈕、60 色著色與 24 色畫畫。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
+            --notes "含八種昆蟲（新增象鼻蟲）、昆蟲大探險、全部已收集角色皆可賽車、動物園找動物、67 隻私人農場、故事書風格地圖與 UI、10 塊田、吃人花、中英文按鈕、60 色著色與 24 色畫畫。已通過 GitHub Actions 遊戲測試與固定簽章驗證。直接下載 AnimalAdventureIsland-signed.apk 安裝或升級。" \
             --latest
           # Cleanup only AFTER release creation succeeds.
           while IFS= read -r old; do

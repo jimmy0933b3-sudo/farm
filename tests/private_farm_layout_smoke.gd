@@ -37,6 +37,22 @@ func _run() -> void:
 	if farm.resident_scroll.get_h_scroll_bar().max_value<=farm.resident_scroll.size.x+300:
 		_fail("Entire roster must be genuinely swipeable with a finger")
 		return
+	# Regression for the screenshot's overlapping controls and cut-off playfield.
+	var stock_rect=farm.stock_strip.get_global_rect()
+	var map_rect=farm.farm_view.get_global_rect()
+	var action_rect=farm.commands.get_global_rect()
+	if stock_rect.end.y>map_rect.position.y+2.0:
+		_fail("Crop inventory overlaps the farm scenery")
+		return
+	if map_rect.end.y>action_rect.position.y+2.0:
+		_fail("Farm scenery overlaps the bottom care controls")
+		return
+	if map_rect.size.y<140.0:
+		_fail("Farm scenery became too short after stacking controls")
+		return
+	if action_rect.end.y>root.size.y+1.0:
+		_fail("Bottom care controls overflow the landscape viewport")
+		return
 	farm._roster_jump("bird")
 	await process_frame
 	if farm.resident_scroll.scroll_horizontal<1000:
