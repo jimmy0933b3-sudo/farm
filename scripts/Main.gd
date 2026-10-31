@@ -770,7 +770,7 @@ func show_private_farm() -> void:
 	var layout = _switch("private_farm","farm")
 	_header(layout,"私人農場",Callable(self,"show_home"))
 	private_farm_game = PrivateFarm.new()
-	private_farm_game.setup(animals,progress,sound)
+	private_farm_game.setup(_all_friends(),progress,sound)
 	private_farm_game.racing_requested.connect(Callable(self,"show_race_lobby"))
 	private_farm_game.garden_requested.connect(Callable(self,"show_garden"))
 	private_farm_game.size_flags_horizontal = Control.SIZE_EXPAND_FILL
