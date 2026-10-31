@@ -1,5 +1,5 @@
 extends VBoxContainer
-## Private sanctuary: all collected residents roam together in a single scene.
+## Private sanctuary: all 67 species share one permanent top roster and may roam together.
 ## Touch roaming animals to pet; drag a harvest from the basket to feed.
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const RoamingAnimal = preload("res://scripts/RoamingAnimal.gd")
@@ -230,8 +230,8 @@ func _card(info: Dictionary,selected: bool,is_member: bool,unlocked: bool) -> Bu
 	var tile=_round("",Callable(),Vector2(100,104))
 	resident_scroll.wire_button(tile,Callable(self,"_toggle_resident").bind(id))
 	var panel=StyleBoxFlat.new()
-	panel.bg_color=Color("#DCF6DA") if is_member else Color("#FCF4DF"
-	panel.border_color=Color("#52B579") if is_member else Color("#D2AB64"
+	panel.bg_color=Color("#DCF6DA") if is_member else Color("#FCF4DF")
+	panel.border_color=Color("#52B579") if is_member else Color("#D2AB64")
 	panel.set_border_width_all(3 if selected or is_member else 2)
 	panel.set_corner_radius_all(16)
 	tile.add_theme_stylebox_override("normal",panel)
