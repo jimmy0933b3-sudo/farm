@@ -197,7 +197,7 @@ func _ready() -> void:
 	food_preview.modulate=Color(1,1,1,.9)
 	food_preview.hide()
 	drag_layer.add_child(food_preview)
-	voice.speak("歡迎來到私人農場！從菜籃拖曳蔬菜到動物身上就能餵食。摸摸動物、左右滑動逛地圖，也可以玩賽車！")
+	voice.speak("歡迎來到大大的私人農場！從菜籃拖曳蔬菜到動物身上就能餵食。手指左右滑動逛地圖，會飛的昆蟲在天空，螳螂、糞金龜和象鼻蟲在草地上爬行，右邊有大水池喔！也可以玩賽車！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
