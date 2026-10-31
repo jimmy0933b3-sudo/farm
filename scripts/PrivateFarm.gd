@@ -90,7 +90,10 @@ func _ready() -> void:
 	counter=_label("🌿 0 / 67",19)
 	counter.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	roster_header.add_child(counter)
-	roster_header.add_child(_label("👈  ➡️",20))
+	for group in [["🏡","farm"],["🐟","ocean"],["🦋","insect"],["🐦","bird"],["👾","monster"]]:
+		var jump=_round(str(group[0]),Callable(self,"_roster_jump").bind(str(group[1])),Vector2(49,41))
+		jump.tooltip_text="跳到%s生物清單" % str(group[1])
+		roster_header.add_child(jump)
 	remove_button=_round("Remove",Callable(self,"remove_current"),Vector2(98,41))
 	roster_header.add_child(remove_button)
 	resident_scroll=TouchAnimalScroll.new()
@@ -262,6 +265,13 @@ func _toggle_resident(id: String) -> void:
 		remove_current()
 	else:
 		place_animal(id)
+
+func _roster_jump(zone: String) -> void:
+	# Shortcuts skip long repeated swipes without splitting the roster.
+	for i in range(animals.size()):
+		if str(animals[i].get("zone",""))==zone:
+			resident_scroll.scroll_horizontal=i*105
+			return
 
 func _restore_roster_scroll(previous: int) -> void:
 	if is_instance_valid(resident_scroll):
