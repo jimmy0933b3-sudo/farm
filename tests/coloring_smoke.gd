@@ -33,8 +33,8 @@ func _run() -> void:
 	game._go("coloring")
 	await process_frame
 	var room=game.coloring_game
-	if room.PALETTE.size()!=30 or room.palette_buttons.size()!=30:
-		_fail("Coloring room must offer exactly thirty color buttons")
+	if room.PALETTE.size()!=60 or room.palette_buttons.size()!=60:
+		_fail("Coloring room must offer exactly sixty color buttons")
 		return
 	var unique_colors={}
 	for hex in room.PALETTE:
