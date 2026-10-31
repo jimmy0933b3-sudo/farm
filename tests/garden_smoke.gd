@@ -1,5 +1,5 @@
 extends SceneTree
-## End-to-end: six raised 3D beds, timed growth without watering, harvest and animal feeding.
+## End-to-end: ten raised 3D beds, timed growth without watering, harvest and animal feeding.
 const Rules=preload("res://scripts/GardenRules.gd")
 const Store=preload("res://scripts/SaveData.gd")
 const CropArt=preload("res://scripts/CropArt.gd")
@@ -14,9 +14,9 @@ func _run() -> void:
 	await process_frame
 	var backup: Dictionary=game.progress.data.duplicate(true)
 	game.progress.data["garden_plots"]=[]
-	for i in range(6):
+	for i in range(10):
 		game.progress.data["garden_plots"].append(Rules.empty_plot())
-	game.progress.data["garden_inventory"]={"carrot":0,"cabbage":0,"pumpkin":0}
+	game.progress.data["garden_inventory"]={"carrot":0,"cabbage":0,"pumpkin":0,"carnivorous_flower":0}
 	game.progress.data["garden_harvests"]=0
 	game.progress.data["garden_feeds"]={}
 	game.progress.save()
@@ -24,12 +24,12 @@ func _run() -> void:
 	await process_frame
 	game._go("garden")
 	await process_frame
-	if game.screen!="garden" or game.garden_game.plot_buttons.size()!=6:
-		_fail("Garden home icon must lead to six separately playable plots")
+	if game.screen!="garden" or game.garden_game.plot_buttons.size()!=10:
+		_fail("Garden home icon must lead to ten separately playable plots")
 		return
 	var garden=game.garden_game
-	if Rules.CROPS.size()!=3 or garden.seed_buttons.size()!=3 or garden.plot_images.size()!=6:
-		_fail("Three unique illustrated vegetable choices and six plots required")
+	if Rules.CROPS.size()!=4 or garden.seed_buttons.size()!=4 or garden.plot_images.size()!=10:
+		_fail("Four distinct illustrated crops, including the fantasy flower, and ten plots required")
 		return
 	for art in garden.plot_images:
 		if not art is CropArt:
@@ -66,13 +66,13 @@ func _run() -> void:
 	if game.progress.garden_plant(0,"fake",now):
 		_fail("Unknown seeds cannot be planted")
 		return
-	if game.progress.garden_plant(6,"carrot",now):
+	if game.progress.garden_plant(10,"carrot",now):
 		_fail("Out-of-range plot index should be rejected")
 		return
 	for i in range(5):
 		var id=str(Rules.CROPS[i%3]["id"])
 		if not game.progress.garden_plant(i,id,now):
-			_fail("Six independent plots should all be plantable")
+			_fail("Ten independent plots should all be plantable")
 			return
 	if game.progress.garden_plant(0,"carrot",now):
 		_fail("Growing plants cannot be overwritten")
@@ -175,12 +175,35 @@ func _run() -> void:
 	farm._on_reaction_finished("cow")
 	farm._set_resident("snake",false)
 	var cabbage_before=int(game.progress.data["garden_inventory"]["cabbage"])
-	if farm.feed_garden("cabbage"):
-		_fail("Meat-eating animals must not be fed inappropriate vegetables")
+	if not farm.feed_garden("cabbage"):
+		_fail("Every resident, including the snake, must happily eat every harvested crop")
 		return
-	if int(game.progress.data["garden_inventory"]["cabbage"])!=cabbage_before:
-		_fail("Rejected animal treats must never deduct vegetables")
+	if int(game.progress.data["garden_inventory"]["cabbage"])!=cabbage_before-1:
+		_fail("Feeding snake must consume exactly one cabbage")
 		return
+	if farm.actors["snake"].avatar.mood!="garden_happy" or farm.actors["snake"].heart_time<2.0:
+		_fail("All animals must show cheerful faces and floating hearts on eating")
+		return
+	farm._on_reaction_finished("snake")
+	if not game.progress.garden_plant(6,"carnivorous_flower",now):
+		_fail("Fourth fantasy plant must grow on an additional garden plot")
+		return
+	if game.progress.garden_harvest(6,now+20):
+		_fail("Fantasy flower cannot be harvested before its 90-second countdown")
+		return
+	if not game.progress.garden_harvest(6,now+120):
+		_fail("Fantasy flower must become harvestable after its own timer")
+		return
+	if int(game.progress.data["garden_inventory"]["carnivorous_flower"])!=1:
+		_fail("Harvested fantasy flower needs its own distinct stock count")
+		return
+	if not farm.feed_garden("carnivorous_flower","cow"):
+		_fail("Every pet can receive the fictional fantasy plant as a game treat")
+		return
+	if farm.actors["cow"].avatar.mood!="garden_happy":
+		_fail("Fantasy flower treat must trigger the same happy eating animation")
+		return
+	farm._on_reaction_finished("cow")
 	var reloaded=Store.new()
 	reloaded.load_save()
 	if int(reloaded.data["garden_inventory"]["carrot"])!=2 or int(reloaded.data["garden_feeds"].get("cow",0))<2:
@@ -210,14 +233,14 @@ func _run() -> void:
 		plot["ready_at"]=current-1
 		game.progress.data["garden_plots"][index]=plot
 	game.garden_game.harvest_all()
-	if game.garden_game.inventory_tiles["carrot"].count!=4 or game.garden_game.inventory_tiles["cabbage"].count!=6:
+	if game.garden_game.inventory_tiles["carrot"].count!=4 or game.garden_game.inventory_tiles["cabbage"].count!=5:
 		_fail("Harvest-all must update the same persisted inventory counters")
 		return
 	game.progress.data=backup
 	game.progress.save()
 	game.show_home()
 	await process_frame
-	print("PASS: 6 isometric beds, 3 timed vegetables, no watering, one-time harvest, stock, happy feed and durable save")
+	print("PASS: 10 isometric beds, 4 timed crops, no watering, one-time harvest, stock, happy feed and durable save")
 	game.queue_free()
 	await process_frame
 	quit(0)
