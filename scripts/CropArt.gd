@@ -2,6 +2,8 @@ extends Control
 ## Original vector crops. Four growth stages, readable without external assets.
 var crop_id: String=""
 var growth_stage: int=0
+# Garden beds draw their own raised 3D soil beneath the plant.
+var show_soil: bool=true
 
 func setup(id: String,stage_value: int) -> void:
 	crop_id=id
@@ -26,12 +28,14 @@ func _draw() -> void:
 		return
 	var k=minf(size.x/175.0,size.y/145.0)
 	draw_set_transform(Vector2(size.x*.5,size.y*.52),0.0,Vector2(k,k))
-	_oval(0,53,77,17,Color("#B58558"))
-	_oval(0,48,72,12,Color("#926746"))
-	for i in range(5):
-		_oval(-50+float(i)*24,48+float(i%2)*3,4,3,Color("#D6A57A"))
+	if show_soil:
+		_oval(0,53,77,17,Color("#B58558"))
+		_oval(0,48,72,12,Color("#926746"))
+		for i in range(5):
+			_oval(-50+float(i)*24,48+float(i%2)*3,4,3,Color("#D6A57A"))
 	if growth_stage==0:
-		_oval(0,46,9,5,Color("#F8DD9A"))
+		if show_soil:
+			_oval(0,46,9,5,Color("#F8DD9A"))
 		draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 		return
 	var factor=.42 if growth_stage==1 else (.72 if growth_stage==2 else 1.0)
