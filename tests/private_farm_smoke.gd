@@ -78,11 +78,16 @@ func _run() -> void:
 		return
 	var before_food=int(game.progress.care_stats("cow")["food"])
 	farm.interact("feed")
-	if not farm.busy or cow.reaction_action!="feed":
-		_fail("Feeding should trigger the selected roaming animal's reaction")
+	if farm.busy or cow.reaction_action=="feed" or int(game.progress.care_stats("cow")["food"])!=before_food:
+		_fail("General feeding must no longer be available through care commands")
 		return
-	if int(game.progress.care_stats("cow")["food"])<before_food:
-		_fail("Feeding must not reduce the care stat")
+	for button in farm.commands.get_children():
+		if "餵" in button.text or "feed" in button.text:
+			_fail("Old regular feeding and popup buttons must be removed")
+			return
+	farm.interact("wash")
+	if not farm.busy or cow.reaction_action!="wash":
+		_fail("Remaining care actions must still work without feeding button")
 		return
 	await create_timer(1.85).timeout
 	if farm.busy:
@@ -109,7 +114,7 @@ func _run() -> void:
 		game.progress.private_farm_remove(id)
 	for id in original:
 		game.progress.private_farm_add(str(id))
-	print("PASS: snake already exists, multi-resident roaming, direct animal touch/hand, petting reaction, feeding and persistence")
+	print("PASS: multi-resident roaming, petting, no general feed button, preserved wash care and persistence")
 	game.queue_free()
 	await process_frame
 	quit(0)
