@@ -270,6 +270,36 @@ func _header(layout: VBoxContainer, name: String, back: Callable = Callable()) -
 	header.add_child(title)
 	header.add_child(_button("家長", Callable(self,"show_parent_gate"), Color("#FFFFFF"), Vector2(112, 58)))
 
+func _farm_header(layout: VBoxContainer) -> void:
+	# Compact storybook wood plaque, sized by containers rather than screen
+	# coordinates. The header does not overlap the scroll list or map.
+	var row=HBoxContainer.new()
+	row.custom_minimum_size.y=58
+	row.add_theme_constant_override("separation",14)
+	layout.add_child(row)
+	var back=_button("⬅ 返回",Callable(self,"show_home"),Color("#FFF9EA"),Vector2(120,54))
+	back.add_theme_font_size_override("font_size",23)
+	row.add_child(back)
+	var sign=PanelContainer.new()
+	sign.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	var wood=StyleBoxFlat.new()
+	wood.bg_color=Color("#F4C996")
+	wood.border_color=Color("#A7784F")
+	wood.set_border_width_all(3)
+	wood.set_corner_radius_all(20)
+	wood.content_margin_top=3
+	wood.content_margin_bottom=3
+	wood.shadow_color=Color("#7B664E",0.16)
+	wood.shadow_size=4
+	sign.add_theme_stylebox_override("panel",wood)
+	row.add_child(sign)
+	var title=_label("🌼  私人農場  🌿",32,HORIZONTAL_ALIGNMENT_CENTER,Color("#71462B"))
+	title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	sign.add_child(title)
+	var parent=_button("家長",Callable(self,"show_parent_gate"),Color("#FFF9EA"),Vector2(108,54))
+	parent.add_theme_font_size_override("font_size",22)
+	row.add_child(parent)
+
 func _spacer() -> Control:
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -763,7 +793,7 @@ func show_garden() -> void:
 
 func show_private_farm() -> void:
 	var layout = _switch("private_farm","farm")
-	_header(layout,"私人農場",Callable(self,"show_home"))
+	_farm_header(layout)
 	private_farm_game = PrivateFarm.new()
 	private_farm_game.setup(_all_friends(),progress,sound)
 	private_farm_game.racing_requested.connect(Callable(self,"show_race_lobby"))
