@@ -1,6 +1,6 @@
 extends HBoxContainer
 ## Private sanctuary: all collected residents roam together in a single scene.
-## Touch the actual moving animal, stroke to pet, tap to select for care actions.
+## Touch roaming animals to pet; drag a harvest from the basket to feed.
 const AnimalArt = preload("res://scripts/AnimalArt.gd")
 const RoamingAnimal = preload("res://scripts/RoamingAnimal.gd")
 const SwimmingAnimal = preload("res://scripts/SwimmingAnimal.gd")
@@ -44,12 +44,18 @@ var mouse_down: bool = false
 var last_touch: Vector2 = Vector2.ZERO
 var pet_feedback_count: int = 0
 var reduce_motion: bool = false
-var veg_popup: PopupPanel
-var veg_buttons: Dictionary = {}
-var veg_notice: Label
-var veg_stock_text: Dictionary = {}
 var farm_inventory_tiles: Dictionary = {}
+var stock_strip: HBoxContainer
 var last_fed_crop: String = ""
+# The basket owns its gesture; empty-ground swipes still pan and pets still work.
+var food_pointer: int=-1
+var food_touch: bool=false
+var food_crop: String=""
+var food_drag_origin: Vector2=Vector2.ZERO
+var food_dragging: bool=false
+var food_preview: Control
+var food_hover_id: String=""
+const FOOD_DRAG_DISTANCE: float=13.0
 
 func setup(info: Array, store, narrator) -> void:
 	animals = info
@@ -77,6 +83,20 @@ func _ready() -> void:
 	farm_header.add_child(_round("🌱 去農田",Callable(self,"_request_garden"),Vector2(125,51)))
 	farm_header.add_child(_round("🏎️ 賽車場",
 		Callable(self,"_request_race"),Vector2(144,51)))
+	# Permanently visible, illustrated basket directly ABOVE the animals.
+	# One direct drag to a roaming animal consumes one crop; no feeding menu.
+	stock_strip=HBoxContainer.new()
+	stock_strip.alignment=BoxContainer.ALIGNMENT_CENTER
+	stock_strip.add_theme_constant_override("separation",12)
+	left.add_child(stock_strip)
+	stock_strip.add_child(_label("🧺",25))
+	for crop in GardenRules.CROPS:
+		var tile=StockTile.new()
+		tile.setup(str(crop["id"]))
+		tile.tooltip_text="按住%s拖到動物身上（每次扣 1）" % str(crop["name"])
+		stock_strip.add_child(tile)
+		farm_inventory_tiles[str(crop["id"])]=tile
+	_refresh_farm_stock()
 	# Wider-than-the-screen scenery under a fixed, clipped viewport.
 	farm_view=Control.new()
 	farm_view.custom_minimum_size=Vector2(555,310)
@@ -110,25 +130,10 @@ func _ready() -> void:
 	commands.alignment = BoxContainer.ALIGNMENT_CENTER
 	commands.add_theme_constant_override("separation",6)
 	left.add_child(commands)
-	for data in [["feed","🍽️ 一般餵食"],["veg_feed","🥕 蔬菜點心"],["wash","洗澡"],["play","玩耍"],["sleep","休息"],["sound","聽聲音"]]:
-		var cb=Callable(self,"open_vegetable_picker") if str(data[0])=="veg_feed" else Callable(self,"interact").bind(str(data[0]))
-		var btn = _round(str(data[1]),cb,Vector2(106,54))
-		btn.disabled = true
+	for data in [["wash","洗澡"],["play","玩耍"],["sleep","休息"],["sound","聽聲音"]]:
+		var btn=_round(str(data[1]),Callable(self,"interact").bind(str(data[0])),Vector2(114,52))
+		btn.disabled=true
 		commands.add_child(btn)
-
-	# Permanently visible stock: a veggie meal takes exactly one crop from here.
-	var stock_strip=HBoxContainer.new()
-	stock_strip.alignment=BoxContainer.ALIGNMENT_CENTER
-	stock_strip.add_theme_constant_override("separation",8)
-	left.add_child(stock_strip)
-	stock_strip.add_child(_label("🧺 菜籃：",18))
-	for crop in GardenRules.CROPS:
-		var tile=StockTile.new()
-		tile.setup(str(crop["id"]))
-		stock_strip.add_child(tile)
-		farm_inventory_tiles[str(crop["id"])]=tile
-	_refresh_farm_stock()
-	_build_vegetable_picker()
 
 	var right = VBoxContainer.new()
 	right.custom_minimum_size = Vector2(275,0)
@@ -181,7 +186,18 @@ func _ready() -> void:
 	_sync_residents()
 	_rebuild_cards()
 	call_deferred("_layout_residents")
-	voice.speak("歡迎來到大大的私人農場！手指左右滑動逛地圖，會飛的昆蟲在天空，螳螂、糞金龜和象鼻蟲在草地上爬行，右邊有大水池喔！")
+	# Above all page content, without taking touches away from animal petting.
+	var drag_layer=CanvasLayer.new()
+	drag_layer.layer=9
+	add_child(drag_layer)
+	food_preview=CropArt.new()
+	food_preview.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	food_preview.size=Vector2(100,92)
+	food_preview.show_soil=false
+	food_preview.modulate=Color(1,1,1,.9)
+	food_preview.hide()
+	drag_layer.add_child(food_preview)
+	voice.speak("歡迎來到私人農場！從菜籃拖曳蔬菜到動物身上就能餵食。摸摸動物、左右滑動逛地圖，也可以玩賽車！")
 
 func _label(value: String, size_value: int) -> Label:
 	var l = Label.new()
@@ -465,89 +481,120 @@ func _refresh_farm_stock() -> void:
 		if farm_inventory_tiles.has(id):
 			farm_inventory_tiles[id].set_count(int(basket.get(id,0)))
 
-func _build_vegetable_picker() -> void:
-	veg_popup=PopupPanel.new()
-	veg_popup.name="VegetablePicker"
-	add_child(veg_popup)
-	var panel=MarginContainer.new()
-	for side in ["left","right","top","bottom"]:
-		panel.add_theme_constant_override("margin_"+side,12)
-	veg_popup.add_child(panel)
-	var column=VBoxContainer.new()
-	column.add_theme_constant_override("separation",9)
-	panel.add_child(column)
-	veg_notice=_label("🥕 蔬菜點心：選擇一份，餵完庫存會扣 1",21)
-	column.add_child(veg_notice)
-	var row=HBoxContainer.new()
-	row.alignment=BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation",10)
-	column.add_child(row)
-	for crop in GardenRules.CROPS:
-		var id=str(crop["id"])
-		var button=_round("",Callable(self,"feed_garden").bind(id),Vector2(188,132))
-		row.add_child(button)
-		veg_buttons[id]=button
-		var body=VBoxContainer.new()
-		body.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		button.add_child(body)
-		var art=CropArt.new()
-		art.setup(id,3)
-		art.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		art.custom_minimum_size=Vector2(177,85)
-		art.size_flags_vertical=Control.SIZE_EXPAND_FILL
-		body.add_child(art)
-		var tag=_label("",17)
-		body.add_child(tag)
-		veg_stock_text[id]=tag
-	column.add_child(_round("🌱 沒有蔬菜？去農田種菜",Callable(self,"_open_garden_from_popup"),Vector2(265,51)))
-	_refresh_vegetable_picker()
+func _input(event: InputEvent) -> void:
+	# Global coordinates let a drag begin on a stock tile and finish over
+	# the clipped, horizontally-panned animal world without opening a dialog.
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_start_food_pointer(event.position,event.index,true)
+		elif food_touch and food_pointer==event.index:
+			_finish_food_pointer(event.position)
+	elif event is InputEventScreenDrag:
+		if food_touch and food_pointer==event.index:
+			_move_food_pointer(event.position)
+	elif event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
+		if event.pressed and food_pointer==-1:
+			_start_food_pointer(event.position,-2,false)
+		elif not event.pressed and food_pointer==-2 and not food_touch:
+			_finish_food_pointer(event.position)
+	elif event is InputEventMouseMotion:
+		if food_pointer==-2 and not food_touch:
+			_move_food_pointer(event.position)
 
-func _refresh_vegetable_picker() -> void:
-	if veg_notice==null or save_data==null:
+func _start_food_pointer(point: Vector2,index: int,touch: bool) -> void:
+	if food_pointer!=-1 or busy or save_data==null:
 		return
-	if active_id.is_empty():
-		veg_notice.text="🐾 先點一隻農場裡的動物，再選點心"
-	else:
-		veg_notice.text="💗 餵 %s · 每按一次扣 1 份蔬菜" % str(_animal(active_id).get("name","動物"))
 	var basket: Dictionary=save_data.data.get("garden_inventory",{})
-	var eligible=0
 	for crop in GardenRules.CROPS:
 		var id=str(crop["id"])
-		var count=maxi(0,int(basket.get(id,0)))
-		var allowed=GardenRules.suitable(active_id,id)
-		var button: Button=veg_buttons[id]
-		var can_feed=not busy and save_data.garden_can_feed(active_id,id)
-		button.disabled=not can_feed
-		var detail="✓ 餵 1 份" if can_feed else ("不適合吃" if not allowed else ("尚未收成" if count<=0 else "吃完再餵"))
-		veg_stock_text[id].text="%s ×%d　%s" % [str(crop["name"]),count,detail]
-		if can_feed:
-			eligible+=1
-	if busy:
-		veg_notice.text="💗 動物正在開心吃，等一下還能再餵！"
-	elif eligible==0 and not active_id.is_empty():
-		veg_notice.text="🐾 %s 目前沒有能吃的蔬菜，請換一種或去收成" % str(_animal(active_id).get("name","動物"))
-
-func open_vegetable_picker() -> void:
-	if active_id.is_empty() or busy:
+		if not farm_inventory_tiles.has(id):
+			continue
+		if not farm_inventory_tiles[id].get_global_rect().has_point(point):
+			continue
+		if int(basket.get(id,0))<1:
+			info_label.text="🧺 %s還沒收成，去農田採收吧！" % str(crop["name"])
+			return
+		food_pointer=index
+		food_touch=touch
+		food_crop=id
+		food_drag_origin=point
+		food_dragging=false
+		food_hover_id=""
 		return
-	_refresh_farm_stock()
-	_refresh_vegetable_picker()
-	veg_popup.popup_centered(Vector2i(654,255))
 
-func feed_garden(crop_id: String) -> bool:
-	if busy or active_id.is_empty() or not actors.has(active_id):
+func _move_food_pointer(point: Vector2) -> void:
+	if food_pointer==-1:
+		return
+	if not food_dragging:
+		if food_drag_origin.distance_to(point)<FOOD_DRAG_DISTANCE:
+			return
+		food_dragging=true
+		food_preview.setup(food_crop,3)
+		food_preview.show()
+	food_preview.position=point-food_preview.size*.5
+	var hovered=_food_target_at(point)
+	if hovered!=food_hover_id:
+		food_hover_id=hovered
+		for key in actors.keys():
+			actors[key].selected=(str(key)==hovered or (hovered.is_empty() and str(key)==active_id))
+			actors[key].queue_redraw()
+	if not hovered.is_empty():
+		var name=str(_animal(hovered).get("name","動物"))
+		var allowed=save_data.garden_can_feed(hovered,food_crop)
+		info_label.text="💗 放開餵%s" % name if allowed else "⛔ %s不適合吃這種蔬菜" % name
+		food_preview.modulate=Color(1,1,1,.94) if allowed else Color("#EBA4A4",.90)
+	else:
+		info_label.text="🥕 拖到農場裡的動物身上"
+		food_preview.modulate=Color(1,1,1,.90)
+	get_viewport().set_input_as_handled()
+
+func _food_target_at(point: Vector2) -> String:
+	if farm_view==null or not farm_view.get_global_rect().has_point(point):
+		return ""
+	var local=point-farm_view.get_global_rect().position+Vector2(camera_x,0)
+	return _actor_at(local)
+
+func _finish_food_pointer(point: Vector2) -> void:
+	if food_pointer==-1:
+		return
+	if food_dragging:
+		var id=_food_target_at(point)
+		if not id.is_empty():
+			if save_data.garden_can_feed(id,food_crop) and not busy:
+				feed_garden(food_crop,id)
+			else:
+				info_label.text="⛔ %s不能吃%s，菜籃不會扣除！" % [
+					str(_animal(id).get("name","動物")),
+					str(GardenRules.crop_for(food_crop).get("name","蔬菜"))]
+		else:
+			info_label.text="🥕 把蔬菜拖到動物身上才能餵食"
+		get_viewport().set_input_as_handled()
+	food_preview.hide()
+	food_pointer=-1
+	food_touch=false
+	food_crop=""
+	food_dragging=false
+	food_hover_id=""
+	for key in actors.keys():
+		actors[key].selected=str(key)==active_id
+		actors[key].queue_redraw()
+
+func feed_garden(crop_id: String,animal_id: String="") -> bool:
+	# Only direct stock-to-animal drags call this in the UI. The optional
+	# recipient parameter permits targeting ANY animal without preselection.
+	var recipient=animal_id if not animal_id.is_empty() else active_id
+	if busy or recipient.is_empty() or not actors.has(recipient):
 		return false
-	if not save_data.garden_can_feed(active_id,crop_id):
-		info_label.text="這種菜不適合這位朋友，或是蔬菜籃還沒收成！"
-		_refresh_vegetable_picker()
+	if not save_data.garden_can_feed(recipient,crop_id):
+		info_label.text="這種菜不適合這位朋友，或是蔬菜籃還沒有收成！"
 		return false
 	var before=int(save_data.data.get("garden_inventory",{}).get(crop_id,0))
-	var creature=actors[active_id]
+	var creature=actors[recipient]
 	if not creature.perform("garden_feed"):
 		return false
-	if not save_data.garden_feed(active_id,crop_id):
+	if not save_data.garden_feed(recipient,crop_id):
 		return false
+	_set_resident(recipient,false)
 	var after=int(save_data.data.get("garden_inventory",{}).get(crop_id,0))
 	creature.effects.crop_id=crop_id
 	creature.effects.queue_redraw()
@@ -555,22 +602,15 @@ func feed_garden(crop_id: String) -> bool:
 	busy=true
 	_update_command_buttons()
 	_refresh_farm_stock()
-	_refresh_vegetable_picker()
 	var crop=GardenRules.crop_for(crop_id)
 	info_label.text="💗 %s吃了%s，開心跳跳！🧺 %d → %d" % [
-		str(_animal(active_id).get("name","動物")),str(crop.get("name","蔬菜")),before,after]
-	if is_instance_valid(veg_popup):
-		veg_popup.hide()
-	# Bundled natural sounds for supported animals, otherwise cheerful TTS.
+		str(_animal(recipient).get("name","動物")),str(crop.get("name","蔬菜")),before,after]
+	# Use recorded calls on known species; TTS announces the actual food.
 	if voice!=null:
 		voice.speak(info_label.text)
-		if voice.has_natural_sound(active_id):
-			voice.play_animal(active_id)
+		if voice.has_natural_sound(recipient):
+			voice.play_animal(recipient)
 	return true
-
-func _open_garden_from_popup() -> void:
-	veg_popup.hide()
-	garden_requested.emit()
 
 func _update_command_buttons() -> void:
 	for b in commands.get_children():
@@ -673,6 +713,8 @@ func _on_animal_petted(id: String) -> void:
 		voice.speak("摸得真好！牠好開心！")
 
 func interact(action: String) -> void:
+	if action=="feed":
+		return # General feeding is gone; food only comes from harvested crops.
 	if active_id.is_empty() or not actors.has(active_id) or busy:
 		return
 	if action == "sound":
@@ -685,7 +727,6 @@ func interact(action: String) -> void:
 	busy = true
 	_update_command_buttons()
 	var msg: Dictionary = {
-		"feed":"吃得好開心！",
 		"wash":"好多泡泡，好乾淨！",
 		"play":"一起玩，好開心！",
 		"sleep":"牠正在休息，輕聲一點喔。"
@@ -704,7 +745,6 @@ func _on_reaction_finished(_id: String) -> void:
 	busy = false
 	_update_command_buttons()
 	_refresh_farm_stock()
-	_refresh_vegetable_picker()
 
 func _request_race() -> void:
 	racing_requested.emit()
