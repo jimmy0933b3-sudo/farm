@@ -220,7 +220,8 @@ func press_plot(index: int) -> void:
 		msg="⏳ %s" % Rules.wait_text(int(plot["ready_at"])-now)
 	if not msg.is_empty():
 		hint_label.text=msg
-		if narrator!=null:
+		# Harvest is intentionally silent; keep visual stock and icon feedback.
+		if narrator!=null and not (id!="" and now>=int(plot.get("ready_at",0))):
 			narrator.speak(msg)
 	_refresh()
 
@@ -331,8 +332,7 @@ func harvest_all() -> void:
 			gained+=int(crop.get("harvest",0))
 	hint_label.text="🧺 +%d" % gained if count>0 else "⏳"
 	_refresh()
-	if narrator!=null:
-		narrator.speak("收成%d塊田，得到%d份蔬菜！" % [count,gained] if count>0 else "還沒有成熟的蔬菜")
+	# Harvest-all is silent, including when no crops are ready.
 
 func _refresh() -> void:
 	if store==null or plot_buttons.is_empty():
